@@ -1,4 +1,4 @@
-/* $Id: RecordingStream.h 109818 2025-06-11 08:31:50Z andreas.loeffler@oracle.com $ */
+/* $Id: RecordingStream.h 110149 2025-07-08 08:35:39Z andreas.loeffler@oracle.com $ */
 /** @file
  * Recording stream code header.
  */
@@ -186,6 +186,9 @@ public:
     int SendVideoFrame(PRECORDINGVIDEOFRAME pFrame, uint64_t msTimestamp);
     int SendScreenChange(PRECORDINGSURFACEINFO pInfo, uint64_t msTimestamp, bool fForce = false);
 
+    int Start(void);
+    int Stop(void);
+
     const settings::RecordingScreen &GetConfig(void) const;
     uint16_t GetID(void) const { return this->m_uScreenID; };
 #ifdef VBOX_WITH_AUDIO_RECORDING
@@ -237,6 +240,14 @@ protected:
         RECORDINGSTREAMSTATE_UNINITIALIZED = 0,
         /** Stream was initialized. */
         RECORDINGSTREAMSTATE_INITIALIZED   = 1,
+        /** Stream was started (recording active). */
+        RECORDINGSTREAMSTATE_STARTED       = 2,
+        /** Stream is in paused state. */
+        RECORDINGSTREAMSTATE_PAUSED        = 3,
+        /** Stream is stopping. */
+        RECORDINGSTREAMSTATE_STOPPING      = 4,
+        /** Stream has been stopped (non-continuable). */
+        RECORDINGSTREAMSTATE_STOPPED       = 5,
         /** The usual 32-bit hack. */
         RECORDINGSTREAMSTATE_32BIT_HACK    = 0x7fffffff
     };
@@ -255,7 +266,6 @@ protected:
         /** Pointer to WebM writer instance being used. */
         WebMWriter         *m_pWEBM;
     } File;
-    bool                m_fEnabled;
     /** Track number of audio stream.
      *  Set to UINT8_MAX if not being used. */
     uint8_t             m_uTrackAudio;
@@ -283,13 +293,19 @@ protected:
     /** STAM values. */
     struct
     {
-        STAMCOUNTER     cFramesAdded;
-        STAMCOUNTER     cFramesEncoded;
-        STAMPROFILE     profileFrameEncode;
+        STAMCOUNTER     cVideoFramesAdded;
+        STAMCOUNTER     cVideoFramesToEncode;
+        STAMCOUNTER     cVideoFramesEncoded;
+        STAMCOUNTER     cVideoFramesHousekeeping;
+# ifdef VBOX_WITH_AUDIO_RECORDING
+        STAMCOUNTER     cAudioFramesAdded;
+        STAMCOUNTER     cAudioFramesToEncode;
+        STAMCOUNTER     cAudioFramesEncoded;
+        STAMCOUNTER     cAudioFramesHousekeeping;
+# endif
         STAMPROFILE     profileFnProcessTotal;
         STAMPROFILE     profileFnProcessVideo;
         STAMPROFILE     profileFnProcessAudio;
-        STAMPROFILE     profileFnHouekeeping;
     } m_STAM;
 #endif /* VBOX_WITH_STATISTICS */
     /** Video codec instance data to use. */
@@ -297,6 +313,13 @@ protected:
     /** Screen settings to use. */
     settings::RecordingScreen
                         m_ScreenSettings;
+    /** Video-specific runtime data. */
+    struct
+    {
+        /** Current surface screen info being used.
+         *  Can be changed by a SendScreenChange() call. */
+        RECORDINGSURFACEINFO ScreenInfo;
+    } m_Video;
     /** Request pool for async tasks. */
     RTREQPOOL           m_hReqPool;
     /** Set of unprocessed recording (data) blocks for this stream. */
