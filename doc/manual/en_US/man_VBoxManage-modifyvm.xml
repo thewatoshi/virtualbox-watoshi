@@ -30,7 +30,7 @@
 ]>
 <refentry id="vboxmanage-modifyvm" lang="en">
   <refentryinfo>
-    <pubdate>$Date: 2025-06-26 09:57:04 +0200 (Thu, 26 Jun 2025) $</pubdate>
+    <pubdate>$Date: 2025-07-10 13:35:55 +0200 (Thu, 10 Jul 2025) $</pubdate>
     <title>VBoxManage modifyvm</title>
   </refentryinfo>
 
@@ -1724,8 +1724,7 @@ it unless this changes. -->
           <term><option>--nat-bind-ip<replaceable>N</replaceable>=<replaceable>IP-address</replaceable></option></term>
           <listitem><para>
               Specifies an alternate IP address to which the NAT engine
-              binds. See <xref linkend="nat-adv-settings" />. By
-              default, &product-name;'s NAT engine routes TCP/IP packets
+              binds. By default, &product-name;'s NAT engine routes TCP/IP packets
               through the default interface assigned by the host's
               TCP/IP stack.
             </para></listitem>
@@ -1763,8 +1762,7 @@ it unless this changes. -->
         <varlistentry>
           <term><option>--nat-settings<replaceable>N</replaceable>=[<replaceable>mtu</replaceable>],[<replaceable>socksnd</replaceable>],[<replaceable>sockrcv</replaceable>],[<replaceable>tcpsnd</replaceable>],[<replaceable>tcprcv</replaceable>]</option></term>
           <listitem><para>
-              Specifies values for tuning NAT performance. See
-              <xref linkend="nat-adv-settings" />.
+              Specifies values for tuning NAT performance.
             </para></listitem>
         </varlistentry>
         <varlistentry>
