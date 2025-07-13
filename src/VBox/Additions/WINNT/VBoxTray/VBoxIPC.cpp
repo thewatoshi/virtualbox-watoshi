@@ -1,4 +1,4 @@
-/* $Id: VBoxIPC.cpp 110099 2025-07-03 08:29:36Z andreas.loeffler@oracle.com $ */
+/* $Id: VBoxIPC.cpp 110207 2025-07-13 11:11:44Z dmitrii.grigorev@oracle.com $ */
 /** @file
  * VBoxIPC - IPC thread, acts as a (purely) local IPC server.
  *           Multiple sessions are supported, whereas every session
@@ -472,7 +472,7 @@ static DECLCALLBACK(int) vboxIPCSessionThread(RTTHREAD hThreadSelf, void *pvSess
             break;
         }
         else
-            VBoxTrayError("IPC: Session %#x: Waiting for session data failed with rc=%Rrc\n", hSession, rc);
+            VBoxTrayVerbose(1, "*** Error: IPC: Session %#x: Waiting for session data failed with rc=%Rrc\n", hSession, rc);
     }
 
     VBoxTrayVerbose(1, "IPC: Session thread %#x ended with rc=%Rrc\n", hSession, rc);

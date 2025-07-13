@@ -1,4 +1,4 @@
-# $Id: Makefile.kmk 108086 2025-01-28 09:22:12Z andreas.loeffler@oracle.com $
+# $Id: Makefile.kmk 110207 2025-07-13 11:11:44Z dmitrii.grigorev@oracle.com $
 ## @file
 # Sub-Makefile for VBoxTray.
 #
@@ -40,7 +40,6 @@ ifdef VBOX_WITH_AUTOMATIC_DEFS_QUOTING
 else
  VBoxTray_DEFS   := VBOX_WITH_HGCM VBOX_BUILD_TARGET=\"$(KBUILD_TARGET).$(KBUILD_TARGET_ARCH)\"
 endif
-VBoxTray_DEFS    += LOG_ENABLED
 VBoxTray_LDFLAGS  = -SubSystem:Windows
 VBoxTray_INCS     = \
 	../include \
