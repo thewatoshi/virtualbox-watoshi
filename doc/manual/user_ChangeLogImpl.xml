@@ -73,15 +73,15 @@ Rules for adding a changelog entry to make them look more uniform:
                            So, we use chapter and xpointer="xpointer(/chapter/)" with xi:include. -->
   <sect1>
 
-    <title>Version 7.1.12 (date tbd)</title>
+    <title>Version 7.1.12 (2025-07-15)</title>
 
-    <para>This is a maintenance release. The following items were fixed and/or
+    <para>This is a maintenance release. The following items were fixed or
       added:</para>
 
     <itemizedlist>
 
       <listitem>
-        <para>VMM: Fixed issue when running a nested VM caused Guru Mediation
+        <para>VMM: Fixed issue when running a nested VM caused Guru Meditation
           for outer VM</para>
       </listitem>
 
@@ -91,7 +91,7 @@ Rules for adding a changelog entry to make them look more uniform:
       </listitem>
 
       <listitem>
-        <para>Linux host: fixed possible kernel panic when using bridged networking
+        <para>Linux host: Fixed possible kernel panic when using bridged networking
           with a network interface handled by the ixgbe driver on newer kernels</para>
       </listitem>
 
@@ -101,7 +101,7 @@ Rules for adding a changelog entry to make them look more uniform:
       </listitem>
 
       <listitem>
-        <para>Windows Host: General improvements in drivers installation area</para>
+        <para>Windows Host: General improvements in drivers installation</para>
       </listitem>
 
       <listitem>
