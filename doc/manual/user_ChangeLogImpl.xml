@@ -85,6 +85,11 @@ Rules for adding a changelog entry to make them look more uniform:
           changed and failed to reset (github:GH-72)</para>
       </listitem>
 
+      <listitem>
+        <para>Guest Additions: Added autorun support for Oracle Linux 10 
+          and RHEL 10</para>
+      </listitem>
+
     </itemizedlist>
   </sect1>
 
