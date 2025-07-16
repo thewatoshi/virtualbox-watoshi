@@ -1,4 +1,4 @@
-# $Id: Makefile.kmk 107177 2024-11-26 12:34:25Z andreas.loeffler@oracle.com $
+# $Id: Makefile.kmk 110250 2025-07-16 12:53:33Z klaus.espenlaub@oracle.com $
 ## @file
 # Makefile for the Windows installer.
 #
@@ -530,8 +530,8 @@ VBOX_WIN_INST_ENV := \
 	-E 'VBOX_WITH_MINIMAL_R0=$(if $(VBOX_WITH_MINIMAL_R0),yes,no)' \
 	-E 'VBOX_WITH_MSM_INSTALL=$(if-expr defined(VBOX_WITH_MSM_INSTALL),yes,no)' \
 	$(if-expr defined(VBOX_WITH_MSM_INSTALL), \
-		$(foreach module,$(VBOX_INSTALLER_MERGE_MODULES), \
-			-E 'VBOX_WIN_INST_MERGE_$(toupper $(module))=$(subst /,\,$(VBOX_WIN_INST_OUT_DIR)/VBoxMerge$(module)_$(lang)_$(KBUILD_TARGET_ARCH).msm')),) \
+	$(foreach module,$(VBOX_INSTALLER_MERGE_MODULES), \
+		-E 'VBOX_WIN_INST_MERGE_$(toupper $(module))=$(subst /,\,$(VBOX_WIN_INST_OUT_DIR)/VBoxMerge$(module)_$(lang)_$(KBUILD_TARGET_ARCH).msm')),) \
 	-E 'VBOX_WITH_NETADP=$(if $(VBOX_WITH_NETADP),yes,no)' \
 	-E 'VBOX_WITH_NETFLT=$(if $(VBOX_WITH_NETFLT),yes,no)' \
 	-E 'VBOX_WITH_ORACLE_QT=$(if $(VBOX_WITH_ORACLE_QT),yes,no)' \
