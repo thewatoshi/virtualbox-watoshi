@@ -9633,10 +9633,6 @@
         <translation>Не удалось изменить параметр клавиатуры.</translation>
     </message>
     <message>
-        <source>Failed to change mouse parameter.</source>
-        <translation type="vanished">Не удалось изменить параметр мыши.</translation>
-    </message>
-    <message>
         <source>Failed to change VSD parameter.</source>
         <translation>Не удалось изменить параметр VSD.</translation>
     </message>
@@ -9790,14 +9786,6 @@
     <message>
         <source>Selects an ISO image to be attached to the virtual machine or used in unattended install.</source>
         <translation>Определяет ISO образ, подключенный к виртуальной машине или используемый для автоматической установки.</translation>
-    </message>
-    <message>
-        <source>Invalid guest machine name</source>
-        <translation type="vanished">Неверное имя гостевой машины</translation>
-    </message>
-    <message>
-        <source>Guest machine name is valid</source>
-        <translation type="vanished">Имя гостевой машины корректно</translation>
     </message>
     <message>
         <source>&amp;Subtype:</source>
@@ -12830,10 +12818,6 @@
     <message>
         <source>Next Check:</source>
         <translation>Следующая проверка:</translation>
-    </message>
-    <message>
-        <source>Check for:</source>
-        <translation type="vanished">Искать:</translation>
     </message>
     <message>
         <source>&amp;Stable Release Versions</source>
