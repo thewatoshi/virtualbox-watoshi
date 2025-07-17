@@ -2341,7 +2341,7 @@
     <message>
         <source>VirtualBox - Preferences</source>
         <comment>global preferences dialog name</comment>
-        <translation>VirtualBox - Tercihleri</translation>
+        <translation>VirtualBox - Tercihler</translation>
     </message>
 </context>
 <context>
@@ -5480,7 +5480,7 @@
     </message>
     <message>
         <source>User name to authenticate session creation</source>
-        <translation>Oturum oluşturma kimlik doğrulaması için kullanıcı adı</translation>
+        <translation>Oturum oluşturma kimliğini doğrulamak için kullanıcı adı</translation>
     </message>
     <message>
         <source>User Name</source>
@@ -5488,7 +5488,7 @@
     </message>
     <message>
         <source>Password to authenticate session creation</source>
-        <translation>Oturum oluşturma kimlik doğrulaması için parola</translation>
+        <translation>Oturum oluşturma kimliğini doğrulamak için parola</translation>
     </message>
     <message>
         <source>Close Session</source>
@@ -6775,7 +6775,7 @@
     </message>
     <message>
         <source>The VRDE authentication timeout value is not currently specified.</source>
-        <translation>VRDE kimlik doğrulaması zaman aşımı değeri şu anda belirtilmemiş.</translation>
+        <translation>VRDE kimlik doğrulama zaman aşımı değeri şu anda belirtilmemiş.</translation>
     </message>
     <message>
         <source>Screen %1</source>
@@ -7995,7 +7995,7 @@
     </message>
     <message>
         <source>&lt;p&gt;You have an old version (%1) of the &lt;b&gt;&lt;nobr&gt;%2&lt;/nobr&gt;&lt;/b&gt; installed.&lt;/p&gt;&lt;p&gt;Do you wish to download latest one from the Internet?&lt;/p&gt;</source>
-        <translation>&lt;p&gt;&lt;b&gt;&lt;nobr&gt;%2&lt;/nobr&gt;&lt;/b&gt; öğesinin yüklü eski bir sürümüne (%1) sahipsiniz.&lt;/p&gt;&lt;p&gt;En son olanı Internet&apos;ten indirmek ister misiniz?&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;&lt;b&gt;&lt;nobr&gt;%2&lt;/nobr&gt;&lt;/b&gt; öğesinin yüklü eski bir sürümüne (%1) sahipsiniz.&lt;/p&gt;&lt;p&gt;En son olanı İnternet&apos;ten indirmek ister misiniz?&lt;/p&gt;</translation>
     </message>
     <message>
         <source>&lt;p&gt;Are you sure you want to download the &lt;b&gt;&lt;nobr&gt;%1&lt;/nobr&gt;&lt;/b&gt; from &lt;nobr&gt;&lt;a href=&quot;%2&quot;&gt;%2&lt;/a&gt;&lt;/nobr&gt; (size %3 bytes)?&lt;/p&gt;</source>
@@ -8261,7 +8261,7 @@
     </message>
     <message>
         <source>Bad password or authentication failure.</source>
-        <translation>Hatalı parola ya da kimlik doğrulaması başarısız.</translation>
+        <translation>Hatalı parola ya da kimlik doğrulama başarısız.</translation>
     </message>
     <message>
         <source>&lt;p&gt;A critical error has occurred while running the virtual machine and the machine execution has been stopped.&lt;/p&gt;&lt;p&gt;For help, please see the Community section on &lt;a href=https://www.virtualbox.org&gt;https://www.virtualbox.org&lt;/a&gt; or your support contract. Please provide the contents of the log file &lt;tt&gt;VBox.log&lt;/tt&gt; and the image file &lt;tt&gt;VBox.png&lt;/tt&gt;, which you can find in the &lt;nobr&gt;&lt;b&gt;%1&lt;/b&gt;&lt;/nobr&gt; directory, as well as a description of what you were doing when this error happened. Note that you can also access the above files by selecting &lt;b&gt;Show Log&lt;/b&gt; from the &lt;b&gt;Machine&lt;/b&gt; menu of the main VirtualBox window.&lt;/p&gt;&lt;p&gt;Press &lt;b&gt;OK&lt;/b&gt; if you want to power off the machine or press &lt;b&gt;Ignore&lt;/b&gt; if you want to leave it as is for debugging. Please note that debugging requires special knowledge and tools, so it is recommended to press &lt;b&gt;OK&lt;/b&gt; now.&lt;/p&gt;</source>
@@ -9627,7 +9627,7 @@
     </message>
     <message>
         <source>Don&apos;t show again</source>
-        <translation type="unfinished"></translation>
+        <translation>Bir daha gösterme</translation>
     </message>
 </context>
 <context>
@@ -10956,7 +10956,7 @@
     </message>
     <message>
         <source>&amp;Direct Connection to the Internet</source>
-        <translation>Internet&apos;e &amp;Doğrudan Bağlantı</translation>
+        <translation>İnternet&apos;e &amp;Doğrudan Bağlantı</translation>
     </message>
     <message>
         <source>When chosen, VirtualBox will use direct Internet connection for tasks like downloading Guest Additions from the network or checking for updates.</source>
@@ -13532,11 +13532,11 @@
     <name>UIVRDEAuthLibraryEditor</name>
     <message>
         <source>V&amp;RDP Authentication Library:</source>
-        <translation>V&amp;RDP Kimlik Doğrulaması Kütüphanesi:</translation>
+        <translation>V&amp;RDP Kimlik Doğrulama Kütüphanesi:</translation>
     </message>
     <message>
         <source>Holds the path to the library that provides authentication for Remote Display (VRDP) clients.</source>
-        <translation>Uzak Görüntü (VRDP) istemcilerine kimlik doğrulaması sağlayan kütüphane için yolu tutar.</translation>
+        <translation>Uzak Görüntü (VRDP) istemcilerine kimlik doğrulama sağlayan kütüphane için yolu tutar.</translation>
     </message>
 </context>
 <context>
@@ -13563,7 +13563,7 @@
     </message>
     <message>
         <source>Selects the VRDP authentication method.</source>
-        <translation>VRDP kimlik doğrulaması yöntemini seçer.</translation>
+        <translation>VRDP kimlik doğrulama yöntemini seçer.</translation>
     </message>
     <message>
         <source>Authentication &amp;Timeout:</source>
@@ -14911,15 +14911,15 @@
     </message>
     <message>
         <source>Guest machine name cannot be empty</source>
-        <translation type="unfinished"></translation>
+        <translation>Misafir makine adı boş olamaz</translation>
     </message>
     <message>
         <source>Guest machine name is valid</source>
-        <translation type="unfinished">Misafir makine adı geçerli</translation>
+        <translation>Misafir makine adı geçerli</translation>
     </message>
     <message>
         <source>Guest machine path is not unique</source>
-        <translation type="unfinished"></translation>
+        <translation>Misafir makine yolu benzersiz değil</translation>
     </message>
 </context>
 <context>
