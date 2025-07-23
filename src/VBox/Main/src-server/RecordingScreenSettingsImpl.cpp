@@ -1,4 +1,4 @@
-/* $Id: RecordingScreenSettingsImpl.cpp 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: RecordingScreenSettingsImpl.cpp 110361 2025-07-23 07:29:53Z andreas.loeffler@oracle.com $ */
 /** @file
  *
  * VirtualBox COM class implementation - Recording settings of one virtual screen.
@@ -36,7 +36,6 @@
 #include <iprt/asm.h> /* For ASMAtomicXXX. */
 #include <iprt/path.h>
 #include <iprt/cpp/utils.h>
-#include <VBox/settings.h>
 
 #include "AutoStateDep.h"
 #include "AutoCaller.h"
@@ -257,7 +256,7 @@ HRESULT RecordingScreenSettings::isFeatureEnabled(RecordingFeature_T aFeature, B
 
     AutoReadLock alock(this COMMA_LOCKVAL_SRC_POS);
 
-    settings::RecordingFeatureMap::const_iterator itFeature = m->bd->featureMap.find(aFeature);
+    RecordingFeatureMap::const_iterator itFeature = m->bd->featureMap.find(aFeature);
 
     *aEnabled = (   itFeature != m->bd->featureMap.end()
                  && itFeature->second == true);
@@ -323,10 +322,10 @@ HRESULT RecordingScreenSettings::getFeatures(std::vector<RecordingFeature_T> &aF
 
     aFeatures.clear();
 
-    settings::RecordingFeatureMap::const_iterator itFeature = m->bd->featureMap.begin();
+    RecordingFeatureMap::const_iterator itFeature = m->bd->featureMap.begin();
     while (itFeature != m->bd->featureMap.end())
     {
-        if (itFeature->second) /* Is feature enable? */
+        if (itFeature->second) /* Is feature enabled? */
             aFeatures.push_back(itFeature->first);
 
         ++itFeature;
@@ -347,7 +346,7 @@ HRESULT RecordingScreenSettings::setFeatures(const std::vector<RecordingFeature_
 
     m->bd.backup();
 
-    settings::RecordingFeatureMap featureMapOld = m->bd->featureMap;
+    RecordingFeatureMap featureMapOld = m->bd->featureMap;
     m->bd->featureMap.clear();
 
     for (size_t i = 0; i < aFeatures.size(); i++)

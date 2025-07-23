@@ -359,7 +359,13 @@ struct SystemProperties
 
 struct PlatformProperties
 {
-    PlatformProperties();
+    PlatformProperties()
+        : fExclusiveHwVirt(true)
+    {
+#if defined(RT_OS_DARWIN) || defined(RT_OS_WINDOWS) || defined(RT_OS_SOLARIS)
+        fExclusiveHwVirt = false; /** @todo BUGBUG Does this apply to MacOS on ARM as well? */
+#endif
+    }
 
     bool                    fExclusiveHwVirt;
 };
@@ -639,9 +645,6 @@ struct NvramSettings
     com::Utf8Str    strKeyStore;
 };
 
-/** List for keeping a recording feature list. */
-typedef std::map<RecordingFeature_T, bool> RecordingFeatureMap;
-
 /**
  * Recording settings for a single screen (e.g. virtual monitor).
  *
@@ -663,17 +666,13 @@ struct RecordingScreen
 
     static const char *getDefaultOptions(void);
 
-    static int featuresFromString(const com::Utf8Str &strFeatures, RecordingFeatureMap &featureMap);
+    static int featuresFromString(const com::Utf8Str &strFeatures, std::map<RecordingFeature_T, bool> &featureMap);
 
-    static void featuresToString(const RecordingFeatureMap &featureMap, com::Utf8Str &strFeatures);
+    static void featuresToString(const std::map<RecordingFeature_T, bool> &featureMap, com::Utf8Str &strFeatures);
 
     static int audioCodecFromString(const com::Utf8Str &strCodec, RecordingAudioCodec_T &enmCodec);
 
-    static void audioCodecToString(const RecordingAudioCodec_T &enmCodec, com::Utf8Str &strCodec);
-
     static int videoCodecFromString(const com::Utf8Str &strCodec, RecordingVideoCodec_T &enmCodec);
-
-    static void videoCodecToString(const RecordingVideoCodec_T &enmCodec, com::Utf8Str &strCodec);
 
     bool operator==(const RecordingScreen &d) const;
 
@@ -685,7 +684,8 @@ struct RecordingScreen
     /** Destination to record to. */
     RecordingDestination_T enmDest;
     /** Which features are enable or not. */
-    RecordingFeatureMap    featureMap; // requires settings version 1.19 (VirtualBox 7.0)
+    std::map<RecordingFeature_T, bool>
+                           featureMap; // requires settings version 1.19 (VirtualBox 7.0)
     /** Maximum time (in s) to record. If set to 0, no time limit is set. */
     uint32_t               ulMaxTimeS; // requires settings version 1.14 (VirtualBox 4.3)
     /** Options string for hidden / advanced / experimental features.

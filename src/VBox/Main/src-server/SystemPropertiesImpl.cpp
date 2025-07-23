@@ -1,4 +1,4 @@
-/* $Id: SystemPropertiesImpl.cpp 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: SystemPropertiesImpl.cpp 110361 2025-07-23 07:29:53Z andreas.loeffler@oracle.com $ */
 /** @file
  * VirtualBox COM class implementation
  */
@@ -32,8 +32,9 @@
 #ifdef VBOX_WITH_EXTPACK
 # include "ExtPackManagerImpl.h"
 #endif
-#include "CPUProfileImpl.h"
+#include "AudioUtils.h" /* For VBoxAudioGetDefaultDriver(). */
 #include "AutoCaller.h"
+#include "CPUProfileImpl.h"
 #include "Global.h"
 #include "LoggingNew.h"
 #include "AutostartDb.h"
@@ -836,7 +837,7 @@ HRESULT SystemProperties::getDefaultAudioDriver(AudioDriverType_T *aAudioDriver)
 {
     AutoReadLock alock(this COMMA_LOCKVAL_SRC_POS);
 
-    *aAudioDriver = settings::MachineConfigFile::getHostDefaultAudioDriver();
+    *aAudioDriver = VBoxAudioGetDefaultDriver();
 
     return S_OK;
 }

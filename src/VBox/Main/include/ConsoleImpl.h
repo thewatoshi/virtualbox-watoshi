@@ -1,4 +1,4 @@
-/* $Id: ConsoleImpl.h 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: ConsoleImpl.h 110361 2025-07-23 07:29:53Z andreas.loeffler@oracle.com $ */
 /** @file
  * VBox Console COM Class definition
  */
@@ -202,7 +202,6 @@ public:
     int i_recordingCreate(ComPtr<IProgress> &pProgress);
     void i_recordingDestroy(void);
     int i_recordingEnable(BOOL fEnable, util::AutoWriteLock *pAutoLock, ComPtr<IProgress> &pProgress);
-    int i_recordingGetSettings(settings::Recording &Settings);
     int i_recordingStart(util::AutoWriteLock *pAutoLock = NULL);
     int i_recordingStop(util::AutoWriteLock *pAutoLock = NULL);
     int i_recordingCursorShapeChange(bool fVisible, bool fAlpha, uint32_t xHot, uint32_t yHot, uint32_t uWidth, uint32_t uHeight, const uint8_t *pu8Shape, uint32_t cbShape);
