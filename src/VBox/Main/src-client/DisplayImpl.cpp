@@ -1,4 +1,4 @@
-/* $Id: DisplayImpl.cpp 110149 2025-07-08 08:35:39Z andreas.loeffler@oracle.com $ */
+/* $Id: DisplayImpl.cpp 110437 2025-07-28 13:26:29Z knut.osmundsen@oracle.com $ */
 /** @file
  * VirtualBox COM class implementation
  */
@@ -1961,26 +1961,22 @@ HRESULT Display::takeScreenShotWorker(ULONG aScreenId,
                                       BitmapFormat_T aBitmapFormat,
                                       ULONG *pcbOut)
 {
-    HRESULT hrc = S_OK;
-
     /* Do not allow too small and too large screenshots. This also filters out negative
      * values passed as either 'aWidth' or 'aHeight'.
      */
-    CheckComArgExpr(aWidth, aWidth != 0 && aWidth <= 32767);
-    CheckComArgExpr(aHeight, aHeight != 0 && aHeight <= 32767);
+    if (aWidth == 0 || aWidth > 32767 || aHeight == 0 || aHeight > 32767)
+        return setError(E_INVALIDARG, tr("Unsupported resolution for screen shot: %ux%u (screen %u)"), aWidth, aHeight, aScreenId);
 
     if (   aBitmapFormat != BitmapFormat_BGR0
         && aBitmapFormat != BitmapFormat_BGRA
         && aBitmapFormat != BitmapFormat_RGBA
         && aBitmapFormat != BitmapFormat_PNG)
-    {
-        return setError(E_NOTIMPL,
-                        tr("Unsupported screenshot format 0x%08X"), aBitmapFormat);
-    }
+        return setError(E_NOTIMPL, tr("Unsupported screenshot format 0x%08X"), aBitmapFormat);
 
     Console::SafeVMPtr ptrVM(mParent);
-    if (!ptrVM.isOk())
-        return ptrVM.hrc();
+    HRESULT hrc = ptrVM.hrc();
+    if (!FAILED(hrc))
+        return hrc;
 
     int vrc = i_displayTakeScreenshot(ptrVM.rawUVM(), ptrVM.vtable(), this, mpDrv, aScreenId, aAddress, aWidth, aHeight);
     if (RT_SUCCESS(vrc))
@@ -2055,7 +2051,7 @@ HRESULT Display::takeScreenShot(ULONG aScreenId,
                                 BitmapFormat_T aBitmapFormat)
 {
     LogRelFlowFunc(("[%d] address=%p, width=%d, height=%d, format 0x%08X\n",
-                     aScreenId, aAddress, aWidth, aHeight, aBitmapFormat));
+                    aScreenId, aAddress, aWidth, aHeight, aBitmapFormat));
 
     ULONG cbOut = 0;
     HRESULT hrc = takeScreenShotWorker(aScreenId, aAddress, aWidth, aHeight, aBitmapFormat, &cbOut);
@@ -2072,13 +2068,13 @@ HRESULT Display::takeScreenShotToArray(ULONG aScreenId,
                                        std::vector<BYTE> &aScreenData)
 {
     LogRelFlowFunc(("[%d] width=%d, height=%d, format 0x%08X\n",
-                     aScreenId, aWidth, aHeight, aBitmapFormat));
+                    aScreenId, aWidth, aHeight, aBitmapFormat));
 
     /* Do not allow too small and too large screenshots. This also filters out negative
      * values passed as either 'aWidth' or 'aHeight'.
      */
-    CheckComArgExpr(aWidth, aWidth != 0 && aWidth <= 32767);
-    CheckComArgExpr(aHeight, aHeight != 0 && aHeight <= 32767);
+    if (aWidth == 0 || aWidth > 32767 || aHeight == 0 || aHeight > 32767)
+        return setError(E_INVALIDARG, tr("Unsupported resolution for screen shot: %ux%u (screen %u)"), aWidth, aHeight, aScreenId);
 
     const size_t cbData = aWidth * 4 * aHeight;
     aScreenData.resize(cbData);
