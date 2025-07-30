@@ -81,6 +81,11 @@ Rules for adding a changelog entry to make them look more uniform:
     <itemizedlist>
 
       <listitem>
+        <para>VMM: Fixed running VirtualBox on Windows with Hyper-V enabled and
+          older Intel CPUs (github:GH-85)</para>
+      </listitem>
+
+      <listitem>
         <para>Audio: Fixed a crash on Windows hosts when a host device has been
           changed and failed to reset (github:GH-72)</para>
       </listitem>
