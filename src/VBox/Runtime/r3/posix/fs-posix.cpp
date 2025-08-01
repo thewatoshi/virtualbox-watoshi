@@ -1,4 +1,4 @@
-/* $Id: fs-posix.cpp 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: fs-posix.cpp 110511 2025-08-01 11:21:19Z brent.paulson@oracle.com $ */
 /** @file
  * IPRT - File System, Linux.
  */
@@ -281,6 +281,10 @@ RTR3DECL(int) RTFsQueryType(const char *pszFsPath, PRTFSTYPE penmType)
                                      || !strncmp("fuse.", mntEnt.mnt_type, 5)
                                      || !strcmp("fuseblk", mntEnt.mnt_type))
                                 *penmType = RTFSTYPE_FUSE;
+                            else if (!strcmp("ecryptfs", mntEnt.mnt_type))
+                                *penmType = RTFSTYPE_ECRYPTFS;
+                            else if (!strcmp("zfs", mntEnt.mnt_type))
+                                *penmType = RTFSTYPE_ZFS;
                             else
                             {
                                 /* sometimes there are more than one entry for the same partition */

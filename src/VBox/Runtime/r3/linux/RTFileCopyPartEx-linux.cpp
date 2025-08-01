@@ -1,4 +1,4 @@
-/* $Id: RTFileCopyPartEx-linux.cpp 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: RTFileCopyPartEx-linux.cpp 110511 2025-08-01 11:21:19Z brent.paulson@oracle.com $ */
 /** @file
  * IPRT - RTFileCopyPartEx, linux specific implementation.
  */
@@ -164,7 +164,8 @@ RTDECL(int) RTFileCopyPartEx(RTFILE hFileSrc, RTFOFF offSrc, RTFILE hFileDst, RT
             rc = errno;
             Assert(rc != 0);
             rc = rc != 0 ? RTErrConvertFromErrno(rc) : VERR_READ_ERROR;
-            if (rc != VERR_NOT_SAME_DEVICE || cbCopied != 0)
+            /* eCryptfs returns EINVAL for copy_file_range(2) */
+            if ((rc != VERR_NOT_SAME_DEVICE && rc != VERR_INVALID_PARAMETER) || cbCopied != 0)
                 break;
 
             /* Fall back to generic implementation if the syscall refuses to handle the case. */
