@@ -1,4 +1,4 @@
-/* $Id: poll.cpp 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: poll.cpp 110531 2025-08-04 14:44:34Z alexander.eichner@oracle.com $ */
 /** @file
  * IPRT - Polling I/O Handles, Windows+Posix Implementation.
  */
@@ -80,10 +80,12 @@
 /*********************************************************************************************************************************
 *   Defined Constants And Macros                                                                                                 *
 *********************************************************************************************************************************/
-/** The maximum poll set size.
- * @remarks To help portability, we set this to the Windows limit. We can lift
- *          this restriction later if it becomes necessary. */
-#define RTPOLL_SET_MAX     64
+/** The maximum poll set size. */
+#ifdef RT_OS_WINDOWS
+# define RTPOLL_SET_MAX     64
+#else
+# define RTPOLL_SET_MAX     _16K
+#endif
 
 
 

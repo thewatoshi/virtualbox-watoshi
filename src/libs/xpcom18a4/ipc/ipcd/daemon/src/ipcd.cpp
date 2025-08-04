@@ -71,7 +71,7 @@
 // upper limit on the number of active connections
 // XXX may want to make this more dynamic
 //
-#define IPC_MAX_CLIENTS 100
+#define IPC_MAX_CLIENTS 10000
 
 /** How many messages should stay in the message cache. */
 #define IPC_MAX_MSGS_IN_CACHE 5
@@ -283,11 +283,12 @@ static int AddClient(PIPCDSTATE pThis, RTSOCKET hSock)
             }
 
             ipcdClientDestroy(&pThis->ipcClientArray[i]);
-            break;
+            return -1;
         }
     }
 
     /* Failed to find or set up the IPC client state. */
+    RTSocketClose(hSock);
     return -1;
 }
 
@@ -338,10 +339,7 @@ static void PollLoop(PIPCDSTATE pThis)
                 RTSOCKET hSock;
                 vrc = RTSocketFromNative(&hSock, fdClient);
                 if (RT_SUCCESS(vrc))
-                {
-                    if (AddClient(pThis, hSock) != 0)
-                        RTSocketClose(hSock);
-                }
+                    AddClient(pThis, hSock);
                 else
                 {
                     LogFlowFunc(("RTSocketFromNative(, %d) -> %Rrc\n", fdClient, vrc));
@@ -707,16 +705,19 @@ static void ipcdTerm(PIPCDSTATE pThis)
 
 static DECLCALLBACK(int) ipcdThread(RTTHREAD hThreadSelf, void *pvUser)
 {
-    IPCDSTATE IpcdState;
+    PIPCDSTATE pIpcdState = (PIPCDSTATE)RTMemAllocZ(sizeof(*pIpcdState));
+    if (!pIpcdState)
+        return VERR_NO_MEMORY;
 
-    int vrc = ipcdInit(&IpcdState, NULL /*pszSocketPath*/);
+    int vrc = ipcdInit(pIpcdState, NULL /*pszSocketPath*/);
     *(int *)pvUser = vrc; /* Set the startup status code. */
     RTThreadUserSignal(hThreadSelf);
 
     if (RT_SUCCESS(vrc))
-        PollLoop(&IpcdState);
+        PollLoop(pIpcdState);
 
-    ipcdTerm(&IpcdState);
+    ipcdTerm(pIpcdState);
+    RTMemFree(pIpcdState);
     return VINF_SUCCESS;
 }
 
