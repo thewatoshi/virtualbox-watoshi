@@ -1,4 +1,4 @@
-/* $Id: scm.cpp 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: scm.cpp 110571 2025-08-05 19:14:57Z klaus.espenlaub@oracle.com $ */
 /** @file
  * IPRT Testcase / Tool - Source Code Massager.
  */
@@ -837,7 +837,7 @@ static SCMCFGENTRY const g_aConfigs[] =
     SCM_CFG_ENTRY("image",      g_apRewritersFor_Images,           true,  "*.png|*.bmp|*.jpg|*.pnm|*.ico|*.icns|*.tiff|*.tif|"
                                                                           "*.xcf|*.gif|*.jar|*.dll|*.exe|*.ttf|*.woff|*.woff2" ),
     SCM_CFG_ENTRY("xslt",       g_apRewritersFor_Xslt,             false, "*.xsl" ),
-    SCM_CFG_ENTRY("xml",        g_apRewritersFor_Xml,              false, "*.xml|*.dist|*.qhcp" ),
+    SCM_CFG_ENTRY("xml",        g_apRewritersFor_Xml,              false, "*.xml|*.dist|*.dita|*.qhcp" ),
     SCM_CFG_ENTRY("wix",        g_apRewritersFor_Wix,              false, "*.wxi|*.wxs|*.wxl" ),
     SCM_CFG_ENTRY("qt-pro",     g_apRewritersFor_QtProject,        false, "*.pro" ),
     SCM_CFG_ENTRY("qt-rc",      g_apRewritersFor_QtResourceFiles,  false, "*.qrc" ),
@@ -3146,7 +3146,7 @@ int main(int argc, char **argv)
             case 'V':
             {
                 /* The following is assuming that svn does it's job here. */
-                static const char s_szRev[] = "$Revision: 106320 $";
+                static const char s_szRev[] = "$Revision: 110571 $";
                 const char *psz = RTStrStripL(strchr(s_szRev, ' '));
                 RTPrintf("r%.*s\n", strchr(psz, ' ') - psz, psz);
                 return 0;
