@@ -1,4 +1,4 @@
-# $Id: .scm-settings 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $
+# $Id: .scm-settings 110568 2025-08-05 18:45:22Z klaus.espenlaub@oracle.com $
 ## @file
 # Source code massager settings for the manual.
 #
@@ -29,4 +29,7 @@
 /oracle-accessibility-ohc-en.xml:   --external-copyright --no-strip-trailing-blanks
 /oracle-support-en.xml:             --external-copyright --no-strip-trailing-blanks
 /oracle-diversity.xml:              --external-copyright --no-strip-trailing-blanks
+
+*.dita:    --treat-as xml --no-update-license --no-update-copyright-year --no-strip-trailing-blanks
+*.ditamap: --treat-as xml --no-update-license --no-update-copyright-year --no-strip-trailing-blanks
 

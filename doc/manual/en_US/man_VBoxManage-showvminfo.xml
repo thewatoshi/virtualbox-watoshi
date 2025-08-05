@@ -30,7 +30,7 @@
 ]>
 <refentry id="vboxmanage-showvminfo" lang="en">
   <refentryinfo>
-    <pubdate>$Date: 2024-10-15 14:08:41 +0200 (Tue, 15 Oct 2024) $</pubdate>
+    <pubdate>$Date: 2025-08-05 20:45:22 +0200 (Tue, 05 Aug 2025) $</pubdate>
     <title>VBoxManage showvminfo</title>
   </refentryinfo>
 
@@ -170,9 +170,6 @@
       The following example shows typical output for this command:
     </para>
 <screen>$ VBoxManage showvminfo "Windows 10"
-VirtualBox Command Line Management Interface Version <replaceable>version-number</replaceable>
-Copyright (C) 2005-2024 Oracle and/or its affiliates
-
 Name:            Windows 10
 Groups:          /
 Guest OS:        Windows 10 (64-bit)
