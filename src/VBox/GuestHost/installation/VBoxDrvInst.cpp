@@ -1,4 +1,4 @@
-/* $Id: VBoxDrvInst.cpp 110470 2025-07-30 08:56:32Z andreas.loeffler@oracle.com $ */
+/* $Id: VBoxDrvInst.cpp 110603 2025-08-07 08:41:59Z andreas.loeffler@oracle.com $ */
 /** @file
  * Driver installation utility for Windows hosts and guests.
  */
@@ -651,6 +651,9 @@ static DECLCALLBACK(RTEXITCODE) vboxDrvInstCmdInstallMain(PRTGETOPTSTATE pGetSta
 
     if (RT_FAILURE(rc))
         return RTEXITCODE_FAILURE;
+
+    if (!pszInfFile)
+        return RTMsgErrorExit(RTEXITCODE_SYNTAX, "No INF file specified!\n");
 
     RTEXITCODE rcExit = RTEXITCODE_SUCCESS;
 
