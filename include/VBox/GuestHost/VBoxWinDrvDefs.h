@@ -1,4 +1,4 @@
-/* $Id: VBoxWinDrvDefs.h 108020 2025-01-23 08:29:22Z andreas.loeffler@oracle.com $ */
+/* $Id: VBoxWinDrvDefs.h 110601 2025-08-07 08:41:16Z andreas.loeffler@oracle.com $ */
 /** @file
  * VBoxWinDrvDefs - Common definitions for Windows driver installation functions.
  */
@@ -42,7 +42,8 @@
 
 #include <iprt/utf16.h>
 
-/* If not defined explicitly, use the given / current target architecture. */
+/** If not defined explicitly, use the given / current target architecture.
+ *  Note! Do *not* change the casing here, as this will be used for string comparison. */
 #ifndef VBOXWINDRVINF_NATIVE_ARCH_STR /* For cross testing and testcases. */
 # if defined(RT_ARCH_AMD64)
 #  define VBOXWINDRVINF_NATIVE_ARCH_STR     "AMD64"
@@ -61,7 +62,8 @@
 /** Defines a string which emits the decoration separator (UTF-16 version). */
 #define VBOXWINDRVINF_DECORATION_SEP_UTF16_STR L"."
 
-/** Defines a string which emits the bulld target's native architeture, e.g. "NTAMD64". */
+/** Defines a string which emits the bulld target's native architeture, e.g. "NTAMD64".
+ *  Note! Do *not* change the casing here, as this will be used for string comparison. */
 #define VBOXWINDRVINF_NT_NATIVE_ARCH_STR "NT" VBOXWINDRVINF_NATIVE_ARCH_STR
 
 /** Defines a string which emits the bulld target's native architeture, e.g. ".NTAMD64". */
