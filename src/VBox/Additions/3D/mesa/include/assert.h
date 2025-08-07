@@ -1,4 +1,4 @@
-/* $Id: assert.h 110576 2025-08-05 20:55:01Z klaus.espenlaub@oracle.com $ */
+/* $Id: assert.h 110629 2025-08-07 19:20:12Z klaus.espenlaub@oracle.com $ */
 /** @file
  * Replaces C runtime assert with a simplified version which just hits breakpoint.
  *
@@ -8,7 +8,7 @@
  */
 
 /*
- * Copyright (C) 2017-2025 Oracle and/or its affiliates.
+ * Copyright (C) 2017-2024 Oracle and/or its affiliates.
  *
  * This file is part of VirtualBox base platform packages, as
  * available from https://www.virtualbox.org.
