@@ -1,4 +1,4 @@
-/* $Id: VBoxWinDrvInst.cpp 109910 2025-06-20 10:11:55Z andreas.loeffler@oracle.com $ */
+/* $Id: VBoxWinDrvInst.cpp 110600 2025-08-07 08:40:41Z andreas.loeffler@oracle.com $ */
 /** @file
  * VBoxWinDrvInst - Windows driver installation handling.
  */
@@ -868,12 +868,14 @@ static int vboxWinDrvInstallInfSectionEx(PVBOXWINDRVINSTINTERNAL pCtx, HINF hInf
         /* Seems like newer Windows OSes (seen on Win10) don't like undecorated sections with SetupInstallFromInfSectionW().
          * So ignore this and continue. */
         if (dwErr == ERROR_BADKEY)
-        {
-            vboxWinDrvInstLogVerbose(pCtx, 1, "Installing INF section \"%ls\" failed with %#x (%d), ignoring",
-                                     pwszSection, dwErr, dwErr);
-        }
+            vboxWinDrvInstLogVerbose(pCtx, 1, "Installing INF section \"%ls\" not possible (ERROR_BADKEY), skipping",
+                                     pwszSection);
+        /* Seen on WinXP: Will return ERROR_INVALID_FLAGS when try to install an INF section which isn't installable. */
+        else if (dwErr == ERROR_INVALID_FLAGS)
+            vboxWinDrvInstLogVerbose(pCtx, 1, "Installing INF section \"%ls\" not possible (ERROR_INVALID_FLAGS), skipping",
+                                     pwszSection);
         else
-           rc = vboxWinDrvInstLogLastError(pCtx, "Installing INF section \"%ls\" failed", pwszSection);
+            rc = vboxWinDrvInstLogLastError(pCtx, "Installing INF section \"%ls\" failed", pwszSection);
     }
 
     /*
