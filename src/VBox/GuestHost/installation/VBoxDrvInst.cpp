@@ -1,4 +1,4 @@
-/* $Id: VBoxDrvInst.cpp 110603 2025-08-07 08:41:59Z andreas.loeffler@oracle.com $ */
+/* $Id: VBoxDrvInst.cpp 110605 2025-08-07 08:49:26Z andreas.loeffler@oracle.com $ */
 /** @file
  * Driver installation utility for Windows hosts and guests.
  */
@@ -385,6 +385,10 @@ static DECLCALLBACK(void) vboxDrvInstLogCallback(VBOXWINDRIVERLOGTYPE enmType, c
      */
     switch (enmType)
     {
+        case VBOXWINDRIVERLOGTYPE_WARN:
+            vboxDrvInstLog("Warning: %s\n", pszMsg);
+            break;
+
         case VBOXWINDRIVERLOGTYPE_ERROR:
             vboxDrvInstLogError("%s\n", pszMsg);
             break;
