@@ -1,4 +1,4 @@
-/* $Id: VBoxWinDrvInst.cpp 110633 2025-08-08 07:37:05Z andreas.loeffler@oracle.com $ */
+/* $Id: VBoxWinDrvInst.cpp 110634 2025-08-08 07:39:09Z andreas.loeffler@oracle.com $ */
 /** @file
  * VBoxWinDrvInst - Windows driver installation handling.
  */
@@ -853,10 +853,10 @@ static int vboxWinDrvInstallInfSectionEx(PVBOXWINDRVINSTINTERNAL pCtx, HINF hInf
          * This gives us more flexibility and control compared to the InstallHinfSectionW() fallback below. */
         struct
         {
-            UINT                uFlags;
-            UINT                uCopyFlags;
+            UINT  uFlags;
+            UINT  uCopyFlags;
             PVOID pCallback;
-            PVOID               pContext;
+            PVOID pContext;
         } s_aFromInfSectionInstall[] =
         {
             /* Install files. */
