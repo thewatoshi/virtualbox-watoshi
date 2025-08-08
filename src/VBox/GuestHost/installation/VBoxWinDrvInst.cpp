@@ -1,4 +1,4 @@
-/* $Id: VBoxWinDrvInst.cpp 110604 2025-08-07 08:42:29Z andreas.loeffler@oracle.com $ */
+/* $Id: VBoxWinDrvInst.cpp 110633 2025-08-08 07:37:05Z andreas.loeffler@oracle.com $ */
 /** @file
  * VBoxWinDrvInst - Windows driver installation handling.
  */
@@ -846,18 +846,66 @@ static int vboxWinDrvInstallInfSectionEx(PVBOXWINDRVINSTINTERNAL pCtx, HINF hInf
     CallbackCtx.pwszSection = pwszSection;
     CallbackCtx.pvSetupContext = SetupInitDefaultQueueCallback(NULL);
 
-    BOOL fRc = SetupInstallFromInfSectionW(NULL, // hWndOwner
-                                           hInf,
-                                           pwszSection,
-                                           SPINST_ALL, // Flags
-                                           NULL, // RelativeKeyRoot
-                                           NULL, // SourceRootPath
-                                             SP_COPY_NOSKIP
-                                           | SP_COPY_IN_USE_NEEDS_REBOOT,
-                                           vboxDrvInstExecuteInfFileCallback,
-                                           &CallbackCtx,
-                                           NULL,  // DeviceInfoSet
-                                           NULL); // DeviceInfoData
+    BOOL fRc;
+    if (!(pCtx->Parms.fFlags & VBOX_WIN_DRIVERINSTALL_F_DRYRUN))
+    {
+        /* Contains entries to install via SetupInstallFromInfSectionW() in a particular order.
+         * This gives us more flexibility and control compared to the InstallHinfSectionW() fallback below. */
+        struct
+        {
+            UINT                uFlags;
+            UINT                uCopyFlags;
+            PVOID pCallback;
+            PVOID               pContext;
+        } s_aFromInfSectionInstall[] =
+        {
+            /* Install files. */
+            { SPINST_FILES, SP_COPY_NOSKIP | SP_COPY_IN_USE_NEEDS_REBOOT,
+              vboxDrvInstExecuteInfFileCallback, &CallbackCtx },
+            /* Install registry directives. */
+            { SPINST_REGISTRY, 0 /* uFlags */,
+              NULL /* pCallback */, NULL /* pContext */ }
+            /** @todo Add more SPINST_ entries as soon as we need those. */
+        };
+
+        for (size_t i = 0; i < RT_ELEMENTS(s_aFromInfSectionInstall); i++)
+        {
+            fRc = SetupInstallFromInfSectionW(NULL, // hWndOwner
+                                              hInf,
+                                              pwszSection,
+                                              s_aFromInfSectionInstall[i].uFlags,
+                                              NULL, // RelativeKeyRoot
+                                              NULL, // SourceRootPath
+                                              s_aFromInfSectionInstall[i].uCopyFlags,
+                                              (PSP_FILE_CALLBACK_W)s_aFromInfSectionInstall[i].pCallback,
+                                              s_aFromInfSectionInstall[i].pContext,
+                                              NULL,  // DeviceInfoSet
+                                              NULL); // DeviceInfoData);
+            if (!fRc)
+            {
+                DWORD const dwErr = GetLastError();
+                vboxWinDrvInstLogVerbose(pCtx, 1, "SetupInstallFromInfSectionW(%zu) failed (%ld / %#x)", i, dwErr, dwErr);
+                break;
+            }
+        }
+
+        if (!fRc)
+        {
+            /* As a last resort, try InstallHinfSectionW() ... we hopefully won't get here ever. */
+            RTUTF16       wszCmdLine[RTPATH_MAX + 64 /* To cover section name + flags */];
+            int     const fFlags = 128 /* Use standard path */ + 0 /* Don't ask for reboot. */;
+            RTUtf16Printf(wszCmdLine, RT_ELEMENTS(wszCmdLine), "%ls %d %ls", pwszSection, fFlags, pCtx->Parms.pwszInfFile);
+            vboxWinDrvInstLogVerbose(pCtx, 1, "Executing \"InstallHinfSection(%ls)\" ...", wszCmdLine);
+            InstallHinfSectionW(NULL, NULL, wszCmdLine, 0);
+
+            /* InstallHinfSectionW() does not provide any return value, so we ASSUME success.
+             * The outcome will be logged via setupapi logs though. */
+            fRc = TRUE;
+        }
+    }
+    else
+        fRc = TRUE;
+
     if (fRc)
     {
         vboxWinDrvInstLogInfo(pCtx, "Installing INF section \"%ls\" successful", pwszSection);
