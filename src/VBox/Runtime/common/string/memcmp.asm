@@ -1,4 +1,4 @@
-; $Id: memcmp.asm 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $
+; $Id: memcmp.asm 110703 2025-08-12 23:07:00Z knut.osmundsen@oracle.com $
 ;; @file
 ; IPRT - No-CRT memcmp - AMD64 & X86.
 ;
@@ -64,6 +64,10 @@ RT_NOCRT_BEGINPROC memcmp
 %else
         push    edi
         push    esi
+ %ifdef ASM_CALL32_WATCOM
+        push    ecx
+        push    edx
+ %endif
 
  %ifdef ASM_CALL32_WATCOM
         mov     edi, eax
@@ -109,6 +113,10 @@ RT_NOCRT_BEGINPROC memcmp
         mov     rsi, r11
  %endif
 %else
+ %ifdef ASM_CALL32_WATCOM
+        pop     edx
+        pop     ecx
+ %endif
         pop     esi
         pop     edi
 %endif

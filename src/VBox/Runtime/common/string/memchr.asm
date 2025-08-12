@@ -1,4 +1,4 @@
-; $Id: memchr.asm 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $
+; $Id: memchr.asm 110703 2025-08-12 23:07:00Z knut.osmundsen@oracle.com $
 ;; @file
 ; IPRT - No-CRT memchr - AMD64 & X86.
 ;
@@ -62,10 +62,12 @@ RT_NOCRT_BEGINPROC memchr
 
 %else
  %ifdef ASM_CALL32_WATCOM
+        push    ecx
+        push    edi
         mov     ecx, ebx
         jecxz   .not_found_early
-        xchg    eax, edx
-        xchg    edi, edx                ; load and save edi.
+        mov     edi, eax
+        mov     eax, edx
  %else
         mov     ecx, [esp + 0ch]
         jecxz   .not_found_early
@@ -85,7 +87,12 @@ RT_NOCRT_BEGINPROC memchr
         mov     rdi, r9
 %endif
 %ifdef RT_ARCH_X86
+ %ifdef ASM_CALL32_WATCOM
+        pop     edi
+        pop     ecx
+ %else
         mov     edi, edx
+ %endif
 %endif
         ret
 
@@ -94,9 +101,17 @@ RT_NOCRT_BEGINPROC memchr
         mov     rdi, r9
 %endif
 %ifdef RT_ARCH_X86
+ %ifndef ASM_CALL32_WATCOM
         mov     edi, edx
+ %endif
 %endif
 .not_found_early:
+%ifdef RT_ARCH_X86
+ %ifdef ASM_CALL32_WATCOM
+        pop     edi
+        pop     ecx
+ %endif
+%endif
         xor     eax, eax
         ret
 ENDPROC RT_NOCRT(memchr)

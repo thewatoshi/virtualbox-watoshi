@@ -1,4 +1,4 @@
-; $Id: wcslen.asm 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $
+; $Id: wcslen.asm 110703 2025-08-12 23:07:00Z knut.osmundsen@oracle.com $
 ;; @file
 ; IPRT - No-CRT strlen - AMD64 & X86.
 ;
@@ -48,10 +48,12 @@ RT_NOCRT_BEGINPROC wcslen
         mov     rdi, rcx
  %endif
 %else
-        mov     edx, edi                ; save edi
  %ifdef ASM_CALL32_WATCOM
+        push    edi
+        push    ecx
         mov     edi, eax
  %else
+        mov     edx, edi                ; save edi
         mov     edi, [esp + 4]
  %endif
 %endif
@@ -68,7 +70,12 @@ RT_NOCRT_BEGINPROC wcslen
 %ifdef ASM_CALL64_MSC
         mov     rdi, r9
 %elifdef RT_ARCH_X86
+ %ifdef ASM_CALL32_WATCOM
+        pop     ecx
+        pop     edi
+ %else
         mov     edi, edx
+ %endif
 %endif
         ret
 ENDPROC RT_NOCRT(wcslen)

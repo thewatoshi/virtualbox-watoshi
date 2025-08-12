@@ -1,4 +1,4 @@
-; $Id: RTStrMemFind32.asm 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $
+; $Id: RTStrMemFind32.asm 110703 2025-08-12 23:07:00Z knut.osmundsen@oracle.com $
 ;; @file
 ; IPRT - RTStrMemFind32 - AMD64 & X86.
 ;
@@ -59,9 +59,11 @@ RT_BEGINPROC RTStrMemFind32
  %endif
 %else
  %ifdef ASM_CALL32_WATCOM
+        push    edi                     ; (watcall preserves all register)
+        push    ecx
         mov     ecx, ebx
-        xchg    eax, edx
-        xchg    edi, edx                ; load and save edi.
+        mov     edi, eax
+        mov     eax, edx
  %else
         mov     ecx, [esp + 0ch]
         mov     edx, edi                ; save edi
@@ -82,7 +84,12 @@ RT_BEGINPROC RTStrMemFind32
         mov     rdi, r9
 %endif
 %ifdef RT_ARCH_X86
+ %ifdef ASM_CALL32_WATCOM
+        pop     ecx
+        pop     edi
+ %else
         mov     edi, edx
+ %endif
 %endif
         ret
 
@@ -91,7 +98,12 @@ RT_BEGINPROC RTStrMemFind32
         mov     rdi, r9
 %endif
 %ifdef RT_ARCH_X86
+ %ifdef ASM_CALL32_WATCOM
+        pop     ecx
+        pop     edi
+ %else
         mov     edi, edx
+ %endif
 %endif
         xor     eax, eax
         ret

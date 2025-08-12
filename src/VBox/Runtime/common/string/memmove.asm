@@ -1,4 +1,4 @@
-; $Id: memmove.asm 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $
+; $Id: memmove.asm 110703 2025-08-12 23:07:00Z knut.osmundsen@oracle.com $
 ;; @file
 ; IPRT - No-CRT memmove - AMD64 & X86.
 ;
@@ -34,7 +34,9 @@
 ; SPDX-License-Identifier: GPL-3.0-only OR CDDL-1.0
 ;
 
-%define RT_ASM_WITH_SEH64
+%ifdef ASM_FORMAT_PE
+ %define RT_ASM_WITH_SEH64
+%endif
 %include "iprt/asmdefs.mac"
 
 
@@ -61,6 +63,11 @@ RT_NOCRT_BEGINPROC memmove
 %else
         push    edi
         push    esi
+ %ifdef ASM_CALL32_WATCOM
+        push    ecx
+        push    edx
+ %endif
+
  %ifdef ASM_CALL32_WATCOM
         mov     edi, eax
         mov     esi, edx
@@ -137,6 +144,10 @@ RT_NOCRT_BEGINPROC memmove
         mov     rsi, r11
  %endif
 %else
+ %ifdef ASM_CALL32_WATCOM
+        pop     edx
+        pop     ecx
+ %endif
         pop     esi
         pop     edi
 %endif

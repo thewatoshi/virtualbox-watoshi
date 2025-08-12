@@ -1,4 +1,4 @@
-; $Id: RTStrEnd.asm 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $
+; $Id: RTStrEnd.asm 110703 2025-08-12 23:07:00Z knut.osmundsen@oracle.com $
 ;; @file
 ; IPRT - RTStrEnd - AMD64 & X86.
 ;
@@ -59,9 +59,10 @@ RT_BEGINPROC RTStrEnd
 
 %else
  %ifdef ASM_CALL32_WATCOM
+        push    edi                     ; (watcall preserves all register)
+        push    ecx
         mov     ecx, edx
         jecxz   .not_found_early
-        mov     edx, edi                ; save rdi
         mov     edi, eax
  %else
         mov     ecx, [esp + 8]
@@ -82,7 +83,12 @@ RT_BEGINPROC RTStrEnd
         mov     rdi, r9
 %endif
 %ifdef RT_ARCH_X86
+ %ifdef ASM_CALL32_WATCOM
+        pop     ecx
+        pop     edi
+ %else
         mov     edi, edx
+ %endif
 %endif
         ret
 
@@ -91,9 +97,17 @@ RT_BEGINPROC RTStrEnd
         mov     rdi, r9
 %endif
 %ifdef RT_ARCH_X86
+ %ifndef ASM_CALL32_WATCOM
         mov     edi, edx
+ %endif
 %endif
 .not_found_early:
+%ifdef RT_ARCH_X86
+ %ifdef ASM_CALL32_WATCOM
+        pop     ecx
+        pop     edi
+ %endif
+%endif
         xor     eax, eax
         ret
 ENDPROC RTStrEnd

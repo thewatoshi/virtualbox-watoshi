@@ -1,4 +1,4 @@
-; $Id: memcpy.asm 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $
+; $Id: memcpy.asm 110703 2025-08-12 23:07:00Z knut.osmundsen@oracle.com $
 ;; @file
 ; IPRT - No-CRT memcpy - AMD64 & X86.
 ;
@@ -72,6 +72,10 @@ RT_NOCRT_BEGINPROC memcpy
 %else
         push    edi
         push    esi
+ %ifdef ASM_CALL32_WATCOM
+        push    ecx
+        push    edx
+ %endif
 
  %ifdef ASM_CALL32_WATCOM
         mov     edi, eax
@@ -114,6 +118,10 @@ RT_NOCRT_BEGINPROC memcpy
         leave
  %endif
 %else
+ %ifdef ASM_CALL32_WATCOM
+        pop     edx
+        pop     ecx
+ %endif
         pop     esi
         pop     edi
 %endif
