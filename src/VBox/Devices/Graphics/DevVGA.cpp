@@ -1,4 +1,4 @@
-/* $Id: DevVGA.cpp 110205 2025-07-12 18:08:45Z vitali.pelenjow@oracle.com $ */
+/* $Id: DevVGA.cpp 110743 2025-08-16 12:10:57Z vitali.pelenjow@oracle.com $ */
 /** @file
  * DevVGA - VBox VGA/VESA device.
  */
@@ -1875,7 +1875,19 @@ static int vgaR3DrawText(PPDMDEVINS pDevIns, PVGASTATE pThis, PVGASTATER3 pThisC
             return rc;
         AssertRCReturn(rc, rc);
     }
-    AssertReturn(scr_width == (int)pDrv->cx && scr_height == (int)pDrv->cy, VERR_INVALID_STATE);
+
+    /* If VRAM rendering is enabled, then check that the provided target memory buffer has a correct size.
+     * Otherwise continue and call pDrv->pfnUpdateRect which will re-enable VRAM rendering.
+     */
+    if (pThis->fRenderVRAM)
+    {
+        if (   scr_width != (int)pDrv->cx
+            || scr_height != (int)pDrv->cy)
+        {
+            AssertReturn(pDrv->cx == 0 && pDrv->cy == 0, VERR_INVALID_STATE);
+            return VINF_SUCCESS;
+        }
+    }
 
     x_incr = cw * ((pDrv->cBits + 7) >> 3);
 
