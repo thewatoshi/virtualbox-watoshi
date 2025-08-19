@@ -1,4 +1,4 @@
-/* $Id: DevVGA-SVGA3d-dx-dx11.cpp 110336 2025-07-21 10:08:24Z vitali.pelenjow@oracle.com $ */
+/* $Id: DevVGA-SVGA3d-dx-dx11.cpp 110762 2025-08-19 12:18:44Z vitali.pelenjow@oracle.com $ */
 /** @file
  * DevVMWare - VMWare SVGA device
  */
@@ -4863,6 +4863,20 @@ static DECLCALLBACK(int) vmsvga3dBackSurfaceUpdateHeapBuffers(PVGASTATECC pThisC
     /** @todo */
     RT_NOREF(pThisCC, pSurface);
     return VERR_NOT_IMPLEMENTED;
+}
+
+
+static DECLCALLBACK(void) vmsvga3dBackFlush(PVGASTATECC pThisCC)
+{
+    DXDEVICE *pDXDevice = dxDeviceGet(pThisCC->svga.p3dState);
+    AssertReturnVoid(pDXDevice->pDevice);
+
+    /* It is necessary to call Flush periodically because objects are created/destroyed
+     * on behalf of the guest and "Microsoft Direct3D 11 defers the destruction of objects.
+     * Therefore, an application can't rely upon objects immediately being destroyed.
+     * By calling Flush, you destroy any objects whose destruction was deferred."
+     */
+    pDXDevice->pImmediateContext->Flush();
 }
 
 
@@ -12045,6 +12059,7 @@ static DECLCALLBACK(int) vmsvga3dBackQueryInterface(PVGASTATECC pThisCC, char co
                 p->pfnDestroyScreen            = vmsvga3dBackDestroyScreen;
                 p->pfnSurfaceBlitToScreen      = vmsvga3dBackSurfaceBlitToScreen;
                 p->pfnSurfaceUpdateHeapBuffers = vmsvga3dBackSurfaceUpdateHeapBuffers;
+                p->pfnFlush                    = vmsvga3dBackFlush;
             }
         }
         else

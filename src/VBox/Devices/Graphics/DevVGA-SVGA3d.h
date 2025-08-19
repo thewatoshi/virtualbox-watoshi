@@ -1,4 +1,4 @@
-/* $Id: DevVGA-SVGA3d.h 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: DevVGA-SVGA3d.h 110762 2025-08-19 12:18:44Z vitali.pelenjow@oracle.com $ */
 /** @file
  * DevVMWare - VMWare SVGA device - 3D part.
  */
@@ -406,6 +406,9 @@ typedef struct
                                                            SVGASignedRect srcRect, uint32_t cRects, SVGASignedRect *paRects));
     /* Various helpers. */
     DECLCALLBACKMEMBER(int,  pfnSurfaceUpdateHeapBuffers, (PVGASTATECC pThisCC, PVMSVGA3DSURFACE pSurface));
+
+    /* Optional flush method that is called before a screen update. */
+    DECLCALLBACKMEMBER(void, pfnFlush,                    (PVGASTATECC pThisCC));
 } VMSVGA3DBACKENDFUNCS3D;
 
 /* VGPU9 3D */
