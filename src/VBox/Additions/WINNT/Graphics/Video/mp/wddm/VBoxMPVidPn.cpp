@@ -1,4 +1,4 @@
-/* $Id: VBoxMPVidPn.cpp 109969 2025-06-25 16:36:39Z dmitrii.grigorev@oracle.com $ */
+/* $Id: VBoxMPVidPn.cpp 110783 2025-08-21 15:06:03Z dmitrii.grigorev@oracle.com $ */
 /** @file
  * VBox WDDM Miniport driver
  */
@@ -2368,37 +2368,39 @@ DECLCALLBACK(BOOLEAN) vboxVidPnCommitTargetModeEnum(PVBOXMP_DEVEXT pDevExt, D3DK
 
 NTSTATUS VBoxVidPnCommitSourceModeForSrcId(PVBOXMP_DEVEXT pDevExt, const D3DKMDT_HVIDPN hDesiredVidPn, const DXGK_VIDPN_INTERFACE* pVidPnInterface,
         PVBOXWDDM_ALLOCATION pAllocation,
-        D3DDDI_VIDEO_PRESENT_SOURCE_ID  VidPnSourceId, VBOXWDDM_SOURCE *paSources, VBOXWDDM_TARGET *paTargets, BOOLEAN bPathPowerTransition)
+        D3DDDI_VIDEO_PRESENT_SOURCE_ID  VidPnSourceId, VBOXWDDM_SOURCE *paSources, VBOXWDDM_TARGET *paTargets, DXGKARG_COMMITVIDPN_FLAGS fCommitVidPN)
 {
     D3DKMDT_HVIDPNSOURCEMODESET hCurVidPnSourceModeSet;
     const DXGK_VIDPNSOURCEMODESET_INTERFACE *pCurVidPnSourceModeSetInterface;
 
     PVBOXWDDM_SOURCE pSource = &paSources[VidPnSourceId];
     NTSTATUS Status;
+    RTRECTSIZE PinnedModeSize;
+    bool bHasPinnedMode;
 
-    if (bPathPowerTransition)
+    Status = vboxVidPnQueryPinnedSourceMode(hDesiredVidPn, pVidPnInterface, VidPnSourceId, &PinnedModeSize);
+    bHasPinnedMode = Status == STATUS_SUCCESS && PinnedModeSize.cx > 0 && PinnedModeSize.cy > 0;
+
+    if (fCommitVidPN.PathPowerTransition)
     {
-        RTRECTSIZE PinnedModeSize;
-        bool bHasPinnedMode;
+        LogRel2(("Path power transition: srcId %d %s\n", VidPnSourceId, bHasPinnedMode ? "wakeup" : "sleep"));
 
-        Status = vboxVidPnQueryPinnedSourceMode(hDesiredVidPn, pVidPnInterface, VidPnSourceId, &PinnedModeSize);
-        bHasPinnedMode = Status == STATUS_SUCCESS && PinnedModeSize.cx > 0 && PinnedModeSize.cy > 0;
         pSource->bBlankedByPowerOff = !bHasPinnedMode;
 
-        LOG(("Path power transition: srcId %d goes blank %d", VidPnSourceId, pSource->bBlankedByPowerOff));
-    }
+        VBOXWDDM_TARGET_ITER Iter;
+        VBoxVidPnStTIterInit(pSource, paTargets, (uint32_t)VBoxCommonFromDeviceExt(pDevExt)->cDisplays, &Iter);
+        for (PVBOXWDDM_TARGET pTarget = VBoxVidPnStTIterNext(&Iter);
+                pTarget;
+                pTarget = VBoxVidPnStTIterNext(&Iter))
+        {
+            Assert(pTarget->VidPnSourceId == pSource->AllocData.SurfDesc.VidPnSourceId);
+            pTarget->fBlankedByPowerOff = RT_BOOL(pSource->bBlankedByPowerOff);
+        }
 
-    VBOXWDDM_TARGET_ITER Iter;
-    VBoxVidPnStTIterInit(pSource, paTargets, (uint32_t)VBoxCommonFromDeviceExt(pDevExt)->cDisplays, &Iter);
-    for (PVBOXWDDM_TARGET pTarget = VBoxVidPnStTIterNext(&Iter);
-            pTarget;
-            pTarget = VBoxVidPnStTIterNext(&Iter))
-    {
-        Assert(pTarget->VidPnSourceId == pSource->AllocData.SurfDesc.VidPnSourceId);
-        pTarget->Size.cx = 0;
-        pTarget->Size.cy = 0;
-        pTarget->fBlankedByPowerOff = RT_BOOL(pSource->bBlankedByPowerOff);
-        pTarget->u8SyncState &= ~VBOXWDDM_HGSYNC_F_SYNCED_ALL;
+        if (pSource->bBlankedByPowerOff)
+        {
+            return STATUS_SUCCESS;
+        }
     }
 
     VBoxVidPnStSourceCleanup(paSources, VidPnSourceId, paTargets, (uint32_t)VBoxCommonFromDeviceExt(pDevExt)->cDisplays);
@@ -2476,7 +2478,7 @@ NTSTATUS VBoxVidPnCommitSourceModeForSrcId(PVBOXMP_DEVEXT pDevExt, const D3DKMDT
 
 NTSTATUS VBoxVidPnCommitAll(PVBOXMP_DEVEXT pDevExt, const D3DKMDT_HVIDPN hDesiredVidPn, const DXGK_VIDPN_INTERFACE* pVidPnInterface,
         PVBOXWDDM_ALLOCATION pAllocation,
-        VBOXWDDM_SOURCE *paSources, VBOXWDDM_TARGET *paTargets)
+        VBOXWDDM_SOURCE *paSources, VBOXWDDM_TARGET *paTargets, DXGKARG_COMMITVIDPN_FLAGS fCommitVidPN)
 {
     D3DKMDT_HVIDPNTOPOLOGY hVidPnTopology;
     const DXGK_VIDPNTOPOLOGY_INTERFACE* pVidPnTopologyInterface;
@@ -2512,7 +2514,7 @@ NTSTATUS VBoxVidPnCommitAll(PVBOXMP_DEVEXT pDevExt, const D3DKMDT_HVIDPN hDesire
     while ((pPath = VBoxVidPnPathIterNext(&PathIter)) != NULL)
     {
         Status = VBoxVidPnCommitSourceModeForSrcId(pDevExt, hDesiredVidPn, pVidPnInterface, pAllocation,
-                    pPath->VidPnSourceId, paSources, paTargets, FALSE);
+                    pPath->VidPnSourceId, paSources, paTargets, fCommitVidPN);
         if (Status != STATUS_SUCCESS)
         {
             WARN(("VBoxVidPnCommitSourceModeForSrcId failed Status(0x%x)", Status));
