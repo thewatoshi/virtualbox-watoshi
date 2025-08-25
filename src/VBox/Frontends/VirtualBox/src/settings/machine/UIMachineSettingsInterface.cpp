@@ -1,4 +1,4 @@
-/* $Id: UIMachineSettingsInterface.cpp 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: UIMachineSettingsInterface.cpp 110805 2025-08-25 14:36:14Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIMachineSettingsInterface class implementation.
  */
@@ -347,13 +347,8 @@ void UIMachineSettingsInterface::polishPage()
     /* Polish interface page availability: */
     if (m_pEditorMenuBar)
         m_pEditorMenuBar->setEnabled(isMachineInValidMode());
-#ifdef VBOX_WS_MAC
-    if (m_pEditorMiniToolabSettings)
-        m_pEditorMiniToolabSettings->hide();
-#else
     if (m_pEditorMiniToolabSettings)
         m_pEditorMiniToolabSettings->setEnabled(isMachineInValidMode());
-#endif
     if (m_pEditorStatusBar)
         m_pEditorStatusBar->setEnabled(isMachineInValidMode());
 }
@@ -401,7 +396,9 @@ void UIMachineSettingsInterface::prepareWidgets()
         }
 
         /* Prepare mini-toolbar settings editor: */
+#ifndef VBOX_WS_MAC
         m_pEditorMiniToolabSettings = new UIMiniToolbarSettingsEditor(this);
+#endif
         if (m_pEditorMiniToolabSettings)
         {
             addEditor(m_pEditorMiniToolabSettings);
