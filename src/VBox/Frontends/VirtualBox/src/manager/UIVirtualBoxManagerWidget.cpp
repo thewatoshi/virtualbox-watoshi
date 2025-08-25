@@ -1,4 +1,4 @@
-/* $Id: UIVirtualBoxManagerWidget.cpp 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: UIVirtualBoxManagerWidget.cpp 110807 2025-08-25 15:02:33Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIVirtualBoxManagerWidget class implementation.
  */
@@ -794,8 +794,8 @@ void UIVirtualBoxManagerWidget::prepareWidgets()
         m_pMenuToolsMachine = new UITools(UIToolClass_Machine, this);
     }
 
-    /* Create notification-center: */
-    UINotificationCenter::create(this);
+    /* Reparent notification-center: */
+    gpNotificationCenter->setParent(this);
 
     /* Update toolbar finally: */
     updateToolbar();
@@ -1124,7 +1124,8 @@ void UIVirtualBoxManagerWidget::cleanupConnections()
 
 void UIVirtualBoxManagerWidget::cleanupWidgets()
 {
-    UINotificationCenter::destroy();
+    /* Reparent notification-center: */
+    gpNotificationCenter->setParent(0);
 }
 
 void UIVirtualBoxManagerWidget::cleanup()
