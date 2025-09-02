@@ -1,4 +1,4 @@
-/* $Id: UIIndicatorsPool.cpp 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: UIIndicatorsPool.cpp 110863 2025-09-02 17:49:14Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIIndicatorsPool class implementation.
  */
@@ -597,6 +597,8 @@ public:
         connect(m_pMachine, &UIMachine::sigMachineStateChange,
                 this, &UIIndicatorNetwork::updateAppearance);
         connect(m_pMachine, &UIMachine::sigNetworkAdapterChange,
+                this, &UIIndicatorNetwork::updateAppearance);
+        connect(m_pMachine, &UIMachine::sigAdditionsStateActualChange,
                 this, &UIIndicatorNetwork::updateAppearance);
         /* Update & translate finally: */
         updateAppearance();
