@@ -1,4 +1,4 @@
-/* $Id: UIWelcomePane.cpp 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: UIWelcomePane.cpp 110865 2025-09-02 19:32:33Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIWelcomePane class implementation.
  */
@@ -68,9 +68,9 @@ bool UIWelcomePane::event(QEvent *pEvent)
         case QEvent::Show:
         case QEvent::ScreenChangeInternal:
         {
-            /* Update pixmap: */
-            updateTextLabels();
+            /* Update stuff: */
             updatePixmap();
+            updateTextLabels();
             break;
         }
         default:
@@ -233,24 +233,8 @@ void UIWelcomePane::prepare()
             this, &UIWelcomePane::sltRetranslateUI);
 
     /* Update stuff: */
-    updateTextLabels();
     updatePixmap();
-}
-
-void UIWelcomePane::updateTextLabels()
-{
-    /* For all the text-labels: */
-    QList<QIRichTextLabel*> labels = findChildren<QIRichTextLabel*>();
-    if (!labels.isEmpty())
-    {
-        /* Make sure their minimum width is around 20% of the screen width: */
-        const QSize screenGeometry = gpDesktop->screenGeometry(this).size();
-        foreach (QIRichTextLabel *pLabel, labels)
-        {
-            pLabel->setMinimumTextWidth(screenGeometry.width() * .2);
-            pLabel->resize(pLabel->minimumSizeHint());
-        }
-    }
+    updateTextLabels();
 }
 
 void UIWelcomePane::updatePixmap()
@@ -264,5 +248,20 @@ void UIWelcomePane::updatePixmap()
         /* Acquire device-pixel ratio: */
         const qreal fDevicePixelRatio = gpDesktop->devicePixelRatio(this);
         m_pLabelIcon->setPixmap(m_icon.pixmap(defaultSize, fDevicePixelRatio));
+    }
+}
+
+void UIWelcomePane::updateTextLabels()
+{
+    /* For all the text-labels: */
+    QList<QIRichTextLabel*> labels = findChildren<QIRichTextLabel*>();
+    if (!labels.isEmpty())
+    {
+        /* Make sure their minimum width is around icon label width: */
+        foreach (QIRichTextLabel *pLabel, labels)
+        {
+            pLabel->setMinimumTextWidth(m_pLabelIcon->minimumSizeHint().width() * 1.1);
+            pLabel->resize(pLabel->minimumSizeHint());
+        }
     }
 }

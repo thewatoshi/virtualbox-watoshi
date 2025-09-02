@@ -1,4 +1,4 @@
-/* $Id: UIWelcomePane.h 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: UIWelcomePane.h 110865 2025-09-02 19:32:33Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIWelcomePane class declaration.
  */
@@ -75,10 +75,10 @@ private:
     /** Prepares all. */
     void prepare();
 
-    /** Updates text labels. */
-    void updateTextLabels();
     /** Updates pixmap. */
     void updatePixmap();
+    /** Updates text labels. */
+    void updateTextLabels();
 
     /** Holds the icon instance. */
     QIcon  m_icon;
