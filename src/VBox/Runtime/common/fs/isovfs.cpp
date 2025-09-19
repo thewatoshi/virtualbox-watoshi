@@ -1,4 +1,4 @@
-/* $Id: isovfs.cpp 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: isovfs.cpp 111061 2025-09-19 13:51:28Z alexander.eichner@oracle.com $ */
 /** @file
  * IPRT - ISO 9660 and UDF Virtual Filesystem (read only).
  */
@@ -4885,6 +4885,10 @@ static DECLCALLBACK(int) rtFsIsoVol_Close(void *pvThis)
         rtFsIsoDirShrd_Release(pThis->pRootDir);
         pThis->pRootDir = NULL;
     }
+
+    if (pThis->Udf.VolInfo.paPartitions)
+        RTMemFree(pThis->Udf.VolInfo.paPartitions);
+    pThis->Udf.VolInfo.paPartitions = NULL;
 
     RTVfsFileRelease(pThis->hVfsBacking);
     pThis->hVfsBacking = NIL_RTVFSFILE;
