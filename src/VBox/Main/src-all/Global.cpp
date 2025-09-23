@@ -1,4 +1,4 @@
-/* $Id: Global.cpp 107002 2024-11-13 12:21:13Z brent.paulson@oracle.com $ */
+/* $Id: Global.cpp 111096 2025-09-23 10:04:39Z brent.paulson@oracle.com $ */
 /** @file
  * VirtualBox COM global definitions
  *
@@ -368,6 +368,8 @@ const Global::OSType Global::sOSTypes[] =
     VBOX_LINUX_SUBTYPE_A_X86("Debian",       Debian12,           "Debian 12 Bookworm (32-bit)",     2048, 16, 20),
     VBOX_LINUX_SUBTYPE_A_X64("Debian",       Debian12,           "Debian 12 Bookworm (64-bit)",     2048, 16, 20),
     VBOX_LINUX_SUBTYPE_A_A64("Debian",       Debian12,           "Debian 12 Bookworm (ARM 64-bit)", 2048, 16, 20),
+    VBOX_LINUX_SUBTYPE_A_X64("Debian",       Debian13,           "Debian 13 Trixie (64-bit)",       2048, 16, 20),  // 64-bit only
+    VBOX_LINUX_SUBTYPE_A_A64("Debian",       Debian13,           "Debian 13 Trixie (ARM 64-bit)",   2048, 16, 20),  // 64-bit only
 
     /** @todo rename VBOXOSTYPE entries to Fedora to avoid this? */
     VBOX_LINUX_SUBTYPE_A_WITH_OSTYPE_X86("Fedora", Fedora,       "Fedora (32-bit)", FedoraCore,     2048, 16, 15),
@@ -396,9 +398,13 @@ const Global::OSType Global::sOSTypes[] =
     VBOX_LINUX_SUBTYPE_B_X86("Oracle Linux", Oracle6,            "Oracle Linux 6.x (32-bit)",       2048, 16, 10),
     VBOX_LINUX_SUBTYPE_B_X64("Oracle Linux", Oracle6,            "Oracle Linux 6.x (64-bit)",       2048, 16, 10),
     VBOX_LINUX_SUBTYPE_B_X64("Oracle Linux", Oracle7,            "Oracle Linux 7.x (64-bit)",       2048, 16, 20),  // 64-bit only
+    VBOX_LINUX_SUBTYPE_B_A64("Oracle Linux", Oracle7,            "Oracle Linux 7.x (ARM 64-bit)",   2048, 16, 20),  // 64-bit only
     VBOX_LINUX_SUBTYPE_B_X64("Oracle Linux", Oracle8,            "Oracle Linux 8.x (64-bit)",       2048, 16, 20),  // 64-bit only
+    VBOX_LINUX_SUBTYPE_B_A64("Oracle Linux", Oracle8,            "Oracle Linux 8.x (ARM 64-bit)",   2048, 16, 20),  // 64-bit only
     VBOX_LINUX_SUBTYPE_B_X64("Oracle Linux", Oracle9,            "Oracle Linux 9.x (64-bit)",       2048, 16, 20),  // 64-bit only
     VBOX_LINUX_SUBTYPE_B_A64("Oracle Linux", Oracle9,            "Oracle Linux 9.x (ARM 64-bit)",   2048, 16, 20),  // 64-bit only
+    VBOX_LINUX_SUBTYPE_B_X64("Oracle Linux", Oracle10,           "Oracle Linux 10.x (64-bit)",      2048, 16, 20),  // 64-bit only
+    VBOX_LINUX_SUBTYPE_B_A64("Oracle Linux", Oracle10,           "Oracle Linux 10.x (ARM 64-bit)",  2048, 16, 20),  // 64-bit only
 
     VBOX_LINUX_SUBTYPE_B_X86("Red Hat",     RedHat,              "Red Hat (32-bit)",                2048, 16, 20),
     VBOX_LINUX_SUBTYPE_B_X64("Red Hat",     RedHat,              "Red Hat (64-bit)",                2048, 16, 20),
@@ -411,8 +417,13 @@ const Global::OSType Global::sOSTypes[] =
     VBOX_LINUX_SUBTYPE_B_X86("Red Hat",     RedHat6,             "Red Hat 6.x (32-bit)",            1024, 16, 10),
     VBOX_LINUX_SUBTYPE_B_X64("Red Hat",     RedHat6,             "Red Hat 6.x (64-bit)",            1024, 16, 10),
     VBOX_LINUX_SUBTYPE_B_X64("Red Hat",     RedHat7,             "Red Hat 7.x (64-bit)",            2048, 16, 20),  // 64-bit only
+    VBOX_LINUX_SUBTYPE_B_A64("Red Hat",     RedHat7,             "Red Hat 7.x (ARM 64-bit)",        2048, 16, 20),  // 64-bit only
     VBOX_LINUX_SUBTYPE_B_X64("Red Hat",     RedHat8,             "Red Hat 8.x (64-bit)",            2048, 16, 20),  // 64-bit only
+    VBOX_LINUX_SUBTYPE_B_A64("Red Hat",     RedHat8,             "Red Hat 8.x (ARM 64-bit)",        2048, 16, 20),  // 64-bit only
     VBOX_LINUX_SUBTYPE_B_X64("Red Hat",     RedHat9,             "Red Hat 9.x (64-bit)",            2048, 16, 20),  // 64-bit only
+    VBOX_LINUX_SUBTYPE_B_A64("Red Hat",     RedHat9,             "Red Hat 9.x (ARM 64-bit)",        2048, 16, 20),  // 64-bit only
+    VBOX_LINUX_SUBTYPE_B_X64("Red Hat",     RedHat10,            "Red Hat 10.x (64-bit)",           2048, 16, 20),  // 64-bit only
+    VBOX_LINUX_SUBTYPE_B_A64("Red Hat",     RedHat10,            "Red Hat 10.x (ARM 64-bit)",       2048, 16, 20),  // 64-bit only
 
     VBOX_LINUX_SUBTYPE_A_X86("openSUSE",    OpenSUSE,            "openSUSE (32-bit)",               1024, 16, 8),
     VBOX_LINUX_SUBTYPE_A_X64("openSUSE",    OpenSUSE,            "openSUSE (64-bit)",               1024, 16, 8),
@@ -468,8 +479,14 @@ const Global::OSType Global::sOSTypes[] =
     VBOX_LINUX_SUBTYPE_A_A64("Ubuntu", Ubuntu22,     "Ubuntu 22.10 (Kinetic Kudu) (ARM 64-bit)", 2048, 16, 25),
     VBOX_LINUX_SUBTYPE_A_X64("Ubuntu", Ubuntu23,     "Ubuntu 23.04 (Lunar Lobster) (64-bit)", 2048, 16, 25), // 64-bit only
     VBOX_LINUX_SUBTYPE_A_A64("Ubuntu", Ubuntu23,     "Ubuntu 23.04 (Lunar Lobster) (ARM 64-bit)", 2048, 16, 25),
+    VBOX_LINUX_SUBTYPE_A_X64("Ubuntu", Ubuntu231,    "Ubuntu 23.10 (Mantic Minotaur) (64-bit)", 2048, 16, 25), // 64-bit only
+    VBOX_LINUX_SUBTYPE_A_A64("Ubuntu", Ubuntu231,    "Ubuntu 23.10 (Mantic Minotaur) (ARM 64-bit)", 2048, 16, 25), // 64-bit only
     VBOX_LINUX_SUBTYPE_A_X64("Ubuntu", Ubuntu24_LTS, "Ubuntu 24.04 LTS (Noble Numbat) (64-bit)", 2048, 16, 25), // 64-bit only
     VBOX_LINUX_SUBTYPE_A_A64("Ubuntu", Ubuntu24_LTS, "Ubuntu 24.04 LTS (Noble Numbat) (ARM 64-bit)", 2048, 16, 25),
+    VBOX_LINUX_SUBTYPE_A_X64("Ubuntu", Ubuntu24,     "Ubuntu 24.10 (Oracular Oriole) (64-bit)", 2048, 16, 25), // 64-bit only
+    VBOX_LINUX_SUBTYPE_A_A64("Ubuntu", Ubuntu24,     "Ubuntu 24.10 (Oracular Oriole) (ARM 64-bit)", 2048, 16, 25),
+    VBOX_LINUX_SUBTYPE_A_X64("Ubuntu", Ubuntu25,     "Ubuntu 25.04 (Plucky Puffin) (64-bit)", 2048, 16, 25), // 64-bit only
+    VBOX_LINUX_SUBTYPE_A_A64("Ubuntu", Ubuntu25,     "Ubuntu 25.04 (Plucky Puffin) (ARM 64-bit)", 2048, 16, 25),
     VBOX_LINUX_SUBTYPE_A_X86("Ubuntu", Lubuntu,      "Lubuntu (32-bit)",  1024, 16, 10),
     VBOX_LINUX_SUBTYPE_A_X64("Ubuntu", Lubuntu,      "Lubuntu (64-bit)",  1024, 16, 10),
     VBOX_LINUX_SUBTYPE_A_X86("Ubuntu", Xubuntu,      "Xubuntu (32-bit)",  1024, 16, 10),
@@ -480,6 +497,7 @@ const Global::OSType Global::sOSTypes[] =
 
     VBOX_LINUX_SUBTYPE_A_X86("Other Linux", Linux,               "Other Linux (32-bit)",             256, 16, 8),
     VBOX_LINUX_SUBTYPE_B_X64("Other Linux", Linux,               "Other Linux (64-bit)",             512, 16, 8),
+    VBOX_LINUX_SUBTYPE_B_A64("Other Linux", Linux,               "Other Linux (ARM 64-bit)",        2048, 16, 20),
 
     { "Solaris", "Solaris",           "",        GUEST_OS_ID_STR_X86("Solaris"),        "Oracle Solaris 10 5/09 and earlier (32-bit)", VBOX_GUEST_ADDITIONS_NAME_SOLARIS,
       VBOXOSTYPE_Solaris,         VBOXOSHINT_NONE,

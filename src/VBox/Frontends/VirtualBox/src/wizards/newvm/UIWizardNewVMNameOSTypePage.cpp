@@ -1,4 +1,4 @@
-/* $Id: UIWizardNewVMNameOSTypePage.cpp 108994 2025-03-28 13:45:53Z serkan.bayraktar@oracle.com $ */
+/* $Id: UIWizardNewVMNameOSTypePage.cpp 111096 2025-09-23 10:04:39Z brent.paulson@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIWizardNewVMPageBasicNameOSStype class implementation.
  */
@@ -187,8 +187,14 @@ static const osTypePattern gs_OSTypePattern[] =
     { QRegularExpression("((kinetic)|(kudu)).*64",                                              QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_ARM64("Ubuntu22") },
     { QRegularExpression("((lunar)|(lobster)).*64",                                             QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X64("Ubuntu23") },
     { QRegularExpression("((lunar)|(lobster)).*64",                                             QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_ARM64("Ubuntu23") },
+    { QRegularExpression("((mantic)|(minotaur)).*64",                                           QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X64("Ubuntu231") },
+    { QRegularExpression("((mantic)|(minotaur)).*64",                                           QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_ARM64("Ubuntu231") },
     { QRegularExpression("((noble)|(numbat)).*64",                                              QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X64("Ubuntu24_LTS") },
     { QRegularExpression("((noble)|(numbat)).*64",                                              QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_ARM64("Ubuntu24_LTS") },
+    { QRegularExpression("((oracular)|(oriole)).*64",                                           QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X64("Ubuntu24") },
+    { QRegularExpression("((oracular)|(oriole)).*64",                                           QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_ARM64("Ubuntu24") },
+    { QRegularExpression("((plucky)|(puffin)).*64",                                             QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X64("Ubuntu25") },
+    { QRegularExpression("((plucky)|(puffin)).*64",                                             QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_ARM64("Ubuntu25") },
     { QRegularExpression("sarge.*32",                         QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X86("Debian31") },
     { QRegularExpression("^etch.*64",                         QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X64("Debian4") },
     { QRegularExpression("debian.*4.*64",                     QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X64("Debian4") },
@@ -239,9 +245,12 @@ static const osTypePattern gs_OSTypePattern[] =
     { QRegularExpression("bookworm.*64",                      QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_ARM64("Debian12") },
     { QRegularExpression("debian.*12.*64",                    QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_ARM64("Debian12") },
     { QRegularExpression("debian.*12",                        QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_ARM32("Debian12") },
-    { QRegularExpression("bookworm.*32",                      QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_ARM32("Debian12") },
-    { QRegularExpression("((trixie)|(sid)).*64",              QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X64("Debian") },
-    { QRegularExpression("((trixie)|(sid)).*32",              QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X86("Debian") },
+    { QRegularExpression("trixie.*64",                      QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X64("Debian13") },
+    { QRegularExpression("debian.*13.*64",                    QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X64("Debian13") },
+    { QRegularExpression("debian.*13",                        QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X86("Debian13") },
+    { QRegularExpression("trixie.*64",                      QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_ARM64("Debian13") },
+    { QRegularExpression("debian.*13.*64",                    QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_ARM64("Debian13") },
+    { QRegularExpression("((forky)|(duke)|(sid)).*64",              QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X64("Debian") },
     { QRegularExpression("((moonshine)|(werewolf)|(sulphur)|(cambridge)|(leonidas)|(constantine)|(goddard)|(laughlin)|(lovelock)|(verne)|(beefy)|(spherical)|(schrodinger)|(heisenberg)).*64", QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X64("Fedora") },
     { QRegularExpression("((moonshine)|(werewolf)|(sulphur)|(cambridge)|(leonidas)|(constantine)|(goddard)|(laughlin)|(lovelock)|(verne)|(beefy)|(spherical)|(schrodinger)|(heisenberg)).*32", QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X86("Fedora") },
     { QRegularExpression("((basilisk)|(emerald)|(teal)|(celadon)|(asparagus)|(mantis)|(dartmouth)|(bottle)|(harlequin)).*64", QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X64("OpenSUSE") },
@@ -295,7 +304,6 @@ static const osTypePattern gs_OSTypePattern[] =
     { QRegularExpression("((Or)|(oel)|(^ol)).*64",            QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X64("Oracle") },
     { QRegularExpression("((Or)|(oel)|(^ol)).*32",            QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X86("Oracle") },
     { QRegularExpression("((Or)|(oel)|(^ol)).*64",            QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_ARM64("Oracle") },
-    { QRegularExpression("((Or)|(oel)|(^ol)).*32",            QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_ARM32("Oracle") },
     { QRegularExpression("Knoppix",                           QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X86("Linux26") },
     { QRegularExpression("Dsl",                               QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X86("Linux24") },
     { QRegularExpression("((Lin)|(lnx)).*2.?2",               QRegularExpression::CaseInsensitiveOption), GUEST_OS_ID_STR_X86("Linux22") },
