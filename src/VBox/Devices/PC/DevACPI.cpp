@@ -1,4 +1,4 @@
-/* $Id: DevACPI.cpp 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: DevACPI.cpp 111129 2025-09-26 06:09:17Z alexander.eichner@oracle.com $ */
 /** @file
  * DevACPI - Advanced Configuration and Power Interface (ACPI) Device.
  */
@@ -561,6 +561,7 @@ typedef ACPISTATE *PACPISTATE;
 
 
 
+#ifdef IN_RING3
 /**
  * The ring-3 ACPI device state.
  */
@@ -585,9 +586,17 @@ typedef struct ACPISTATER3
     R3PTRTYPE(uint8_t *) apu8CustBin[MAX_CUST_TABLES];
     /** The size of the custom table binary. */
     uint64_t            acbCustBin[MAX_CUST_TABLES];
+
+    /** GCM patch ID to try for the guest if configured and ACPI
+     * is enabled for the first time. */
+    GCMGSTPATCHID       enmGcmPatch;
+    /** Configured GCM patch ID to try for the guest if configured and ACPI
+     * is enabled for the first time. */
+    GCMGSTPATCHID       enmGcmPatchCfg;
 } ACPISTATER3;
 /** Pointer to the ring-3 ACPI device state. */
 typedef ACPISTATER3 *PACPISTATER3;
+#endif
 
 
 #pragma pack(1)
@@ -2175,11 +2184,20 @@ static DECLCALLBACK(VBOXSTRICTRC) acpiR3SmiWrite(PPDMDEVINS pDevIns, void *pvUse
     if (cb != 1)
         return PDMDevHlpDBGFStop(pDevIns, RT_SRC_POS, "cb=%d offPort=%u u32=%#x\n", cb, offPort, u32);
 
-    PACPISTATE pThis = PDMDEVINS_2_DATA(pDevIns, PACPISTATE);
+    PACPISTATE   pThis = PDMDEVINS_2_DATA(pDevIns, PACPISTATE);
+    PACPISTATER3 pThisCC = PDMDEVINS_2_DATA_CC(pDevIns, PACPISTATER3);
     DEVACPI_LOCK_R3(pDevIns, pThis);
 
     if (u32 == ACPI_ENABLE)
+    {
         pThis->pm1a_ctl |= SCI_EN;
+        /* Trigger the GCM patcher if configured. */
+        if (pThisCC->enmGcmPatch != kGcmGstPatchId_Invalid)
+        {
+            PDMDevHlpGCMTriggerPatch(pDevIns, pThisCC->enmGcmPatch);
+            pThisCC->enmGcmPatch = kGcmGstPatchId_Invalid;
+        }
+    }
     else if (u32 == ACPI_DISABLE)
         pThis->pm1a_ctl &= ~SCI_EN;
     else
@@ -4238,6 +4256,8 @@ static DECLCALLBACK(void) acpiR3Reset(PPDMDEVINS pDevIns)
     acpiR3UpdateSMBusHandlers(pDevIns, pThis, SMB_PORT_BASE);
     acpiR3SMBusPCIBIOSFake(pDevIns, pThis);
     acpiR3SMBusResetDevice(pThis);
+
+    pThisCC->enmGcmPatch = pThisCC->enmGcmPatchCfg;
 }
 
 /**
@@ -4361,6 +4381,7 @@ static DECLCALLBACK(int) acpiR3Construct(PPDMDEVINS pDevIns, int iInstance, PCFG
                                   "|TpmMode"
                                   "|TpmMmioAddress"
                                   "|SsdtTpmFilePath"
+                                  "|GcmPatchIdOnAcpiEnable"
                                   , "");
 
     /* query whether we are supposed to present an IOAPIC */
@@ -4606,6 +4627,12 @@ static DECLCALLBACK(int) acpiR3Construct(PPDMDEVINS pDevIns, int iInstance, PCFG
     if (RT_FAILURE(rc))
         return PDMDEV_SET_ERROR(pDevIns, rc, N_("Configuration error: Failed to read \"TpmMmioAddress\""));
 #endif
+
+    rc = pHlp->pfnCFGMQueryU32Def(pCfg, "GcmPatchIdOnAcpiEnable", (uint32_t *)&pThisCC->enmGcmPatchCfg, kGcmGstPatchId_Invalid);
+    if (RT_FAILURE(rc))
+        return PDMDEV_SET_ERROR(pDevIns, rc, N_("Configuration error: Failed to read \"GcmPatchId\""));
+    pThisCC->enmGcmPatch = pThisCC->enmGcmPatchCfg;
+
 
     /* Try to attach the other CPUs */
     for (unsigned i = 1; i < pThis->cCpus; i++)
