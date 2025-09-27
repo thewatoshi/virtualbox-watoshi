@@ -1,4 +1,4 @@
-/* $Id: PDMDevHlp.cpp 111129 2025-09-26 06:09:17Z alexander.eichner@oracle.com $ */
+/* $Id: PDMDevHlp.cpp 111141 2025-09-27 07:20:22Z alexander.eichner@oracle.com $ */
 /** @file
  * PDM - Pluggable Device and Driver Manager, Device Helpers.
  */
@@ -4948,7 +4948,7 @@ static DECLCALLBACK(void) pdmR3DevHlp_GCMTriggerPatch(PPDMDEVINS pDevIns, GCMGST
     LogFlow(("pdmR3DevHlp_GCMTriggerPatch: caller='%s'/%d: enmPatch=%#x\n",
              pDevIns->pReg->szName, pDevIns->iInstance, enmPatch));
 
-#ifdef VBOX_VMM_TARGET_X86
+#ifndef VBOX_VMM_TARGET_ARMV8
     GCMR3PatchGuest(pDevIns->Internal.s.pVMR3, enmPatch);
 #else
     RT_NOREF(pDevIns, enmPatch);
