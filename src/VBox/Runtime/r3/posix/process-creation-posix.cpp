@@ -1,4 +1,4 @@
-/* $Id: process-creation-posix.cpp 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: process-creation-posix.cpp 111253 2025-10-06 11:12:44Z brent.paulson@oracle.com $ */
 /** @file
  * IPRT - Process Creation, POSIX.
  */
@@ -2186,19 +2186,19 @@ static int rtProcPosixCreateInner(const char *pszNativeExec, const char * const 
              * Change group and user if requested.
              */
 #if 1 /** @todo This needs more work, see suplib/hardening. */
-            if (pszAsUser)
+           if (gid != ~(gid_t)0)
             {
-                int ret = initgroups(pszAsUser, gid);
-                if (ret)
+                if (pszAsUser)
                 {
-                    if (fFlags & RTPROC_FLAGS_DETACHED)
-                        _Exit(126);
-                    else
-                        exit(126);
+                    if (initgroups(pszAsUser, gid))
+                    {
+                        if (fFlags & RTPROC_FLAGS_DETACHED)
+                            _Exit(126);
+                        else
+                            exit(126);
+                    }
                 }
-            }
-            if (gid != ~(gid_t)0)
-            {
+
                 if (setgid(gid))
                 {
                     if (fFlags & RTPROC_FLAGS_DETACHED)
