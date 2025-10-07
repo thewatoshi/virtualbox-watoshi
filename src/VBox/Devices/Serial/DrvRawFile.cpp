@@ -1,4 +1,4 @@
-/* $Id: DrvRawFile.cpp 106320 2024-10-15 12:08:41Z klaus.espenlaub@oracle.com $ */
+/* $Id: DrvRawFile.cpp 111263 2025-10-07 06:35:05Z alexander.eichner@oracle.com $ */
 /** @file
  * VBox stream drivers - Raw file output.
  */
@@ -88,7 +88,11 @@ static DECLCALLBACK(int) drvRawFilePoll(PPDMISTREAM pInterface, uint32_t fEvts, 
         return VINF_SUCCESS;
     }
 
-    return RTSemEventWait(pThis->hSemEvtPoll, cMillies);
+    int rc = RTSemEventWait(pThis->hSemEvtPoll, cMillies);
+    if (RT_SUCCESS(rc))
+        rc = VERR_INTERRUPTED;
+
+    return rc;
 }
 
 
