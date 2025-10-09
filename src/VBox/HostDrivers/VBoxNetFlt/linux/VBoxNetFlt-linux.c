@@ -1,4 +1,4 @@
-/* $Id: VBoxNetFlt-linux.c 110212 2025-07-14 12:01:10Z aleksey.ilyushin@oracle.com $ */
+/* $Id: VBoxNetFlt-linux.c 111310 2025-10-09 13:37:22Z vadim.galitsyn@oracle.com $ */
 /** @file
  * VBoxNetFlt - Network Filter Driver (Host), Linux Specific Code.
  */
@@ -181,6 +181,12 @@ typedef struct VBOXNETFLTNOTIFIER *PVBOXNETFLTNOTIFIER;
 # define VBOX_SKB_FRAG_LEN(_pFrag)       ((_pFrag)->size)
 # define VBOX_SKB_FRAG_OFFSET(_pFrag)    ((_pFrag)->page_offset)
 #endif /* > KERNEL_VERSION(6, 9, 0) */
+
+#if RTLNX_VER_MIN(6,17,0)
+# define VBOX_NETDEV_GET_FLAGS  netif_get_flags
+#else
+# define VBOX_NETDEV_GET_FLAGS  dev_get_flags
+#endif
 
 #if RTLNX_VER_MIN(3,20,0) || RTLNX_RHEL_RANGE(7,2,  8,0) || RTLNX_RHEL_RANGE(6,8,  7,0)
 # define VBOX_HAVE_SKB_VLAN
@@ -2450,7 +2456,7 @@ void vboxNetFltPortOsSetActive(PVBOXNETFLTINS pThis, bool fActive)
             pThis->u.s.fPromiscuousSet = false;
 
 #ifdef LOG_ENABLED
-            fIf = dev_get_flags(pDev);
+            fIf = VBOX_NETDEV_GET_FLAGS(pDev);
             Log(("VBoxNetFlt: fIf=%#x; %d->%d\n", fIf, cPromiscBefore, pDev->promiscuity));
 #endif
         }
