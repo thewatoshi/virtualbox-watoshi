@@ -1,5 +1,5 @@
 #!/usr/bin/make -f
-# $Id: rules 111309 2025-10-09 13:36:22Z vadim.galitsyn@oracle.com $
+# $Id: rules 111315 2025-10-09 13:47:11Z vadim.galitsyn@oracle.com $
 ## @file
 # VirtualBox rules.
 #
@@ -127,7 +127,7 @@ ifneq ($(MAKECMDGOALS),clean)
  ifeq ($(filter-out el5 el6 el7 el8 el9 el10 fedora18 fedora19 fedora20 fedora21 fedora22 fedora24 fedora25 fedora26 fedora29 fedora31 fedora32 fedora33 fedora35 fedora36 fedora40,$(rpmrel)),)
   rpmspec := rpm_redhat
  endif
- ifeq ($(filter-out openSUSE110 openSUSE111 openSUSE112 openSUSE113 openSUSE114 openSUSE123 openSUSE131 openSUSE132 openSUSE150 openSUSE153 openSUSE156 openSUSETW,$(rpmrel)),)
+ ifeq ($(filter-out openSUSE110 openSUSE111 openSUSE112 openSUSE113 openSUSE114 openSUSE123 openSUSE131 openSUSE132 openSUSE150 openSUSE153 openSUSE156 openSUSE160 openSUSETW,$(rpmrel)),)
   rpmspec := rpm_suse
  endif
  ifeq ($(rpmspec),)
@@ -183,7 +183,7 @@ cfg_flags := $(if $(NOQT),--disable-qt,) \
     $(if $(VNC),--enable-vnc,) \
     $(if $(PATH_OUT_BASE),--out-base-dir=$(PATH_OUT_BASE),) \
     $(if $(filter el10 openSUSE156,$(rpmrel)),--build-libssl,) \
-    $(if $(filter el10 openSUSE156,$(rpmrel)),--disable-java,) \
+    $(if $(filter el10 openSUSE156 openSUSE160,$(rpmrel)),--disable-java,) \
     --disable-extpack
 
 bld_flags := LOCALCFG=$(instlin)/rpm/LocalConfig.kmk \
