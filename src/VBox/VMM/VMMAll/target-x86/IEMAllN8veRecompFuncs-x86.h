@@ -1,4 +1,4 @@
-/* $Id: IEMAllN8veRecompFuncs-x86.h 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: IEMAllN8veRecompFuncs-x86.h 111484 2025-10-24 07:19:03Z alexander.eichner@oracle.com $ */
 /** @file
  * IEM - Native Recompiler - Inlined Bits, x86 target.
  */
@@ -881,6 +881,9 @@ iemNativeEmitCheckGprCanonicalMaybeRaiseGp0WithOldPc(PIEMRECOMPILERSTATE pReNati
 #ifdef IEMNATIVE_WITH_DELAYED_REGISTER_WRITEBACK
     Assert(pReNative->Core.bmGstRegShadowDirty == 0);
 #endif
+#ifndef IEMNATIVE_WITH_DELAYED_PC_UPDATING
+    RT_NOREF(idxOldPcReg);
+#endif
 
 #ifdef IEMNATIVE_WITH_INSTRUCTION_COUNTING
 # ifdef IEMNATIVE_WITH_DELAYED_PC_UPDATING
@@ -1021,6 +1024,9 @@ iemNativeEmitCheckGpr32AgainstCsSegLimitMaybeRaiseGp0WithOldPc(PIEMRECOMPILERSTA
 {
 #ifdef IEMNATIVE_WITH_DELAYED_REGISTER_WRITEBACK
     Assert(pReNative->Core.bmGstRegShadowDirty == 0);
+#endif
+#ifndef IEMNATIVE_WITH_DELAYED_PC_UPDATING
+    RT_NOREF(idxOldPcReg);
 #endif
 
 #ifdef IEMNATIVE_WITH_INSTRUCTION_COUNTING
@@ -1168,7 +1174,11 @@ iemNativeEmitRip64RelativeJumpAndFinishingNoFlags(PIEMRECOMPILERSTATE pReNative,
                                                                  kIemNativeGstRegUse_ForUpdate);
 
         /* Perform the addition. */
+#ifdef IEMNATIVE_WITH_DELAYED_PC_UPDATING
         off = iemNativeEmitAddGprImm(pReNative, off, idxPcReg, (int64_t)offDisp + cbInstr + pReNative->Core.offPc);
+#else
+        off = iemNativeEmitAddGprImm(pReNative, off, idxPcReg, (int64_t)offDisp + cbInstr);
+#endif
 
         if (RT_LIKELY(enmEffOpSize == IEMMODE_64BIT))
         {
@@ -1313,7 +1323,7 @@ iemNativeEmitEip32RelativeJumpAndFinishingNoFlags(PIEMRECOMPILERSTATE pReNative,
 #ifdef IEMNATIVE_WITH_DELAYED_PC_UPDATING
     off = iemNativeEmitAddGpr32Imm(pReNative, off, idxPcReg, offDisp + cbInstr + (int32_t)pReNative->Core.offPc);
 #else
-    off = iemNativeEmitAddGpr32Imm(pReNative, off, idxPcReg, offDisp + cbInstr + (int32_t)pReNative->Core.offPc);
+    off = iemNativeEmitAddGpr32Imm(pReNative, off, idxPcReg, offDisp + cbInstr);
 #endif
 
     /* Truncate the result to 16-bit IP if the operand size is 16-bit. */

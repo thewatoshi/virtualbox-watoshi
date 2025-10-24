@@ -1,4 +1,4 @@
-/* $Id: IEMAllN8veRecompiler.cpp 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: IEMAllN8veRecompiler.cpp 111484 2025-10-24 07:19:03Z alexander.eichner@oracle.com $ */
 /** @file
  * IEM - Native Recompiler
  *
@@ -4608,7 +4608,9 @@ iemNativeSimdRegMoveAndFreeAndFlushAtCall(PIEMRECOMPILERSTATE pReNative, uint32_
                 case kIemNativeWhat_FixedTmp:
                 case kIemNativeWhat_pVCpuFixed:
                 case kIemNativeWhat_pCtxFixed:
+#ifdef IEMNATIVE_WITH_DELAYED_PC_UPDATING
                 case kIemNativeWhat_PcShadow:
+#endif
                 case kIemNativeWhat_Invalid:
                 case kIemNativeWhat_End:
                     AssertFailedStmt(IEMNATIVE_DO_LONGJMP(pReNative, VERR_IEM_REG_IPE_1));
@@ -4745,7 +4747,9 @@ AssertCompile(IEMNATIVE_CALL_VOLATILE_NOTMP_GREG_MASK == UINT32_C(0x37fff));
                 case kIemNativeWhat_FixedTmp:
                 case kIemNativeWhat_pVCpuFixed:
                 case kIemNativeWhat_pCtxFixed:
+#ifdef IEMNATIVE_WITH_DELAYED_PC_UPDATING
                 case kIemNativeWhat_PcShadow:
+#endif
                 case kIemNativeWhat_FixedReserved:
                 case kIemNativeWhat_Invalid:
                 case kIemNativeWhat_End:
