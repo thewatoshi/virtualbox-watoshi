@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# $Id: resourcecache.py 111287 2025-10-08 09:45:48Z alexander.eichner@oracle.com $
+# $Id: resourcecache.py 111543 2025-11-04 08:58:06Z knut.osmundsen@oracle.com $
 # pylint: disable=too-many-lines
 
 """
@@ -37,7 +37,7 @@ terms and conditions of either the GPL or the CDDL or both.
 
 SPDX-License-Identifier: GPL-3.0-only OR CDDL-1.0
 """
-__version__ = "$Revision: 111287 $"
+__version__ = "$Revision: 111543 $"
 
 
 # Standard Python imports.
@@ -74,9 +74,8 @@ class LocalRsrcCache(object):
             fRc = os.path.isfile(sCacheToc);
             if fRc:
                 oTocJson = None;
-                with open(sCacheToc) as oFileToc:
+                with open(sCacheToc, encoding = 'utf-8') as oFileToc:
                     oTocJson = json.load(oFileToc);
-                    oFileToc.close();
                 if oTocJson is not None:
                     for sItem in oTocJson:
                         sPath = os.path.join(self.sLocalCachePath, sItem);
@@ -104,9 +103,8 @@ class LocalRsrcCache(object):
             asToc.append(sKey);
 
         sCacheToc = os.path.join(self.sLocalCachePath, 'cache-toc.json');
-        with open(sCacheToc, 'w', encoding='utf-8') as oFileToc:
-            json.dump(asToc, oFileToc, ensure_ascii=False, indent=4);
-            oFileToc.close();
+        with open(sCacheToc, 'w', encoding = 'utf-8') as oFileToc:
+            json.dump(asToc, oFileToc, ensure_ascii = False, indent = 4);
 
     def getCachedResource(self, sName):
         """
