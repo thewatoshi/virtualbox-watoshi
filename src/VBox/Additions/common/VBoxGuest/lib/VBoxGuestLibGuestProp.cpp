@@ -1,4 +1,4 @@
-/* $Id: VBoxGuestLibGuestProp.cpp 111546 2025-11-04 13:03:27Z knut.osmundsen@oracle.com $ */
+/* $Id: VBoxGuestLibGuestProp.cpp 111547 2025-11-04 18:30:32Z dmitrii.grigorev@oracle.com $ */
 /** @file
  * VBoxGuestLib - Support Library for VirtualBox guest additions, guest properties.
  *
@@ -383,7 +383,7 @@ DECLVBGL(int) VbglGuestPropRead(PVBGLGSTPROPCLIENT pClient, const char *pszName,
      * adjust his/her buffer.
      */
     if (    rc == VERR_BUFFER_OVERFLOW
-        ||  pcbBufActual != NULL)
+        &&  pcbBufActual != NULL)
     {
         int rc2 = VbglHGCMParmUInt32Get(&Msg.size, pcbBufActual);
         AssertRCReturn(rc2, RT_FAILURE(rc) ? rc : rc2);
