@@ -1,4 +1,4 @@
-/* $Id: VBoxWinDrvCommon.h 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: VBoxWinDrvCommon.h 111563 2025-11-07 15:43:46Z andreas.loeffler@oracle.com $ */
 /** @file
  * VBoxWinDrvCommon - Common Windows driver functions.
  */
@@ -58,6 +58,7 @@ int VBoxWinDrvInfOpenEx(PCRTUTF16 pwszInfFile, PRTUTF16 pwszClassName, HINF *phI
 int VBoxWinDrvInfOpen(PCRTUTF16 pwszInfFile, HINF *phInf);
 int VBoxWinDrvInfOpenUtf8(const char *pszInfFile, HINF *phInf);
 int VBoxWinDrvInfClose(HINF hInf);
+PRTUTF16 VBoxWinDrvInfGetPathFromId(unsigned idDir, PCRTUTF16 pwszSubDir);
 VBOXWINDRVINFTYPE VBoxWinDrvInfGetTypeEx(HINF hInf, PRTUTF16 *ppwszSection);
 VBOXWINDRVINFTYPE VBoxWinDrvInfGetType(HINF hInf);
 int VBoxWinDrvInfQueryFirstModel(HINF hInf, PCRTUTF16 pwszSection, PRTUTF16 *ppwszModel);
