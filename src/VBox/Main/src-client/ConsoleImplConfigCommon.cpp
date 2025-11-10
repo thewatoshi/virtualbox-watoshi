@@ -1,4 +1,4 @@
-/* $Id: ConsoleImplConfigCommon.cpp 110930 2025-09-08 16:34:44Z aleksey.ilyushin@oracle.com $ */
+/* $Id: ConsoleImplConfigCommon.cpp 111594 2025-11-10 13:33:34Z alexander.eichner@oracle.com $ */
 /** @file
  * VBox Console COM Class implementation - VM Configuration Bits.
  *
@@ -1750,25 +1750,6 @@ int Console::i_configMedium(PCFGMNODE pLunL0,
                 }
                 /* Index of last image */
                 uImage--;
-
-# ifdef VBOX_WITH_EXTPACK
-                if (mptrExtPackManager->i_isExtPackUsable(ORACLE_PUEL_EXTPACK_NAME))
-                {
-                    /* Configure loading the VDPlugin. */
-                    static const char s_szVDPlugin[] = "VDPluginCrypt";
-                    PCFGMNODE pCfgPlugins = NULL;
-                    PCFGMNODE pCfgPlugin = NULL;
-                    Utf8Str strPlugin;
-                    hrc = mptrExtPackManager->i_getLibraryPathForExtPack(s_szVDPlugin, ORACLE_PUEL_EXTPACK_NAME, &strPlugin);
-                    // Don't fail, this is optional!
-                    if (SUCCEEDED(hrc))
-                    {
-                        InsertConfigNode(pCfg, "Plugins", &pCfgPlugins);
-                        InsertConfigNode(pCfgPlugins, s_szVDPlugin, &pCfgPlugin);
-                        InsertConfigString(pCfgPlugin, "Path", strPlugin);
-                    }
-                }
-# endif
 
                 hrc = ptrMedium->COMGETTER(Location)(bstr.asOutParam());                    H();
                 InsertConfigString(pCfg, "Path", bstr);

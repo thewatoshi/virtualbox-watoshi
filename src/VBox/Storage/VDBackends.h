@@ -1,4 +1,4 @@
-/* $Id: VDBackends.h 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: VDBackends.h 111594 2025-11-10 13:33:34Z alexander.eichner@oracle.com $ */
 /** @file
  * VD - builtin backends.
  */
@@ -55,6 +55,10 @@ extern const VDIMAGEBACKEND g_CueBackend;
 extern const VDIMAGEBACKEND g_VBoxIsoMakerBackend;
 
 extern const VDCACHEBACKEND g_VciCacheBackend;
+
+#ifdef VBOX_WITH_PLUGIN_CRYPT
+extern const VDFILTERBACKEND g_VDFilterCrypt;
+#endif
 
 RT_C_DECLS_END
 
