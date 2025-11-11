@@ -1,4 +1,4 @@
-/* $Id: QITreeView.h 111506 2025-10-28 12:34:08Z sergey.dubov@oracle.com $ */
+/* $Id: QITreeView.h 111631 2025-11-11 12:56:58Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - Qt extensions: QITreeView class declaration.
  */
@@ -135,8 +135,9 @@ public:
 
 protected slots:
 
-    /** Handles index changed from @a previous to @a current.*/
-    void currentChanged(const QModelIndex &current, const QModelIndex &previous) RT_OVERRIDE;
+    /** This slot is called when a new item becomes the current item.
+      * The previous current item is specified by the @a previous index, and the new item by the @a current index. */
+    virtual void currentChanged(const QModelIndex &current, const QModelIndex &previous) RT_OVERRIDE;
 
 protected:
 
