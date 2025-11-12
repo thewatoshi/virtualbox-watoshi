@@ -1,4 +1,4 @@
-# $Id: Makefile.kmk 111649 2025-11-12 09:45:14Z knut.osmundsen@oracle.com $
+# $Id: Makefile.kmk 111650 2025-11-12 09:58:47Z knut.osmundsen@oracle.com $
 ## @file
 # Sub-Makefile for zlib.
 #
@@ -68,7 +68,7 @@ ifdef VBOX_WITH_32_ON_64_MAIN_API # 32-bit edition.
  VBox-zlib-x86_EXTENDS = VBox-zlib
 endif
 
-if !defined(VBOX_ONLY_EXTPACKS) || !defined(VBOX_ONLY_EXTPACKS)
+if !defined(VBOX_ONLY_BUILD) || defined(VBOX_ONLY_EXTPACKS)
  # For bldRTTar.
  LIBRARIES += VBoxBldProg-zlib
  VBoxBldProg-zlib_TEMPLATE = VBoxAdvBldProg
