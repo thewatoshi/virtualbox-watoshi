@@ -1,4 +1,4 @@
-/* $Id: QITreeView.h 111678 2025-11-12 14:10:30Z sergey.dubov@oracle.com $ */
+/* $Id: QITreeView.h 111679 2025-11-12 14:17:11Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - Qt extensions: QITreeView class declaration.
  */
@@ -135,6 +135,9 @@ public:
     virtual int childCount() const { return 0; }
     /** Returns the child item with @a iIndex. */
     virtual QITreeViewItem *childItem(int /* iIndex */) const { return 0; }
+
+    /** Returns current item. */
+    QITreeViewItem *currentItem() const;
 
 protected slots:
 
