@@ -1,4 +1,4 @@
-/* $Id: VBoxWinDrvCommon.cpp 111675 2025-11-12 13:47:58Z andreas.loeffler@oracle.com $ */
+/* $Id: VBoxWinDrvCommon.cpp 111682 2025-11-12 14:32:16Z andreas.loeffler@oracle.com $ */
 /** @file
  * VBoxWinDrvCommon - Common Windows driver installation functions.
  */
@@ -46,6 +46,7 @@
 #include <iprt/utf16.h>
 
 #include <VBox/err.h> /* For VERR_PLATFORM_ARCH_NOT_SUPPORTED.*/
+#include <VBox/GuestHost/VBoxWinDrvDefs.h>
 
 #include "VBoxWinDrvCommon.h"
 
@@ -828,7 +829,7 @@ int VBoxWinDrvInfQueryParms(HINF hInf, PVBOXWINDRVINFPARMS pParms, bool fForce)
             wszSvcName[0] = L'\0';
 
             /* Note: We don't support multi-service drivers here (yet). */
-            while (SetupEnumInfSectionsW(hInf, idxSection, wszSection, RT_ELEMENTS(wszSection), NULL))
+            while (g_pfnSetupEnumInfSectionsW(hInf, idxSection, wszSection, RT_ELEMENTS(wszSection), NULL))
             {
                 if (SetupFindFirstLineW(hInf, wszSection, L"AddService", &context))
                 {
