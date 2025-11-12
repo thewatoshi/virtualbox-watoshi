@@ -1,4 +1,4 @@
-# $Id: Makefile.kmk 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $
+# $Id: Makefile.kmk 111643 2025-11-12 08:44:15Z alexander.eichner@oracle.com $
 ## @file
 # Sub-Makefile for the Solaris installer.
 #
@@ -477,10 +477,8 @@ SOLARIS_STRIP_BINS += \
 
 # VRDP
 ifdef VBOX_WITH_VRDP
- ifndef VBOX_WITH_EXTPACK_PUEL
-  SOLARIS_STRIP_BINS += \
-  	VBoxVRDP.so
- endif
+ SOLARIS_STRIP_BINS += \
+ 	VBoxVRDP.so
 endif
 
 SOLARIS_STRIP_BINS += \
