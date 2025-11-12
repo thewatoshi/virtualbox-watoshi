@@ -1,4 +1,4 @@
-/* $Id: git.cpp 110524 2025-08-04 09:36:44Z alexander.eichner@oracle.com $ */
+/* $Id: git.cpp 111660 2025-11-12 11:58:30Z alexander.eichner@oracle.com $ */
 /** @file
  * svn2git - Convert a svn repository to git.
  */
@@ -792,14 +792,16 @@ DECLHIDDEN(int) s2gGitTransactionCommit(S2GREPOSITORYGIT hGitRepo, const char *p
     uint64_t const idMark = pThis->idCommitMark++;
     int rc = s2gScratchBufPrintf(&pThis->BufScratch,
                                  "commit refs/heads/%s\n"
-                                 "mark :%RU64\n"
-                                 "committer %s <%s> %RI64 +0000\n",
-                                 pszBranch, idMark,
-                                 pszCommitter, pszCommitterEmail, cEpochSecs);
+                                 "mark :%RU64\n",
+                                 pszBranch, idMark);
     if (RT_SUCCESS(rc) && pszAuthor && pszAuthorEmail)
         rc = s2gScratchBufPrintf(&pThis->BufScratch,
                                  "author %s <%s> %RI64 +0000\n",
                                  pszAuthor, pszAuthorEmail, cEpochSecs);
+    if (RT_SUCCESS(rc))
+        rc = s2gScratchBufPrintf(&pThis->BufScratch,
+                                 "committer %s <%s> %RI64 +0000\n",
+                                 pszCommitter, pszCommitterEmail, cEpochSecs);
     if (RT_SUCCESS(rc))
         rc = s2gScratchBufPrintf(&pThis->BufScratch,
                                  "data %zu\n"
