@@ -1,4 +1,4 @@
-/* $Id: SUPDrv-linux.c 111691 2025-11-13 05:33:01Z ramshankar.venkataraman@oracle.com $ */
+/* $Id: SUPDrv-linux.c 111692 2025-11-13 10:17:51Z ramshankar.venkataraman@oracle.com $ */
 /** @file
  * VBoxDrv - The VirtualBox Support Driver - Linux specifics.
  */
@@ -413,10 +413,10 @@ static int supdrvLinuxInitKvmSymbols(void)
                     {
                         /*
                          * When CET is enabled, the address obtained by kprobe may be offset by a
-                         * few bytes (endbr32/64). We disable CET prior to jumping into the function
-                         * as otherwise it would cause a \#GP fault. We deliberately do not use
-                         * supdrvOSChangeCR4() here as cr4_update_irqsoff() disallows modifying
-                         * 'pinned' bits.
+                         * few bytes (endbr32/64 or a multi-byte NOP sequence). We disable CET prior
+                         * to jumping into the function, as otherwise it would cause a \#GP fault.
+                         * We deliberately do not usesupdrvOSChangeCR4() here as cr4_update_irqsoff()
+                         * disallows modifying 'pinned' bits.
                          */
                         RTTHREADPREEMPTSTATE Preempt = RTTHREADPREEMPTSTATE_INITIALIZER;
                         RTThreadPreemptDisable(&Preempt);
