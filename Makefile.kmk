@@ -1,4 +1,4 @@
-# $Id: Makefile.kmk 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $
+# $Id: Makefile.kmk 111705 2025-11-13 14:47:31Z knut.osmundsen@oracle.com $
 ## @file
 # Top level makefile.
 #
@@ -615,10 +615,13 @@ VBOX_CORE_DOXYFILE_INPUT_DIRS = \
 	include/VBox/HGSMI \
 	src/VBox/VMM \
 	src/VBox/VMM/VMMR0 \
-	src/VBox/VMM/VMMRC \
+	src/VBox/VMM/VMMR0/target-x86 \
 	src/VBox/VMM/VMMR3 \
+	src/VBox/VMM/VMMR3/target-armv8 \
+	src/VBox/VMM/VMMR3/target-x86 \
 	src/VBox/VMM/VMMAll \
-	src/VBox/VMM/VMMSwitcher \
+	src/VBox/VMM/VMMAll/target-x86 \
+	src/VBox/VMM/VMMAll/target-armv8 \
 	src/VBox/VMM/include \
 	src/VBox/Debugger \
 	src/VBox/Devices \
