@@ -1,4 +1,4 @@
-/* $Id: CPUMR3CpuId-armv8.cpp 110756 2025-08-18 21:09:11Z knut.osmundsen@oracle.com $ */
+/* $Id: CPUMR3CpuId-armv8.cpp 111713 2025-11-13 15:27:35Z knut.osmundsen@oracle.com $ */
 /** @file
  * CPUM - CPU ID part for ARMv8 hypervisor.
  */
@@ -107,6 +107,7 @@ static PSUPARMSYSREGVAL cpumCpuIdLookupIdReg(PSUPARMSYSREGVAL paIdRegs, uint32_t
  * Looks up @a idReg in the guest ID registers.
  *
  * @returns Pointer to matching ID register entry if found, NULL if not.
+ * @param   pVM         The cross context VM structure.
  * @param   idReg       The ID register to lookup.
  */
 static PSUPARMSYSREGVAL cpumR3CpuIdLookupGuestIdReg(PVM pVM, uint32_t idReg)
