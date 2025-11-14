@@ -1,4 +1,4 @@
-# $Id: Makefile.kmk 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $
+# $Id: Makefile.kmk 111731 2025-11-14 12:02:32Z knut.osmundsen@oracle.com $
 ## @file
 # Sub-Makefile for OpenGL ICD loader.
 #
@@ -43,7 +43,7 @@ endif
 
 VBoxICD_INCS     = \
 	$(VBOX_PATH_3D)/win/include \
-	$(PATH_ROOT)/src/VBox/Additions/WINNT/Graphics/Video \
+	$(PATH_ROOT)/src/VBox/Additions/win/Graphics/Video \
 	$(PATH_ROOT)/src/VBox/Devices/Graphics/vmsvga_include \
 	$(VBOX_GRAPHICS_INCS)
 VBoxICD_SOURCES  = \

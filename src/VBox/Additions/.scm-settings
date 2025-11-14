@@ -1,4 +1,4 @@
-# $Id: .scm-settings 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $
+# $Id: .scm-settings 111731 2025-11-14 12:02:32Z knut.osmundsen@oracle.com $
 ## @file
 # Source code massager settings for the Additions.
 #
@@ -28,7 +28,8 @@
 /*.h: --guard-relative-to-dir . --guard-prefix GA_INCLUDED_SRC_
 /3D/mesa/include/*.h:   --guard-relative-to-dir 3D/mesa/include --guard-prefix GA_INCLUDED_3D_MESA_
 /3D/win/include/*.h:    --guard-relative-to-dir 3D/win/include  --guard-prefix GA_INCLUDED_3D_WIN_
-/WINNT/include/*.h:     --guard-relative-to-dir WINNT/include   --guard-prefix GA_INCLUDED_WINNT_
+/win/*.h:               --guard-relative-to-dir win --guard-prefix GA_INCLUDED_SRC_WINNT_
+/win/include/*.h:       --guard-relative-to-dir win/include     --guard-prefix GA_INCLUDED_WINNT_
 /haiku/include/*.h:     --guard-relative-to-dir haiku/include   --guard-prefix GA_INCLUDED_HAIKU_
 
 # Some drop in header replacement weirdness:

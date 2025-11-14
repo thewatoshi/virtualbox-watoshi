@@ -1,4 +1,4 @@
-/* $Id: DisplayImplLegacy.cpp 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: DisplayImplLegacy.cpp 111731 2025-11-14 12:02:32Z knut.osmundsen@oracle.com $ */
 /** @file
  * VirtualBox IDisplay implementation, helpers for legacy GAs.
  *
@@ -892,7 +892,7 @@ void Display::processAdapterData(void *pvVRAM, uint32_t u32VRAMSize)
              }
              else if (pHdr->u8Type != VBOX_VIDEO_INFO_TYPE_NV_HEAP)
              {
-                 /** @todo why is Additions/WINNT/Graphics/Miniport/VBoxVideo. cpp pushing this to us? */
+                 /** @todo why is Additions/win/Graphics/Miniport/VBoxVideo. cpp pushing this to us? */
                  LogRel(("Guest adapter information contains unsupported type %d. The block has been skipped.\n", pHdr->u8Type));
              }
 

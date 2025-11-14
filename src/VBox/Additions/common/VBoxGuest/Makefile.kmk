@@ -1,4 +1,4 @@
-# $Id: Makefile.kmk 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $
+# $Id: Makefile.kmk 111731 2025-11-14 12:02:32Z knut.osmundsen@oracle.com $
 ## @file
 # Makefile for the Cross Platform Guest Additions Driver.
 #
@@ -52,7 +52,7 @@ if defined(VBOX_WITH_ADDITION_DRIVERS) && "$(intersects $(KBUILD_TARGET), darwin
  VBoxGuest_NAME.netbsd   = vboxguest
  VBoxGuest_NAME.solaris  = vboxguest
  VBoxGuest_INST.darwin   = $(INST_ADDITIONS)VBoxGuest.kext/Contents/MacOS/
- if defined(VBOX_SIGNING_MODE) && defined(VBOX_SIGN_ADDITIONS) # See Additions/WINNT/Makefile.kmk?
+ if defined(VBOX_SIGNING_MODE) && defined(VBOX_SIGN_ADDITIONS) # See Additions/win/Makefile.kmk?
   VBoxGuest_INSTTYPE.win  = none
   VBoxGuest_DEBUG_INSTTYPE.win  = both
  endif
@@ -270,7 +270,7 @@ ifeq ($(KBUILD_TARGET),win)
  ifndef VBOX_WITH_NOCRT_STATIC
   VBoxGuestInstNT_LDFLAGS := -Include:_vcc100_kernel32_fakes_asm # Temporary kludge to deal with some link order issue.
  endif
- VBoxGuestInstNT_INCS     = ../../WINNT/include
+ VBoxGuestInstNT_INCS     = ../../win/include
  VBoxGuestInstNT_SOURCES  = win/VBoxGuestInst.cpp
  VBoxGuestInstNT_USES     = vboximportchecker
  VBoxGuestInstNT_VBOX_IMPORT_CHECKER.win.x86 = nt31

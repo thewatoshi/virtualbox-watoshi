@@ -1,9 +1,9 @@
-/* $Id: VBoxStubCertUtil.cpp 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: VBoxStubCertUtil.cpp 111731 2025-11-14 12:02:32Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBoxStub - VirtualBox's Windows installer stub (certificate manipulations).
  *
  * NOTE: The content of this file is partly
- *       grabbed from src/VBox/Additions/WINNT/tools/VBoxCertUtil.cpp
+ *       grabbed from src/VBox/Additions/win/tools/VBoxCertUtil.cpp
  */
 
 /*

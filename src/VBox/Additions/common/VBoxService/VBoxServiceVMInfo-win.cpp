@@ -1,4 +1,4 @@
-/* $Id: VBoxServiceVMInfo-win.cpp 111635 2025-11-11 13:27:52Z knut.osmundsen@oracle.com $ */
+/* $Id: VBoxServiceVMInfo-win.cpp 111731 2025-11-14 12:02:32Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBoxService - Virtual Machine Information for the Host, Windows specifics.
  */
@@ -61,7 +61,7 @@
 #include <VBox/VBoxGuestLib.h>
 #include <VBox/HostServices/GuestPropertySvc.h> /* GUEST_PROP_MAX_NAME_LEN */
 #include "VBoxServiceInternal.h"
-#include "../../WINNT/VBoxTray/VBoxTrayMsg.h" /* For IPC. */
+#include "../../win/VBoxTray/VBoxTrayMsg.h" /* For IPC. */
 
 
 /*********************************************************************************************************************************
