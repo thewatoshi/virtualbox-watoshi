@@ -1,4 +1,4 @@
-/* $Id: UIStorageSettingsEditor.cpp 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: UIStorageSettingsEditor.cpp 111739 2025-11-14 13:37:06Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIStorageSettingsEditor class implementation.
  */
@@ -239,11 +239,13 @@ public:
     virtual ItemType rtti() const = 0;
 
     /** Returns child item with specified @a iIndex. */
-    virtual AbstractItem *childItem(int iIndex) const RT_OVERRIDE = 0;
+    virtual AbstractItem *childItem(int iIndex) const = 0;
     /** Returns child item with specified @a uId. */
     virtual AbstractItem *childItemById(const QUuid &uId) const = 0;
     /** Returns position of specified child @a pItem. */
     virtual int posOfChild(AbstractItem *pItem) const = 0;
+    /** Returns the number of children. */
+    virtual int childCount() const = 0;
 
     /** Returns tool-tip information. */
     virtual QString toolTip() const = 0;
