@@ -1,4 +1,4 @@
-/* $Id: xkbtoscan.h 111770 2025-11-17 21:13:30Z knut.osmundsen@oracle.com $ */
+/* $Id: xkbtoscan.h 111772 2025-11-17 22:22:27Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBox/Frontends/Common - X11 keyboard driver translation tables (XT scan
  *                         code mappings for XKB key names).
@@ -42,7 +42,7 @@ struct
 {
     const char cszName[XKB_NAME_SIZE];
     unsigned uScan;
-} xkbMap[] =
+} const xkbMap[] =
 {
     { { 'E', 'S', 'C',  0  }, 0x1 },
     { { 'A', 'E', '0', '1' }, 0x2 },
