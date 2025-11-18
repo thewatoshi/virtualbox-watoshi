@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# $Id: virtual_test_sheriff.py 111194 2025-10-01 09:07:33Z alexander.eichner@oracle.com $
+# $Id: virtual_test_sheriff.py 111782 2025-11-18 08:41:25Z knut.osmundsen@oracle.com $
 # pylint: disable=line-too-long
 
 """
@@ -45,7 +45,7 @@ terms and conditions of either the GPL or the CDDL or both.
 
 SPDX-License-Identifier: GPL-3.0-only OR CDDL-1.0
 """
-__version__ = "$Revision: 111194 $"
+__version__ = "$Revision: 111782 $"
 
 
 # Standard python imports
@@ -87,7 +87,10 @@ from testmanager.config                     import g_ksSmtpHost, g_kcSmtpPort, g
 
 # Python 3 hacks:
 if sys.version_info[0] >= 3:
-    xrange = range; # pylint: disable=redefined-builtin,invalid-name
+    xrange = range;     # pylint: disable=redefined-builtin,invalid-name
+else:
+    xrange = xrange;    # pylint: disable=redefined-builtin,invalid-name,self-assigning-variable
+
 
 
 class VirtualTestSheriffCaseFile(object):
@@ -350,7 +353,7 @@ class VirtualTestSheriff(object): # pylint: disable=too-few-public-methods
 
         if self.oConfig.sLogFile:
             self.oLogFile = open(self.oConfig.sLogFile, "a");   # pylint: disable=consider-using-with,unspecified-encoding
-            self.oLogFile.write('VirtualTestSheriff: $Revision: 111194 $ \n');
+            self.oLogFile.write('VirtualTestSheriff: $Revision: 111782 $ \n');
 
 
     def eprint(self, sText):
@@ -765,7 +768,7 @@ class VirtualTestSheriff(object): # pylint: disable=too-few-public-methods
         for idTestResult, tReason in dReasonForResultId.items():
             oFailureReason = self.getFailureReason(tReason);
             if oFailureReason is not None:
-                sComment = 'Set by $Revision: 111194 $' # Handy for reverting later.
+                sComment = 'Set by $Revision: 111782 $' # Handy for reverting later.
                 if idTestResult in dCommentForResultId:
                     sComment += ': ' + dCommentForResultId[idTestResult];
 
