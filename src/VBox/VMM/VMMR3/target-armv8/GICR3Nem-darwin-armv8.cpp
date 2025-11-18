@@ -1,4 +1,4 @@
-/* $Id: GICR3Nem-darwin-armv8.cpp 111779 2025-11-18 08:34:27Z ramshankar.venkataraman@oracle.com $ */
+/* $Id: GICR3Nem-darwin-armv8.cpp 111783 2025-11-18 08:47:19Z ramshankar.venkataraman@oracle.com $ */
 /** @file
  * GIC - Generic Interrupt Controller Architecture (GIC) - Hypervisor.framework in kernel interface.
  */
@@ -34,12 +34,7 @@
 #include <VBox/gic.h>
 #include <VBox/vmm/pdmdev.h>
 #include <VBox/vmm/pdmgic.h>
-#include <VBox/vmm/cpum.h>
-#include <VBox/vmm/hm.h>
-#include <VBox/vmm/mm.h>
 #include <VBox/vmm/pdmdev.h>
-#include <VBox/vmm/ssm.h>
-#include <VBox/vmm/vm.h>
 
 #include <Hypervisor/Hypervisor.h>
 
