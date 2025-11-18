@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# $Id: db.py 111780 2025-11-18 08:39:38Z knut.osmundsen@oracle.com $
+# $Id: db.py 111789 2025-11-18 12:07:28Z knut.osmundsen@oracle.com $
 
 """
 Test Manager - Database Interface.
@@ -36,7 +36,7 @@ terms and conditions of either the GPL or the CDDL or both.
 
 SPDX-License-Identifier: GPL-3.0-only OR CDDL-1.0
 """
-__version__ = "$Revision: 111780 $"
+__version__ = "$Revision: 111789 $"
 
 
 # Standard python imports.
@@ -54,9 +54,9 @@ from testmanager                        import config;
 if sys.version_info[0] < 3:
     psycopg2.extensions.register_type(psycopg2.extensions.UNICODE);
     psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY);
-    unicode = unicode;  # pylint: disable=redefined-builtin,invalid-name,self-assigning-variable
+    unicode = unicode;  # pylint: disable=redefined-builtin,invalid-name,self-assigning-variable,undefined-variable
 else:
-    unicode = str;      # pylint: disable=redefined-builtin,invalid-name,self-assigning-variable
+    unicode = str;      # pylint: disable=redefined-builtin,invalid-name
 
 
 
