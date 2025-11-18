@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# $Id: vbox.py 111531 2025-11-03 19:26:02Z klaus.espenlaub@oracle.com $
+# $Id: vbox.py 111780 2025-11-18 08:39:38Z knut.osmundsen@oracle.com $
 # pylint: disable=too-many-lines
 
 """
@@ -37,7 +37,7 @@ terms and conditions of either the GPL or the CDDL or both.
 
 SPDX-License-Identifier: GPL-3.0-only OR CDDL-1.0
 """
-__version__ = "$Revision: 111531 $"
+__version__ = "$Revision: 111780 $"
 
 # pylint: disable=unnecessary-semicolon
 
@@ -68,8 +68,12 @@ from testdriver import vboxtestvms;
 
 # Python 3 hacks:
 if sys.version_info[0] >= 3:
-    xrange = range; # pylint: disable=redefined-builtin,invalid-name
-    long = int;     # pylint: disable=redefined-builtin,invalid-name
+    xrange = range;     # pylint: disable=redefined-builtin,invalid-name
+    long = int;         # pylint: disable=redefined-builtin,invalid-name
+else:
+    xrange = xrange;    # pylint: disable=redefined-builtin,invalid-name,self-assigning-variable
+    long = long;        # pylint: disable=redefined-builtin,invalid-name,self-assigning-variable
+
 
 #
 # Exception and Error Unification Hacks.

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# $Id: wuibase.py 111778 2025-11-18 08:20:37Z knut.osmundsen@oracle.com $
+# $Id: wuibase.py 111780 2025-11-18 08:39:38Z knut.osmundsen@oracle.com $
 
 """
 Test Manager Web-UI - Base Classes.
@@ -36,7 +36,7 @@ terms and conditions of either the GPL or the CDDL or both.
 
 SPDX-License-Identifier: GPL-3.0-only OR CDDL-1.0
 """
-__version__ = "$Revision: 111778 $"
+__version__ = "$Revision: 111780 $"
 
 
 # Standard python imports.
@@ -54,8 +54,11 @@ from testmanager.core.useraccount import UserAccountLogic
 
 # Python 3 hacks:
 if sys.version_info[0] >= 3:
-    unicode = str;  # pylint: disable=redefined-builtin,invalid-name
-    long = int;     # pylint: disable=redefined-builtin,invalid-name
+    unicode = str;     # pylint: disable=redefined-builtin,invalid-name
+    long = int;        # pylint: disable=redefined-builtin,invalid-name
+else:
+    unicode = unicode; # pylint: disable=redefined-builtin,invalid-name,self-assigning-variable
+    long = long;       # pylint: disable=redefined-builtin,invalid-name,self-assigning-variable
 
 
 class WuiException(TMExceptionBase):

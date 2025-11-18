@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# $Id: txsclient.py 111443 2025-10-18 17:25:21Z alexander.eichner@oracle.com $
+# $Id: txsclient.py 111780 2025-11-18 08:39:38Z knut.osmundsen@oracle.com $
 # pylint: disable=too-many-lines
 
 """
@@ -36,7 +36,7 @@ terms and conditions of either the GPL or the CDDL or both.
 
 SPDX-License-Identifier: GPL-3.0-only OR CDDL-1.0
 """
-__version__ = "$Revision: 111443 $"
+__version__ = "$Revision: 111780 $"
 
 # Standard Python imports.
 import array;
@@ -58,7 +58,9 @@ from testdriver.base    import TdTaskBase;
 
 # Python 3 hacks:
 if sys.version_info[0] >= 3:
-    long = int;     # pylint: disable=redefined-builtin,invalid-name
+    long = int;         # pylint: disable=redefined-builtin,invalid-name
+else:
+    long = long;        # pylint: disable=redefined-builtin,invalid-name,self-assigning-variable
 
 #
 # Helpers for decoding data received from the TXS.

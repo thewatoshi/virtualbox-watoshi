@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# $Id: tdAudioTest.py 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $
+# $Id: tdAudioTest.py 111780 2025-11-18 08:39:38Z knut.osmundsen@oracle.com $
 
 """
 AudioTest test driver which invokes the VKAT (Validation Kit Audio Test)
@@ -40,7 +40,7 @@ terms and conditions of either the GPL or the CDDL or both.
 
 SPDX-License-Identifier: GPL-3.0-only OR CDDL-1.0
 """
-__version__ = "$Revision: 110684 $"
+__version__ = "$Revision: 111780 $"
 
 # Standard Python imports.
 from datetime import datetime
@@ -64,7 +64,6 @@ from testdriver import vboxcon;
 from testdriver import vboxtestvms
 from common     import utils;
 
-# pylint: disable=unnecessary-semicolon
 
 class tdDebugSettings(object):
     """

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# $Id: failurecategory.py 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $
+# $Id: failurecategory.py 111780 2025-11-18 08:39:38Z knut.osmundsen@oracle.com $
 
 """
 Test Manager - Failure Categories.
@@ -36,7 +36,7 @@ terms and conditions of either the GPL or the CDDL or both.
 
 SPDX-License-Identifier: GPL-3.0-only OR CDDL-1.0
 """
-__version__ = "$Revision: 110684 $"
+__version__ = "$Revision: 111780 $"
 
 
 # Standard Python imports.
@@ -49,7 +49,9 @@ from testmanager.core.useraccount   import UserAccountLogic;
 
 # Python 3 hacks:
 if sys.version_info[0] >= 3:
-    xrange = range; # pylint: disable=redefined-builtin,invalid-name
+    xrange = range;  # pylint: disable=redefined-builtin,invalid-name
+else:
+    xrange = xrange; # pylint: disable=redefined-builtin,invalid-name,self-assigning-variable
 
 
 class FailureCategoryData(ModelDataBase):

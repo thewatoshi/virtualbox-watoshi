@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# $Id: vboxtestfileset.py 111259 2025-10-06 12:09:03Z alexander.eichner@oracle.com $
+# $Id: vboxtestfileset.py 111780 2025-11-18 08:39:38Z knut.osmundsen@oracle.com $
 # pylint: disable=too-many-lines
 
 """
@@ -37,7 +37,7 @@ terms and conditions of either the GPL or the CDDL or both.
 
 SPDX-License-Identifier: GPL-3.0-only OR CDDL-1.0
 """
-__version__ = "$Revision: 111259 $"
+__version__ = "$Revision: 111780 $"
 
 
 # Standard Python imports.
@@ -51,7 +51,9 @@ from testdriver import testfileset;
 
 # Python 3 hacks:
 if sys.version_info[0] >= 3:
-    xrange = range; # pylint: disable=redefined-builtin,invalid-name
+    xrange = range;     # pylint: disable=redefined-builtin,invalid-name
+else:
+    xrange = xrange;    # pylint: disable=redefined-builtin,invalid-name,self-assigning-variable
 
 
 class TestFileSet(testfileset.TestFileSet):

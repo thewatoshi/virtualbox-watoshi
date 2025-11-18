@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# $Id: testresults.py 111164 2025-09-29 11:41:22Z alexander.eichner@oracle.com $
+# $Id: testresults.py 111780 2025-11-18 08:39:38Z knut.osmundsen@oracle.com $
 # pylint: disable=too-many-lines
 
 ## @todo Rename this file to testresult.py!
@@ -39,7 +39,7 @@ terms and conditions of either the GPL or the CDDL or both.
 
 SPDX-License-Identifier: GPL-3.0-only OR CDDL-1.0
 """
-__version__ = "$Revision: 111164 $"
+__version__ = "$Revision: 111780 $"
 
 
 # Standard python imports.
@@ -65,6 +65,8 @@ from testmanager.core.useraccount           import UserAccountLogic;
 # Python 3 hacks:
 if sys.version_info[0] >= 3:
     long = int;     # pylint: disable=redefined-builtin,invalid-name
+else:
+    long = long;    # pylint: disable=redefined-builtin,invalid-name,self-assigning-variable
 
 
 class TestResultData(ModelDataBase):

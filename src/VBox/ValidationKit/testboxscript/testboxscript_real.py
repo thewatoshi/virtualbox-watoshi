@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# $Id: testboxscript_real.py 111283 2025-10-08 06:51:32Z alexander.eichner@oracle.com $
+# $Id: testboxscript_real.py 111780 2025-11-18 08:39:38Z knut.osmundsen@oracle.com $
 
 """
 TestBox Script - main().
@@ -37,7 +37,7 @@ terms and conditions of either the GPL or the CDDL or both.
 
 SPDX-License-Identifier: GPL-3.0-only OR CDDL-1.0
 """
-__version__ = "$Revision: 111283 $"
+__version__ = "$Revision: 111780 $"
 
 
 # Standard python imports.
@@ -70,7 +70,9 @@ from testboxscript      import TBS_EXITCODE_SYNTAX, TBS_EXITCODE_FAILURE;
 
 # Python 3 hacks:
 if sys.version_info[0] >= 3:
-    long = int;     # pylint: disable=redefined-builtin,invalid-name
+    long = int;         # pylint: disable=redefined-builtin,invalid-name
+else:
+    long = long;        # pylint: disable=redefined-builtin,invalid-name,self-assigning-variable
 
 
 class TestBoxScriptException(Exception):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # pylint: disable=too-many-lines
-# $Id: tdAddGuestCtrl.py 111447 2025-10-19 07:26:03Z alexander.eichner@oracle.com $
+# $Id: tdAddGuestCtrl.py 111780 2025-11-18 08:39:38Z knut.osmundsen@oracle.com $
 
 """
 VirtualBox Validation Kit - Guest Control Tests.
@@ -38,7 +38,7 @@ terms and conditions of either the GPL or the CDDL or both.
 
 SPDX-License-Identifier: GPL-3.0-only OR CDDL-1.0
 """
-__version__ = "$Revision: 111447 $"
+__version__ = "$Revision: 111780 $"
 
 # Standard Python imports.
 import errno
@@ -68,8 +68,13 @@ from common     import utils;
 
 # Python 3 hacks:
 if sys.version_info[0] >= 3:
-    long = int      # pylint: disable=redefined-builtin,invalid-name
-    xrange = range; # pylint: disable=redefined-builtin,invalid-name
+    long = int          # pylint: disable=redefined-builtin,invalid-name
+    xrange = range;     # pylint: disable=redefined-builtin,invalid-name
+else:
+    xrange = xrange;    # pylint: disable=redefined-builtin,invalid-name,self-assigning-variable
+    long = long;        # pylint: disable=redefined-builtin,invalid-name,self-assigning-variable
+
+
 
 def limitString(sString, cLimit = 128):
     """
