@@ -1,4 +1,4 @@
-/* $Id: UIMachineSettingsDisplay.cpp 111788 2025-11-18 11:38:21Z sergey.dubov@oracle.com $ */
+/* $Id: UIMachineSettingsDisplay.cpp 111852 2025-11-24 14:34:05Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIMachineSettingsDisplay class implementation.
  */
@@ -693,11 +693,6 @@ void UIMachineSettingsDisplay::polishPage()
            ((isMachineOffline() || isMachineSaved()))
         || (isMachineOnline() && !m_pCache->base().m_fRecordingEnabled);
     m_pEditorRecordingSettings->setOptionsAvailable(fIsRecordingOptionsEnabled);
-    // Recording screens option should be enabled only if:
-    // 1. Machine is in *any* valid state.
-    const bool fIsRecordingScreenOptionsEnabled =
-        isMachineInValidMode();
-    m_pEditorRecordingSettings->setScreenOptionsAvailable(fIsRecordingScreenOptionsEnabled);
 }
 
 void UIMachineSettingsDisplay::sltHandleMonitorCountChange()

@@ -1,4 +1,4 @@
-/* $Id: UIRecordingSettingsEditor.h 111787 2025-11-18 11:20:58Z sergey.dubov@oracle.com $ */
+/* $Id: UIRecordingSettingsEditor.h 111852 2025-11-24 14:34:05Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIRecordingSettingsEditor class declaration.
  */
@@ -65,8 +65,6 @@ public:
 
     /** Defines whether options are @a fAvailable. */
     void setOptionsAvailable(bool fAvailable);
-    /** Defines whether screen options are @a fAvailable. */
-    void setScreenOptionsAvailable(bool fAvailable);
 
     /** Defines @a enmMode. */
     void setMode(UISettingsDefs::RecordingMode enmMode);
@@ -175,8 +173,6 @@ private:
 
         /** Holds whether options are available. */
         bool  m_fOptionsAvailable;
-        /** Holds whether screen options are available. */
-        bool  m_fScreenOptionsAvailable;
 
         /** Holds the list of supported modes. */
         QVector<UISettingsDefs::RecordingMode>  m_supportedValues;

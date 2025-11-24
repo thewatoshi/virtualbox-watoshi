@@ -1,4 +1,4 @@
-/* $Id: UIRecordingSettingsEditor.cpp 111794 2025-11-18 14:09:45Z sergey.dubov@oracle.com $ */
+/* $Id: UIRecordingSettingsEditor.cpp 111852 2025-11-24 14:34:05Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIRecordingSettingsEditor class implementation.
  */
@@ -54,7 +54,6 @@ UIRecordingSettingsEditor::UIRecordingSettingsEditor(QWidget *pParent /* = 0 */)
     : UIEditor(pParent)
     , m_fFeatureEnabled(false)
     , m_fOptionsAvailable(false)
-    , m_fScreenOptionsAvailable(false)
     , m_enmMode(UISettingsDefs::RecordingMode_Max)
     , m_iFrameWidth(0)
     , m_iFrameHeight(0)
@@ -128,17 +127,6 @@ void UIRecordingSettingsEditor::setOptionsAvailable(bool fAvailable)
     if (m_fOptionsAvailable != fAvailable)
     {
         m_fOptionsAvailable = fAvailable;
-        updateWidgetAvailability();
-    }
-}
-
-void UIRecordingSettingsEditor::setScreenOptionsAvailable(bool fAvailable)
-{
-    /* Update cached value and
-     * widget availability if value has changed: */
-    if (m_fScreenOptionsAvailable != fAvailable)
-    {
-        m_fScreenOptionsAvailable = fAvailable;
         updateWidgetAvailability();
     }
 }
@@ -1027,8 +1015,8 @@ void UIRecordingSettingsEditor::updateWidgetAvailability()
 
     m_pLabelSizeHint->setEnabled(fFeatureEnabled && m_fOptionsAvailable && fRecordVideo);
 
-    m_pLabelScreens->setEnabled(fFeatureEnabled && m_fScreenOptionsAvailable && fRecordVideo);
-    m_pScrollerScreens->setEnabled(fFeatureEnabled && m_fScreenOptionsAvailable && fRecordVideo);
+    m_pLabelScreens->setEnabled(fFeatureEnabled && m_fOptionsAvailable && fRecordVideo);
+    m_pScrollerScreens->setEnabled(fFeatureEnabled && m_fOptionsAvailable && fRecordVideo);
 }
 
 void UIRecordingSettingsEditor::updateRecordingFileSizeHint()
