@@ -1,4 +1,4 @@
-/* $Id: UIRecordingSettingsEditor.h 111878 2025-11-26 09:42:09Z serkan.bayraktar@oracle.com $ */
+/* $Id: UIRecordingSettingsEditor.h 111883 2025-11-26 11:07:45Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIRecordingSettingsEditor class declaration.
  */
@@ -116,7 +116,6 @@ public:
     /** Returns enabled screens. */
     QVector<bool> screens() const;
 
-
 private slots:
 
     /** Handles translation event. */
@@ -178,11 +177,6 @@ private:
         QVector<UISettingsDefs::RecordingMode>  m_supportedValues;
         /** Holds the mode. */
         UISettingsDefs::RecordingMode           m_enmMode;
-
-        /** Holds the folder. */
-        QString  m_strFolder;
-        /** Holds the file path. */
-        QString  m_strFilePath;
 
         /** Holds the frame width. */
         int                      m_iFrameWidth;
