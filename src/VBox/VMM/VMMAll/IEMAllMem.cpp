@@ -1,4 +1,4 @@
-/* $Id: IEMAllMem.cpp 111873 2025-11-26 08:35:38Z knut.osmundsen@oracle.com $ */
+/* $Id: IEMAllMem.cpp 111874 2025-11-26 08:50:23Z knut.osmundsen@oracle.com $ */
 /** @file
  * IEM - Interpreted Execution Manager - Common Memory Routines.
  */
@@ -476,7 +476,9 @@ VBOXSTRICTRC iemMemBounceBufferMapCrossPage(PVMCPUCC pVCpu, int iMemMap, void **
     if (cbMem < sizeof(ICORE(pVCpu).aBounceBuffers[iMemMap].ab))
         memset(pbBuf + cbMem, 0xaa, sizeof(ICORE(pVCpu).aBounceBuffers[iMemMap].ab) - cbMem);
 #endif
+#if !defined(IN_RING0) || !defined(__GNUC__) /** @todo fix the macro... -Winvalid-offsetof issue. */
     AssertCompileMemberAlignment(VMCPUCC, IEM_CORE_MEMBER.aBounceBuffers, 64);
+#endif
 
     /*
      * Commit the bounce buffer entry.
