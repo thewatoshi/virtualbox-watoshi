@@ -1,4 +1,4 @@
-/* $Id: UIRecordingSettingsEditor.h 111884 2025-11-26 11:12:11Z sergey.dubov@oracle.com $ */
+/* $Id: UIRecordingSettingsEditor.h 111885 2025-11-26 11:43:31Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIRecordingSettingsEditor class declaration.
  */
@@ -191,8 +191,6 @@ private:
         int                      m_iFrameWidth;
         /** Holds the frame height. */
         int                      m_iFrameHeight;
-        /** Holds the frame rate. */
-        int                      m_iFrameRate;
         /** Holds the bit rate. */
         int                      m_iBitRate;
         /** Holds the video quality. */
