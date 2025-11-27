@@ -1,4 +1,4 @@
-/* $Id: HMR0SVM-x86.cpp 111859 2025-11-25 07:57:47Z alexander.eichner@oracle.com $ */
+/* $Id: HMR0SVM-x86.cpp 111929 2025-11-27 15:44:31Z alexander.eichner@oracle.com $ */
 /** @file
  * HM SVM (AMD-V) - Host Context Ring-0.
  */
@@ -1701,11 +1701,7 @@ static int hmR0SvmExportGuestCR4(PVMCPUCC pVCpu, PSVMVMCB pVmcb)
 
             case PGMMODE_AMD64:         /* 64-bit AMD paging (long mode). */
             case PGMMODE_AMD64_NX:      /* 64-bit AMD paging (long mode) with NX enabled. */
-#ifdef VBOX_WITH_64_BITS_GUESTS
                 break;
-#else
-                return VERR_PGM_UNSUPPORTED_SHADOW_PAGING_MODE;
-#endif
 
             default:                    /* shut up gcc */
                 return VERR_PGM_UNSUPPORTED_SHADOW_PAGING_MODE;
