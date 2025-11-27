@@ -1,4 +1,4 @@
-/* $Id: UIRecordingVideoFrameRateEditor.cpp 111914 2025-11-27 11:37:23Z serkan.bayraktar@oracle.com $ */
+/* $Id: UIRecordingVideoFrameRateEditor.cpp 111921 2025-11-27 12:51:44Z serkan.bayraktar@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIRecordingVideoFrameRateEditor class implementation.
  */
@@ -120,7 +120,7 @@ void UIRecordingVideoFrameRateEditor::prepareWidgets()
     if (m_pLayout)
     {
         m_pLayout->setContentsMargins(0, 0, 0, 0);
-        m_pLayout->setColumnStretch(2, 1); // strech between min and max labels
+        m_pLayout->setColumnStretch(2, 1); // stretch between min and max labels
 
         /* Prepare label: */
         m_pLabel = new QLabel(this);

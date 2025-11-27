@@ -1,4 +1,4 @@
-/* $Id: UIRecordingVideoBitrateEditor.cpp 111918 2025-11-27 12:37:02Z serkan.bayraktar@oracle.com $ */
+/* $Id: UIRecordingVideoBitrateEditor.cpp 111921 2025-11-27 12:51:44Z serkan.bayraktar@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIRecordingVideoBitrateEditor class implementation.
  */
@@ -94,27 +94,11 @@ void UIRecordingVideoBitrateEditor::sltRetranslateUI()
 void UIRecordingVideoBitrateEditor::sltHandleBitRateSliderChange()
 {
     emit sigBitrateQualitySliderChanged();
-    // /* Calculate/apply proposed bit rate: */
-    // m_pSpinboxBitRate->blockSignals(true);
-    // m_pSpinboxBitRate->setValue(calculateBitRate(m_pSpinboxFrameWidth->value(),
-    //                                              m_pSpinboxFrameHeight->value(),
-    //                                              m_pEditorFrameRate->frameRate(),
-    //                                              m_pSliderQuality->value()));
-    // m_pSpinboxBitRate->blockSignals(false);
-    // updateRecordingFileSizeHint();
 }
 
 void UIRecordingVideoBitrateEditor::sltHandleBitRateSpinboxChange()
 {
     emit sigBitrateChanged(m_pSpinboxBitRate->value());
-    // /* Calculate/apply proposed quality: */
-    // m_pSliderQuality->blockSignals(true);
-    // m_pSliderQuality->setValue(calculateQuality(m_pSpinboxFrameWidth->value(),
-    //                                             m_pSpinboxFrameHeight->value(),
-    //                                             m_pEditorFrameRate->frameRate(),
-    //                                             m_pSpinboxBitRate->value()));
-    // m_pSliderQuality->blockSignals(false);
-    // updateRecordingFileSizeHint();
 }
 
 void UIRecordingVideoBitrateEditor::prepare()
