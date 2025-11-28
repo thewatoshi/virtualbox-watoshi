@@ -1,4 +1,4 @@
-/* $Id: VBoxClipboard.cpp 111731 2025-11-14 12:02:32Z knut.osmundsen@oracle.com $ */
+/* $Id: VBoxClipboard.cpp 111941 2025-11-28 17:42:23Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBoxClipboard - Shared clipboard, Windows Guest Implementation.
  */
@@ -425,7 +425,7 @@ static LRESULT vbtrShClWndProcWorker(PSHCLCONTEXT pCtx, HWND hwnd, UINT msg, WPA
                 }
             }
 
-            if (RT_FAILURE(rc))
+            if (RT_FAILURE(rc) && rc != VERR_ACCESS_DENIED /* mode */)
                 VBoxTrayError("Shared Clipboard: WM_CLIPBOARDUPDATE failed with %Rrc\n", rc);
 
             break;
