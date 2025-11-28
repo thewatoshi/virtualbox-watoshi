@@ -1,4 +1,4 @@
-/* $Id: QITableView.cpp 111920 2025-11-27 12:50:50Z sergey.dubov@oracle.com $ */
+/* $Id: QITableView.cpp 111935 2025-11-28 15:36:02Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - Qt extensions: QITableView class implementation.
  */
@@ -441,6 +441,14 @@ void QITableView::currentChanged(const QModelIndex &current, const QModelIndex &
     emit sigCurrentChanged(current, previous);
     /* Call to base-class: */
     QTableView::currentChanged(current, previous);
+}
+
+void QITableView::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+{
+    /* Notify listeners about index changed: */
+    emit sigSelectionChanged(selected, deselected);
+    /* Call to base-class: */
+    QTableView::selectionChanged(selected, deselected);
 }
 
 void QITableView::sltEditorCreated(QWidget *pEditor, const QModelIndex &index)

@@ -1,4 +1,4 @@
-/* $Id: UIVMActivityOverviewModelView.h 111205 2025-10-01 13:08:24Z serkan.bayraktar@oracle.com $ */
+/* $Id: UIVMActivityOverviewModelView.h 111935 2025-11-28 15:36:02Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIVMActivityOverviewModelView class declaration.
  */
@@ -72,10 +72,6 @@ class UIVMActivityOverviewTableView : public QITableView
 {
     Q_OBJECT;
 
-signals:
-
-    void sigSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
-
 public:
 
     UIVMActivityOverviewTableView(QWidget *pParent);
@@ -87,7 +83,6 @@ public:
 private:
 
     virtual void resizeEvent(QResizeEvent *pEvent) RT_OVERRIDE;
-    virtual void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected) RT_OVERRIDE;
     virtual void mousePressEvent(QMouseEvent *pEvent) RT_OVERRIDE;
     /** Resizes all the columns in response to resizeEvent. Columns cannot be narrower than m_minimumColumnWidths values. */
     void resizeHeaders();

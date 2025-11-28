@@ -1,4 +1,4 @@
-/* $Id: UIVMActivityOverviewModelView.cpp 111205 2025-10-01 13:08:24Z serkan.bayraktar@oracle.com $ */
+/* $Id: UIVMActivityOverviewModelView.cpp 111935 2025-11-28 15:36:02Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIVMActivityOverviewModelView class implementation.
  */
@@ -677,12 +677,6 @@ void UIVMActivityOverviewTableView::resizeEvent(QResizeEvent *pEvent)
 {
     resizeHeaders();
     QTableView::resizeEvent(pEvent);
-}
-
-void UIVMActivityOverviewTableView::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
-{
-    emit sigSelectionChanged(selected, deselected);
-    QTableView::selectionChanged(selected, deselected);
 }
 
 void UIVMActivityOverviewTableView::mousePressEvent(QMouseEvent *pEvent)
