@@ -1,4 +1,4 @@
-# $Id: Makefile.kmk 111958 2025-12-01 12:45:52Z alexander.eichner@oracle.com $
+# $Id: Makefile.kmk 111959 2025-12-01 12:46:40Z alexander.eichner@oracle.com $
 ## @file
 # Some hacks to allow syntax and prerequisite include checking of headers.
 # This makefile doesn't and shouldn't build successfully.
@@ -178,7 +178,8 @@ ifneq ($(KBUILD_TARGET_ARCH),amd64)
  	VBox/vmm/dbgfcorefmt.h \
  	VBox/vmm/gvm.h \
  	VBox/vmm/uvm.h \
- 	VBox/vmm/vm.h
+ 	VBox/vmm/vm.h \
+ 	VBox/vmm/vmcc.h
 endif
 # ARM only headers.
 ifn1of ($(KBUILD_TARGET_ARCH), arm32 arm64)
