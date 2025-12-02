@@ -1,4 +1,4 @@
-/* $Id: hardenedmain.cpp 111976 2025-12-02 15:01:44Z knut.osmundsen@oracle.com $ */
+/* $Id: hardenedmain.cpp 111977 2025-12-02 15:13:50Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBox Qt GUI - Hardened main().
  */
@@ -90,8 +90,8 @@ int main(int argc, char **argv, char **envp)
     for (int i = 1; i < argc && cOptionsLeft > 0; ++i)
     {
         int iMatch;
-        if (   (iMatch = MyStrCmp(argv[i], "--startvm")) >= 0
-            || (iMatch = MyStrCmp(argv[i], "-startvm"))  >= 0)
+        if (   (iMatch = MyStrMatchOptWithValue(argv[i], "--startvm")) >= 0
+            || (iMatch = MyStrMatchOptWithValue(argv[i], "-startvm"))  >= 0)
         {
             cOptionsLeft -= fStartVM == false;
             fStartVM = true;
