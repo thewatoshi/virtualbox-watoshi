@@ -1,4 +1,4 @@
-# $Id: Makefile.kmk 111661 2025-11-12 12:00:49Z knut.osmundsen@oracle.com $
+# $Id: Makefile.kmk 112026 2025-12-04 19:01:28Z alexander.eichner@oracle.com $
 ## @file
 # Sub-Makefile for the IPRT.
 #
@@ -1188,6 +1188,7 @@ RuntimeBaseR3_SOURCES.linux = \
 	r3/posix/allocex-r3-posix.cpp \
 	r3/linux/RTThreadGetNativeState-linux.cpp \
 	r3/linux/fileaio-linux.cpp \
+	r3/linux/init-linux.cpp \
 	r3/linux/ioqueue-iouringfile-provider.cpp \
 	r3/linux/krnlmod-linux.cpp \
 	r3/linux/mp-linux.cpp \

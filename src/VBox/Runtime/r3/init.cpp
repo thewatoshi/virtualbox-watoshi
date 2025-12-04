@@ -1,4 +1,4 @@
-/* $Id: init.cpp 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: init.cpp 112026 2025-12-04 19:01:28Z alexander.eichner@oracle.com $ */
 /** @file
  * IPRT - Init Ring-3.
  */
@@ -115,7 +115,7 @@ RTDATADECL(bool) g_fRTAlignmentChecks = false;
 
 
 #if defined(RT_OS_DARWIN) || defined(RT_OS_FREEBSD) || defined(RT_OS_NETBSD) || defined(RT_OS_HAIKU) \
- || defined(RT_OS_LINUX)  || defined(RT_OS_OS2)     || defined(RT_OS_SOLARIS) /** @todo add host init hooks everywhere. */
+ || defined(RT_OS_OS2)     || defined(RT_OS_SOLARIS) /** @todo add host init hooks everywhere. */
 /* Stubs */
 DECLHIDDEN(int)  rtR3InitNativeFirst(uint32_t fFlags)     { RT_NOREF_PV(fFlags); return VINF_SUCCESS; }
 DECLHIDDEN(int)  rtR3InitNativeFinal(uint32_t fFlags)     { RT_NOREF_PV(fFlags); return VINF_SUCCESS; }
