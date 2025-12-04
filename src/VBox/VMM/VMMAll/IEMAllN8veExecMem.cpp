@@ -1,4 +1,4 @@
-/* $Id: IEMAllN8veExecMem.cpp 111870 2025-11-25 15:04:16Z knut.osmundsen@oracle.com $ */
+/* $Id: IEMAllN8veExecMem.cpp 112011 2025-12-04 11:19:40Z knut.osmundsen@oracle.com $ */
 /** @file
  * IEM - Native Recompiler, Executable Memory Allocator.
  */
@@ -1880,7 +1880,7 @@ iemExecMemAllocatorInitAndRegisterUnwindInfoForChunk(PVMCPUCC pVCpu, PIEMEXECMEM
         = pSymFile->aPhdrs[i].p_paddr   = 0;
     pSymFile->aPhdrs[i].p_filesz         /* Size of segment in file. */
         = pSymFile->aPhdrs[i].p_memsz   = pExecMemAllocator->cbChunk - offSymFileInChunk;
-    pSymFile->aPhdrs[i].p_align         = HOST_PAGE_SIZE;
+    pSymFile->aPhdrs[i].p_align         = RTSystemGetPageSize(); //HOST_PAGE_SIZE;
     i++;
     /* The .dynamic segment. */
     pSymFile->aPhdrs[i].p_type          = PT_DYNAMIC;
