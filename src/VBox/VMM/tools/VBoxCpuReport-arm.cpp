@@ -1,4 +1,4 @@
-/* $Id: VBoxCpuReport-arm.cpp 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: VBoxCpuReport-arm.cpp 112014 2025-12-04 11:51:17Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBoxCpuReport - Produces the basis for a CPU DB entry, x86 specifics.
  */
@@ -807,6 +807,8 @@ int produceCpuReport(void)
      */
     if (!g_pszCpuNameOverride)
         pszCpuName = g_aVariations[0].pszName;
+    if (!pszCpuName)
+        pszCpuName = ""; /* prevent crashing */
     const char * const pszCpuDesc = strlen(szDetectedCpuName) > strlen(pszCpuName) ? RTStrStrip(szDetectedCpuName)
                                   : g_cVariations == 1 ? g_aVariations[0].pszFullName : pszCpuName;
 
