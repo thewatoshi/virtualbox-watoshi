@@ -1,4 +1,4 @@
-/* $Id: Disasm.cpp 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: Disasm.cpp 112043 2025-12-05 13:19:26Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBox disassembler - Disassemble and optionally format.
  */
@@ -31,20 +31,12 @@
 *********************************************************************************************************************************/
 #define LOG_GROUP LOG_GROUP_DIS
 #include <VBox/dis.h>
-#include <iprt/errcore.h>
 #include <iprt/assert.h>
+#include <iprt/errcore.h>
+#include <iprt/param.h>
 #include <iprt/string.h>
 #include "DisasmInternal.h"
 
-
-/*********************************************************************************************************************************
-*   Defined Constants And Macros                                                                                                 *
-*********************************************************************************************************************************/
-
-
-/*********************************************************************************************************************************
-*   Internal Functions                                                                                                           *
-*********************************************************************************************************************************/
 
 /**
  * @interface_method_impl{FNDISREADBYTES, The default byte reader callber.}
@@ -52,11 +44,7 @@
 static DECLCALLBACK(int) disReadBytesDefault(PDISSTATE pDis, uint8_t offInstr, uint8_t cbMinRead, uint8_t cbMaxRead)
 {
     uint8_t const  *pbSrc        = (uint8_t const *)(uintptr_t)pDis->uInstrAddr + offInstr;
-#ifdef IN_RING0
-    size_t  const   cbLeftOnPage = (uintptr_t)pbSrc & PAGE_OFFSET_MASK;
-#else
-    size_t  const   cbLeftOnPage = (uintptr_t)pbSrc & (uintptr_t)(_4K - 1); /* Minimum page size for safety. */
-#endif
+    size_t  const   cbLeftOnPage = (uintptr_t)pbSrc & (uintptr_t)RT_MIN_PAGE_OFFSET_MASK; /* Minimum page size for safety. */
     uint8_t         cbToRead     = cbLeftOnPage >= cbMaxRead
                                  ? cbMaxRead
                                  : cbLeftOnPage <= cbMinRead
