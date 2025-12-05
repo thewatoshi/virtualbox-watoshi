@@ -1,4 +1,4 @@
-/* $Id: SUPDrv.cpp 111133 2025-09-26 07:01:31Z ramshankar.venkataraman@oracle.com $ */
+/* $Id: SUPDrv.cpp 112031 2025-12-05 01:30:45Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBoxDrv - The VirtualBox Support Driver - Common code.
  */
@@ -7436,9 +7436,11 @@ static void supdrvIOCtl_ArmGetSysRegsOnCpu(PSUPARMGETSYSREGS pReq, uint32_t cons
     /** @todo FEAT_ETE: READ_SYS_REG_NAMED(2, 1, 0,  4, 6, TRCIDR12);  */
     /** @todo FEAT_ETE: READ_SYS_REG_NAMED(2, 1, 0,  5, 6, TRCIDR13);  */
 
+# if 0 /** @todo this crashes on DGX  */
     bool const fFeatEte = ((fDfr0 >> 4) & 0xfU) >= 1U; /* FEAT_ETE <-> ID_AA64DFR0_EL1.TraceVer >= 1 */
     if (fFeatEte)
         READ_SYS_REG_NAMED(2, 1, 7, 15, 6, TRCDEVARCH);
+# endif        
 
     /*
      * Collections of other read-only registers.
