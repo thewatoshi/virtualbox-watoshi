@@ -1,4 +1,4 @@
-/* $Id: ARM_ARM_Cortex_X925_A725.h 112033 2025-12-05 01:38:20Z knut.osmundsen@oracle.com $ */
+/* $Id: ARM_ARM_Cortex_X925_A725.h 112034 2025-12-05 01:44:37Z knut.osmundsen@oracle.com $ */
 /** @file
  * CPU database entry "ARM_Cortex_X925_A725".
  * Generated at 2025-12-05T01:36:04Z by VBoxCpuReport v7.2.97r171671 on linux.arm64.
@@ -139,6 +139,7 @@ static CPUMDBENTRYARM const g_Entry_ARM_ARM_Cortex_X925_A725 =
         /*.enmVendor    = */ CPUMCPUVENDOR_ARM,
         /*.enmMicroarch = */ kCpumMicroarch_Arm_Chaberton,
         /*.fFlags       = */ 0,
+        /*.enmEntryType = */ CPUMDBENTRYTYPE_ARM,
     },
     /*.paSysRegCmnVals  = */ NULL_ALONE(g_aCmnSysRegVals_ARM_ARM_Cortex_X925_A725),
     /*.cSysRegCmnVals   = */ ZERO_ALONE(RT_ELEMENTS(g_aCmnSysRegVals_ARM_ARM_Cortex_X925_A725)),

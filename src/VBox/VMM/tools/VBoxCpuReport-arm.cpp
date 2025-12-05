@@ -1,4 +1,4 @@
-/* $Id: VBoxCpuReport-arm.cpp 112014 2025-12-04 11:51:17Z knut.osmundsen@oracle.com $ */
+/* $Id: VBoxCpuReport-arm.cpp 112034 2025-12-05 01:44:37Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBoxCpuReport - Produces the basis for a CPU DB entry, x86 specifics.
  */
@@ -892,6 +892,7 @@ int produceCpuReport(void)
                    "        /*.enmVendor    = */ CPUMCPUVENDOR_%s,\n"
                    "        /*.enmMicroarch = */ kCpumMicroarch_%s,\n"
                    "        /*.fFlags       = */ %s,\n"
+                   "        /*.enmEntryType = */ CPUMDBENTRYTYPE_ARM,\n"
                    "    },\n"
                    "    /*.paSysRegCmnVals  = */ NULL_ALONE(g_aCmnSysRegVals_%s),\n"
                    "    /*.cSysRegCmnVals   = */ ZERO_ALONE(RT_ELEMENTS(g_aCmnSysRegVals_%s)),\n"
