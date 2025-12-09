@@ -1,4 +1,4 @@
-/* $Id: combined-agnostic.c 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: combined-agnostic.c 112071 2025-12-09 22:01:33Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBoxGuest - Combine a bunch of OS agnostic sources into one compile unit.
  */
@@ -60,6 +60,8 @@
 #include "r0drv/powernotification-r0drv.c"
 #undef LOG_GROUP
 #include "r0drv/generic/semspinmutex-r0drv-generic.c"
+#undef LOG_GROUP
+#include "r0drv/RTR0DbgKrnlInfoGetSymbol.c"
 #undef LOG_GROUP
 #include "common/alloc/alloc.c"
 #undef LOG_GROUP

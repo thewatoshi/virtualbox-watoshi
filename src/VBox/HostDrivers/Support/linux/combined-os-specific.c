@@ -1,4 +1,4 @@
-/* $Id: combined-os-specific.c 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: combined-os-specific.c 112071 2025-12-09 22:01:33Z knut.osmundsen@oracle.com $ */
 /** @file
  * SUPDrv - Combine a bunch of OS specific sources into one compile unit.
  */
@@ -39,6 +39,8 @@
 
 #include "r0drv/linux/alloc-r0drv-linux.c"
 #include "r0drv/linux/assert-r0drv-linux.c"
+#include "r0drv/linux/dbgkrnlinfo-r0drv-linux.c"
+#include "r0drv/linux/fileio-r0drv-linux.c"
 #include "r0drv/linux/initterm-r0drv-linux.c"
 #include "r0drv/linux/memobj-r0drv-linux.c"
 #include "r0drv/linux/memuserkernel-r0drv-linux.c"
