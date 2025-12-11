@@ -1,4 +1,4 @@
-/* $Id: UICloudProfileDetailsWidget.h 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: UICloudProfileDetailsWidget.h 112108 2025-12-11 13:07:04Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UICloudProfileDetailsWidget class declaration.
  */
@@ -151,6 +151,8 @@ protected:
 
     /** Handles editor translation. */
     void retranslateEditor();
+    /** Handles table translation. */
+    void retranslateTable();
     /** Handles buttons translation. */
     void retranslateButtons();
 
