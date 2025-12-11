@@ -1,4 +1,4 @@
-/* $Id: UIShortcutConfigurationEditor.cpp 111993 2025-12-03 13:24:42Z sergey.dubov@oracle.com $ */
+/* $Id: UIShortcutConfigurationEditor.cpp 112110 2025-12-11 17:10:19Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIShortcutConfigurationEditor class implementation.
  */
@@ -30,12 +30,12 @@
 #include <QHeaderView>
 #include <QItemEditorFactory>
 #include <QSortFilterProxyModel>
-#include <QTabWidget>
 #include <QVBoxLayout>
 
 /* GUI includes: */
 #include "QIStyledItemDelegate.h"
 #include "QITableView.h"
+#include "QITabWidget.h"
 #include "UIActionPool.h"
 #include "UICommon.h"
 #include "UIExtraDataManager.h"
@@ -858,7 +858,7 @@ void UIShortcutConfigurationEditor::prepareWidgets()
         pMainLayout->setContentsMargins(0, 0, 0, 0);
 
         /* Prepare tab-widget: */
-        m_pTabWidget = new QTabWidget(this);
+        m_pTabWidget = new QITabWidget(this);
         if (m_pTabWidget)
         {
             /* Prepare 'Manager UI' tab: */

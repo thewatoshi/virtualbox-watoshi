@@ -1,4 +1,4 @@
-/* $Id: QITabWidget.cpp 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: QITabWidget.cpp 112110 2025-12-11 17:10:19Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - Qt extensions: QITabWidget class implementation.
  */
@@ -32,6 +32,14 @@
 QITabWidget::QITabWidget(QWidget *pParent /* = 0 */)
     : QTabWidget(pParent)
 {
+    // WORKAROUND:
+    // Make sure tab-widget takes focus back before tab-switch,
+    // otherwise if some of children had focus before the switch
+    // tab-widget will try to find new focus target, the bad way.
+    // As a result it will force parent scroll-view to scroll to end.
+    // Let's try to apply this globally and wait for complains.
+    setFocusPolicy(Qt::StrongFocus);
+
 #ifdef VBOX_WS_MAC
     // WORKAROUND:
     // I don't know why, but for some languages there is
