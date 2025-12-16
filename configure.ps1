@@ -1,4 +1,4 @@
-# $Id: configure.py.ps1 111996 2025-12-03 15:01:49Z andreas.loeffler@oracle.com $
+# $Id: configure.ps1 112140 2025-12-16 17:21:05Z andreas.loeffler@oracle.com $
 # Thin PowerShell wrapper to call configure.py with passed arguments.
 #
 # Copyright (C) 2025 Oracle and/or its affiliates.
