@@ -6,7 +6,7 @@ Requires >= Python 3.4.
 """
 
 # -*- coding: utf-8 -*-
-# $Id: configure.py 112207 2025-12-23 16:26:50Z andreas.loeffler@oracle.com $
+# $Id: configure.py 112208 2025-12-23 20:18:38Z andreas.loeffler@oracle.com $
 # pylint: disable=bare-except
 # pylint: disable=consider-using-f-string
 # pylint: disable=global-statement
@@ -39,7 +39,7 @@ along with this program; if not, see <https://www.gnu.org/licenses>.
 SPDX-License-Identifier: GPL-3.0-only
 """
 
-__revision__ = "$Revision: 112207 $"
+__revision__ = "$Revision: 112208 $"
 
 import argparse
 import ctypes
@@ -53,6 +53,7 @@ import platform
 import re
 import shlex
 import shutil
+import signal
 import subprocess
 import sysconfig # Since Python 3.2.
 import sys
@@ -460,6 +461,46 @@ def getWinError(uCode):
         return wszBuf.value.strip();
     return f'{uCode:#x}'; # Return the plain error (as hex).
 
+def getSignalName(uSig):
+    """
+    Returns the name of a POSIX signal.
+    """
+    try:
+        return signal.Signals(uSig).name;
+    except ValueError:
+        pass;
+    return f"SIG{uSig}";
+
+def getSignalDesc(uSig):
+    """
+    Returns the description of a POSIX signal.
+    """
+    strsignal = getattr(signal, "strsignal", None);
+    if callable(strsignal):
+        try:
+            sDesc = strsignal(uSig);
+            if sDesc:
+                return sDesc;
+        except ValueError:
+            pass;
+    return "";
+
+def getPosixError(uCode):
+    """
+    Returns an error string for a given POSIX error code.
+    """
+    if 0 <= uCode <= 255:
+        if uCode > 128:
+            uSig = uCode - 128;
+            sName = getSignalName(uSig);
+            sDesc = getSignalDesc(uSig);
+            if sDesc:
+                return f"Killed by signal {sName} ({sDesc})";
+            else:
+                return f"Killed by signal {sName}";
+        return f"Exit status {uCode}";
+    return f"Non-standard exit code {uCode} (out of range)";
+
 def compileAndExecute(sName, enmBuildTarget, enmBuildArch, asIncPaths, asLibPaths, asIncFiles, asLibFiles, sCode, \
                       oEnv = None, asLinkerFlags = None, asDefines = None, fLog = True, fLinkMayFail = False):
     """
@@ -567,6 +608,8 @@ def compileAndExecute(sName, enmBuildTarget, enmBuildArch, asIncPaths, asLibPath
                         printError(f"Execution of test binary for {sName} failed with return code {oProc.returncode}:");
                         if enmBuildTarget == BuildTarget.WINDOWS:
                             printError(f"Windows Error { getWinError(oProc.returncode) }", fDontCount = True);
+                        else:
+                            printError(getPosixError(oProc.returncode), fDontCount = True);
                         if sStdErr:
                             printError(sStdErr, fDontCount = True);
             except subprocess.SubprocessError as ex:
@@ -812,7 +855,7 @@ class LibraryCheck(CheckBase):
     """
     Describes and checks for a library / package.
     """
-    def __init__(self, sName, asIncFiles, asLibFiles, aeTargets = [ BuildTarget.ANY ], sCode = None,
+    def __init__(self, sName, asIncFiles, asLibFiles, aeTargets = None, sCode = None,
                  asIncPaths = None, asLibPaths = None,
                  fnCallback = None, aeTargetsExcluded = None, asAltIncFiles = None, sSdkName = None,
                  asDefinesToDisableIfNotFound = None):
@@ -1191,7 +1234,7 @@ class LibraryCheck(CheckBase):
                     self.fHave = self.fInTree;
         if not fRc:
             if self.asDefinesToDisableIfNotFound: # Implies being optional.
-                self.printWarn(f'Library check failed and is optional, disabling');
+                self.printWarn('Library check failed and is optional, disabling');
                 for sDef in self.asDefinesToDisableIfNotFound:
                     g_oEnv.set(sDef, '');
             else:
@@ -1449,7 +1492,7 @@ class ToolCheck(CheckBase):
 
         if not self.fHave:
             if self.asDefinesToDisableIfNotFound: # Implies being optional.
-                self.printWarn(f'Tool check failed and is optional, disabling dependent features');
+                self.printWarn('Tool check failed and is optional, disabling dependent features');
                 for sDef in self.asDefinesToDisableIfNotFound:
                     g_oEnv.set(sDef, '');
             else:
@@ -1638,15 +1681,15 @@ class ToolCheck(CheckBase):
                             if uMaj == 1:
                                 uMaj = int(reMatch.group(2));
                             if uMaj > 17:
-                                self.printInfo(f'OpenJDK {uMaj} installed ({sCmd}), but need <= 8');
+                                self.print(f'OpenJDK {uMaj} installed ({sCmd}), but need <= 8');
                                 fRc = False;
                                 break;
                         else:
-                            self.printInfo('Unable to detect Java version');
+                            self.printWarn('Unable to detect Java version');
                             fRc = False;
                             break;
                     except:
-                        self.printInfo('Java is not installed or not found in PATH');
+                        self.printWarn('Java is not installed or not found in PATH');
                         fRc = False;
                         break;
             if fRc:
