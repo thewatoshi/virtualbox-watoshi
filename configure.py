@@ -6,7 +6,7 @@ Requires >= Python 3.4.
 """
 
 # -*- coding: utf-8 -*-
-# $Id: configure.py 112211 2025-12-23 20:35:06Z andreas.loeffler@oracle.com $
+# $Id: configure.py 112212 2025-12-23 22:05:55Z andreas.loeffler@oracle.com $
 # pylint: disable=bare-except
 # pylint: disable=consider-using-f-string
 # pylint: disable=global-statement
@@ -39,7 +39,7 @@ along with this program; if not, see <https://www.gnu.org/licenses>.
 SPDX-License-Identifier: GPL-3.0-only
 """
 
-__revision__ = "$Revision: 112211 $"
+__revision__ = "$Revision: 112212 $"
 
 import argparse
 import ctypes
@@ -2484,8 +2484,8 @@ class EnvManager:
         If not environment block is defined, the process' default environment will be applied.
         """
         self.env = env.copy() if env else os.environ.copy();
-        # Maximum key len. Also used for aligning key = value pairs in the output files. Hardcoded for now.
-        self.cchMaxKeyLen = 32;
+        # Used for aligning key = value pairs in the output files.
+        self.cchKeyAlign = 0;
         # The default key/value separator.
         self.sSep = '=';
 
@@ -2507,6 +2507,14 @@ class EnvManager:
         """
         if sKey in self.env:
             del self.env[sKey];
+
+    def setKeyAlignment(self, cchKeyAlign = None):
+        """
+        Sets the key name alignment.
+
+        Note: Set to 0 for shell script files (e.g. for 'export' directives).
+        """
+        self.cchKeyAlign = cchKeyAlign if cchKeyAlign else 0;
 
     def setSep(self, sSep):
         """
@@ -2570,21 +2578,20 @@ class EnvManager:
                     aValueNew = sKey[idxSep + 1:];
                     self.set(sKeyNew, str(aValueNew));
 
-    def write_single(self, fh, sKey, sVal = None, sSep = None, sWhat = None):
+    def write_single(self, fh, sKey, sVal = None, enmBuildTarget = g_enmHostTarget, sSep = None, sWhat = None):
         """
         Writes a single key=value pair to the given file handle.
         """
+        _ = enmBuildTarget;
         sSep = sSep if sSep else self.sSep;
         sWhat = sWhat if sWhat else '';
         if sKey not in self.env:
             if g_fDebug:
                 printVerbose(1, f'Key {sKey} does not exist (yet)');
             self.env[sKey] = None;
-        if sVal:
-            sVal = ''.join(c if c != '\\' else '/' for c in sVal); # Translate to UNIX paths (for kBuild).
-        fh.write(f"{sWhat}{sKey.ljust(self.cchMaxKeyLen)} {sSep} {sVal if sVal else self.env[sKey]}\n");
+        fh.write(f"{sWhat}{sKey.ljust(self.cchKeyAlign)}{sSep}{sVal if sVal else self.env[sKey]}\n");
 
-    def write_all(self, fh, sSep = None, sWhat = None, asPrefixInclude = None, asPrefixExclude = None):
+    def write_all_fn(self, fh, fn, enmBuildTarget = g_enmHostTarget , sSep = None, sWhat = None, asPrefixInclude = None, asPrefixExclude = None):
         """
         Writes all stored environment variables as KEY=VALUE pairs to the given file handle.
         """
@@ -2593,16 +2600,40 @@ class EnvManager:
                 continue;
             if asPrefixInclude and not any(sKey.startswith(p) for p in asPrefixInclude):
                 continue;
-            self.write_single(fh, sKey, sVal, sSep, sWhat);
+            fn(fh, sKey, sVal, enmBuildTarget, sSep, sWhat);
         return True;
 
-    def write_all_as_exports(self, fh, enmBuildTarget, asPrefixInclude = None, asPrefixExclude = None):
+    def write_all(self, fh, enmBuildTarget = g_enmHostTarget, asPrefixInclude = None, asPrefixExclude = None):
         """
         Writes all stored environment variables as (system-specific) export / set KEY=VALUE pairs
         to the given file handle.
         """
-        sWhat = 'set ' if enmBuildTarget == BuildTarget.WINDOWS else 'export ';
-        return self.write_all(fh, sSep = '=', sWhat = sWhat, asPrefixInclude = asPrefixInclude, asPrefixExclude = asPrefixExclude);
+        fn = self.write_single;
+        return self.write_all_fn(fh, fn, enmBuildTarget, sSep = '=', sWhat = None, asPrefixInclude = asPrefixInclude, asPrefixExclude = asPrefixExclude);
+
+    def write_all_as_exports(self, fh, enmBuildTarget = g_enmHostTarget, asPrefixInclude = None, asPrefixExclude = None):
+        """
+        Writes all stored environment variables as (system-specific) export / set KEY=VALUE pairs
+        to the given file handle.
+        """
+        fn = self.write_single_as_export;
+        return self.write_all_fn(fh, fn, enmBuildTarget, sSep = '=', asPrefixInclude = asPrefixInclude, asPrefixExclude = asPrefixExclude);
+
+    def write_single_as_export(self, fh, sKey, sVal = None, enmBuildTarget = g_enmHostTarget, sSep = None, sWhat = None):
+        """
+        Writes a single key=value pair as a shell / batch export/set.
+        """
+        if not sWhat:
+            sWhat = 'set ' if enmBuildTarget == BuildTarget.WINDOWS else 'export ';
+
+        # Make sure that we escape characters the build host does not understand.
+        if g_enmHostTarget != BuildTarget.WINDOWS:
+            asSafeChars = "".join(sorted(set("/._-+:")));
+            sClass = rf"A-Za-z0-9{re.escape(asSafeChars)}";
+            reMatch = re.compile(rf"[^{sClass}]");
+            sVal = reMatch.sub(lambda m: "\\" + m.group(0), str(sVal));
+
+        return self.write_single(fh, sKey, sVal = sVal, sSep = sSep, sWhat = sWhat);
 
     def write(self, fh, sKey, sSep = None, sWhat = None):
         """
@@ -2615,12 +2646,16 @@ class EnvManager:
                 return True;
         return False;
 
-    def write_as_export(self, fh, sKey, enmBuildTarget):
+    def write_as_export(self, fh, sKey, sSep = None, sWhat = None):
         """
         Writes a single key as an export.
         """
-        sWhat = 'set ' if enmBuildTarget == BuildTarget.WINDOWS else 'export ';
-        return self.write(fh, sKey, sWhat = sWhat);
+        if sKey in self.env:
+            sVal = self.env[sKey];
+            if sVal:
+                self.write_single_as_export(fh, sKey, sVal, sSep, sWhat);
+                return True;
+        return False;
 
     def transform(self, mapTransform):
         """
@@ -2639,9 +2674,9 @@ class EnvManager:
             oProcEnvFiltered = { k: self.env[k] for k in asKeys if k in self.env };
         else:
             oProcEnvFiltered = self.env;
-        cchMaxKeyLen = max((len(k) for k in oProcEnvFiltered), default = 0)
+        cchKeyAlign = max((len(k) for k in oProcEnvFiltered), default = 0)
         for k, v in oProcEnvFiltered.items():
-            printLog(f"{k.ljust(cchMaxKeyLen)} : {v}");
+            printLog(f"{k.ljust(cchKeyAlign)} : {v}");
 
     def __getitem__(self, sName):
         """
@@ -2861,7 +2896,8 @@ def write_autoconfig_kmk(sFilePath, enmBuildTarget, oEnv, aoLibs, aoTools):
 
     _ = enmBuildTarget, aoTools; # Unused for now.
 
-    g_oEnv.setSep(':='); # For kBuild Makefiles.
+    g_oEnv.setSep(':=');        # For kBuild Makefiles.
+    g_oEnv.setKeyAlignment(32); # Makes it easier to read.
 
     try:
         with open(sFilePath, "w", encoding = "utf-8") as fh:
@@ -2888,6 +2924,10 @@ def write_autoconfig_kmk(sFilePath, enmBuildTarget, oEnv, aoLibs, aoTools):
                     fh.write(f"VBOX_WITH_{sVarBase.ljust(22)} := {'1' if oLibCur.fHave else ''}\n");
 
             fh.write('\n');
+
+            ## @todo Not happy w/ the API here yet. Too complicated!
+            #        Better use a FileWriter class -> EnvWriter, MakefileWriter derived
+            #        instead of baking this all in EnvManager. Later.
 
             # SDKs
             oEnv.write_all(fh, asPrefixInclude = ['PATH_SDK_' ]);
@@ -2922,7 +2962,8 @@ def write_env(sFilePath, enmBuildTarget, enmBuildArch, oEnv, aoLibs, aoTools):
 
     _ = aoLibs, aoTools; # Unused for now.
 
-    g_oEnv.setSep('='); # For script / command files.
+    g_oEnv.setSep('=');        # For script / command files.
+    g_oEnv.setKeyAlignment(0); # Needed for 'export' directives.
 
     try:
         with open(sFilePath, "w", encoding = "utf-8") as fh:
