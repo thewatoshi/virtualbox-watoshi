@@ -6,7 +6,7 @@ Requires >= Python 3.4.
 """
 
 # -*- coding: utf-8 -*-
-# $Id: configure.py 112219 2025-12-24 10:44:50Z andreas.loeffler@oracle.com $
+# $Id: configure.py 112220 2025-12-24 11:05:29Z andreas.loeffler@oracle.com $
 # pylint: disable=bare-except
 # pylint: disable=consider-using-f-string
 # pylint: disable=global-statement
@@ -39,7 +39,7 @@ along with this program; if not, see <https://www.gnu.org/licenses>.
 SPDX-License-Identifier: GPL-3.0-only
 """
 
-__revision__ = "$Revision: 112219 $"
+__revision__ = "$Revision: 112220 $"
 
 import argparse
 import ctypes
@@ -3415,6 +3415,11 @@ def main():
     print();
     oLibsTable.print();
     print();
+
+    if g_cVerbosity >= 2:
+        printVerbose(2, 'Environment manager variables:');
+        print(g_oEnv.env);
+        print();
 
     if g_cErrors == 0 \
     or g_fContOnErr:
