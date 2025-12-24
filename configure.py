@@ -6,7 +6,7 @@ Requires >= Python 3.4.
 """
 
 # -*- coding: utf-8 -*-
-# $Id: configure.py 112220 2025-12-24 11:05:29Z andreas.loeffler@oracle.com $
+# $Id: configure.py 112221 2025-12-24 11:21:58Z andreas.loeffler@oracle.com $
 # pylint: disable=bare-except
 # pylint: disable=consider-using-f-string
 # pylint: disable=global-statement
@@ -39,7 +39,7 @@ along with this program; if not, see <https://www.gnu.org/licenses>.
 SPDX-License-Identifier: GPL-3.0-only
 """
 
-__revision__ = "$Revision: 112220 $"
+__revision__ = "$Revision: 112221 $"
 
 import argparse
 import ctypes
@@ -2951,8 +2951,10 @@ def write_autoconfig_kmk(sFilePath, enmBuildTarget, oEnv, aoLibs, aoTools):
             g_oEnv.write_single(fh, 'PATH_SDK_WINDDK71');
             g_oEnv.write_single(fh, 'SDK_WINDDK71_VERSION'); # Not official, but good to have (I guess).
 
-            # Misc stuff.
+            # Extension Pack.
             g_oEnv.write_single(fh, 'VBOX_WITH_EXTPACK');
+            g_oEnv.write_single(fh, 'VBOX_WITH_EXTPACK_PUEL');
+            g_oEnv.write_single(fh, 'VBOX_WITH_EXTPACK_PUEL_BUILD');
 
         return True;
     except OSError as ex:
@@ -3270,12 +3272,20 @@ def main():
         #
         # Disabling building the docs when only building Additions or explicitly disabled building the docs.
         lambda env: { 'VBOX_WITH_DOCS_PACKING': ''} if g_oEnv['VBOX_ONLY_ADDITIONS'] or g_oEnv['VBOX_WITH_DOCS'] == '' else {},
-        # Disable building the ExtPack VNC when only building Additions or OSE.
-        lambda env: { 'VBOX_WITH_EXTPACK_VNC': '' } if g_oEnv['VBOX_ONLY_ADDITIONS'] or g_oEnv['VBOX_OSE'] == '1' else {},
         lambda env: { 'VBOX_WITH_WEBSERVICES': '' } if g_oEnv['VBOX_ONLY_ADDITIONS'] else {},
         # Disable stuff which aren't available in OSE.
         lambda env: { 'VBOX_WITH_VALIDATIONKIT': '' , 'VBOX_WITH_WIN32_ADDITIONS': '' } if g_oEnv['VBOX_OSE'] else {},
-        lambda env: { 'VBOX_WITH_EXTPACK_PUEL_BUILD': '' } if g_oEnv['VBOX_ONLY_ADDITIONS'] else {},
+        # Disable building the Extension Pack VNC feature when only building Additions.
+        lambda env: { 'VBOX_WITH_EXTPACK_VNC': '' } if g_oEnv['VBOX_ONLY_ADDITIONS'] else {},
+        # Disable Extension Pack PUEL features when building OSE.
+        lambda env: { 'VBOX_WITH_EXTPACK_PUEL': '', \
+                      'VBOX_WITH_EXTPACK_PUEL_BUILD': '' } if g_oEnv['VBOX_OSE'] == '1' else {},
+        # Disable Extension Pack feature (plus PUEL stuff) when building only Guest Additions
+        # or with Extension Pack feature disabled.
+        lambda env: { 'VBOX_WITH_EXTPACK': '', \
+                      'VBOX_WITH_EXTPACK_PUEL': '', \
+                      'VBOX_WITH_EXTPACK_PUEL_BUILD': '' } if  g_oEnv['VBOX_ONLY_ADDITIONS'] == '1'
+                                                            or g_oEnv['VBOX_WITH_EXTPACK'] == '' else {},
         # Disable FE/Qt if qt6 is disabled.
         lambda env: { 'VBOX_WITH_QTGUI': '' } if g_oEnv['config_libs_disable_qt6'] else {},
         # Disable components if we want to build headless.
