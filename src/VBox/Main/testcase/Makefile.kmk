@@ -1,4 +1,4 @@
-# $Id: Makefile.kmk 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $
+# $Id: Makefile.kmk 112213 2025-12-24 03:41:13Z jack.doherty@oracle.com $
 ## @file
 # Sub-Makefile for the VBox API testcases.
 #
@@ -54,7 +54,12 @@ ifndef VBOX_ONLY_SDK
   	tstUnattendedScript \
   	tstVBoxCrypto
   PROGRAMS.linux += \
-  	$(if $(VBOX_WITH_USB),tstUSBProxyLinux,)
+  	$(if $(VBOX_WITH_USB),tstUSBProxyLinux,) \
+  	tstHostDnsResolvConf
+  PROGRAMS.freebsd += \
+  	tstHostDnsResolvConf
+  PROGRAMS.solaris += \
+  	tstHostDnsResolvConf
  endif # !VBOX_WITH_TESTCASES
 endif # !VBOX_ONLY_SDK
 if defined(VBOX_ONLY_SDK) || !defined(VBOX_WITH_XPCOM)
@@ -345,6 +350,20 @@ tstBstr_SOURCES  = tstBstr.cpp
 #
 tstGuid_TEMPLATE = VBoxMainClientTstExe
 tstGuid_SOURCES  = tstGuid.cpp
+
+#
+# tstHostDnsResolvConf
+#
+tstHostDnsResolvConf_TEMPLATE = VBoxMainClientTstExe
+tstHostDnsResolvConf_SOURCES  = \
+	tstHostDnsResolvConf.cpp \
+	../src-server/HostDnsServiceResolvConf.cpp \
+	../src-server/HostDnsService.cpp
+tstHostDnsResolvConf_SOURCES.linux += \
+	../src-server/linux/HostDnsServiceLinux.cpp
+tstHostDnsResolvConf_INCS = \
+	../include \
+	$(VBOX_MAIN_APIWRAPPER_INCS)
 
 
 #

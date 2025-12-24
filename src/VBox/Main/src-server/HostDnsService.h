@@ -1,4 +1,4 @@
-/* $Id: HostDnsService.h 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: HostDnsService.h 112213 2025-12-24 03:41:13Z jack.doherty@oracle.com $ */
 /** @file
  * Host DNS listener.
  */
@@ -52,6 +52,7 @@ public:
 
 public:
     std::vector<com::Utf8Str> servers;
+    std::vector<com::Utf8Str> serversV6;
     com::Utf8Str domain;
     std::vector<com::Utf8Str> searchList;
     bool equals(const HostDnsInformation &, uint32_t fLaxComparison = 0) const;
@@ -219,6 +220,8 @@ public:
 protected:
 
     HRESULT readResolvConf(void);
+    int i_rcpParse(const char *, HostDnsInformation&);
+    char *i_getToken(char *, char **);
 
 protected:
 

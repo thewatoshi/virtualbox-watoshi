@@ -1,4 +1,4 @@
-/* $Id: DrvNAT.cpp 112122 2025-12-15 19:04:30Z jack.doherty@oracle.com $ */
+/* $Id: DrvNAT.cpp 112213 2025-12-24 03:41:13Z jack.doherty@oracle.com $ */
 /** @file
  * DrvNATlibslirp - NATlibslirp network transport driver.
  */
@@ -85,7 +85,6 @@
 
 #define COUNTERS_INIT
 #include "slirp/counters.h"
-#include "slirp/resolv_conf_parser.h"
 
 
 /*********************************************************************************************************************************

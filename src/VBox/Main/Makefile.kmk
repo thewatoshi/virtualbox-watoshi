@@ -1,4 +1,4 @@
-# $Id: Makefile.kmk 111849 2025-11-24 11:06:24Z knut.osmundsen@oracle.com $
+# $Id: Makefile.kmk 112213 2025-12-24 03:41:13Z jack.doherty@oracle.com $
 ## @file
 # Makefile for the VBox Main module.
 #
@@ -744,10 +744,10 @@ if !defined(VBOX_ONLY_SDK) && !defined(VBOX_ONLY_EXTPACKS) # Note this goes on f
   	src-all/QMTranslatorImpl.cpp
  endif
 
- ifn1of ($(KBUILD_TARGET), win darwin)
-  VBoxSVC_SOURCES += $(PATH_ROOT)/src/VBox/Devices/Network/slirp/resolv_conf_parser.c
-  #$(PATH_ROOT)/src/VBox/Devices/Network/slirp/resolv_conf_parser.c_DEFS += LOG_GROUP=LOG_GROUP_MAIN
- endif
+#  ifn1of ($(KBUILD_TARGET), win darwin)
+#   VBoxSVC_SOURCES += $(PATH_ROOT)/src/VBox/Devices/Network/slirp/resolv_conf_parser.c
+#   #$(PATH_ROOT)/src/VBox/Devices/Network/slirp/resolv_conf_parser.c_DEFS += LOG_GROUP=LOG_GROUP_MAIN
+#  endif
 
  VBoxSVC_SOURCES.darwin = \
  	src-server/darwin/iokit.cpp \
