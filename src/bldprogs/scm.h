@@ -1,4 +1,4 @@
-/* $Id: scm.h 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: scm.h 112240 2025-12-28 14:45:18Z knut.osmundsen@oracle.com $ */
 /** @file
  * IPRT Testcase / Tool - Source Code Massager.
  */
@@ -326,7 +326,7 @@ typedef SCMCFGENTRY const *PCSCMCFGENTRY;
 
 
 /** License update options. */
-typedef enum SCMLICENSE
+typedef enum SCMLICENSE : uint8_t
 {
     kScmLicense_LeaveAlone = 0,     /**< Leave it alone. */
     kScmLicense_OseGpl,             /**< VBox OSE GPL if public. */
@@ -337,6 +337,16 @@ typedef enum SCMLICENSE
     kScmLicense_BasedOnMit,         /**< Copyright us but based on someone else's MIT. */
     kScmLicense_End
 } SCMLICENSE;
+
+/** Expected svn:sync-process value. */
+typedef enum SCMSVNSYNCPROCESS : uint8_t
+{
+    kScmSvnSyncProcess_Undefined,       /**< No particular svn:sync-process value. */
+    kScmSvnSyncProcess_All,             /**< 'svn:sync-process=export' for all. */
+    kScmSvnSyncProcess_None,            /**< 'svn:sync-process=' (absent) for all. */
+    kScmSvnSyncProcess_SubdirEitherOr,  /**< Set to 'All' when entering exported subdir, set to 'None' if subdir not exported. */
+    kScmSvnSyncProcess_End
+} SCMSVNSYNCPROCESS;
 
 /**
  * Source Code Massager Settings.
@@ -405,6 +415,8 @@ typedef struct SCMSETTINGSBASE
     bool            fSetSvnKeywords;
     /** Skip checking svn:sync-process. */
     bool            fSkipSvnSyncProcess;
+    /** svn:sync-process expectations.   */
+    SCMSVNSYNCPROCESS enmSyncProcess;
     /** Skip the unicode checks. */
     bool            fSkipUnicodeChecks;
     /** Tab size. */
@@ -452,7 +464,7 @@ typedef struct SCMSETTINGS *PSCMSETTINGS;
  * .scm-settings file found in a directory we recurse into.  When recursing in
  * and out of a directory, we push and pop a settings set for it.
  *
- * The .scm-settings file has two kinds of setttings, first there are the
+ * The .scm-settings file has two kinds of settings, first there are the
  * unqualified base settings and then there are the settings which applies to a
  * set of files or directories.  The former are lines with command line options.
  * For the latter, the options are preceded by a string pattern and a colon.

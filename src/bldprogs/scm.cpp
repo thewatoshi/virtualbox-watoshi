@@ -1,4 +1,4 @@
-/* $Id: scm.cpp 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: scm.cpp 112240 2025-12-28 14:45:18Z knut.osmundsen@oracle.com $ */
 /** @file
  * IPRT Testcase / Tool - Source Code Massager.
  */
@@ -132,6 +132,7 @@ typedef enum SCMOPT
     SCMOPT_DONT_SET_SVN_KEYWORDS,
     SCMOPT_SKIP_SVN_SYNC_PROCESS,
     SCMOPT_DONT_SKIP_SVN_SYNC_PROCESS,
+    SCMOPT_SVN_SYNC_PROCESS_EXPORT,
     SCMOPT_SKIP_UNICODE_CHECKS,
     SCMOPT_DONT_SKIP_UNICODE_CHECKS,
     SCMOPT_TAB_SIZE,
@@ -185,6 +186,7 @@ uint32_t            g_uYear                 = 0; /**< The current year. */
 /** @name Statistics
  * @{ */
 static uint32_t     g_cDirsProcessed        = 0;
+static uint32_t     g_cDirsSkipped          = 0;
 static uint32_t     g_cFilesProcessed       = 0;
 static uint32_t     g_cFilesModified        = 0;
 static uint32_t     g_cFilesSkipped         = 0;
@@ -227,6 +229,7 @@ static SCMSETTINGSBASE const g_Defaults =
     /* .fSetSvnExecutable = */                      false,
     /* .fSetSvnKeywords = */                        false,
     /* .fSkipSvnSyncProcess = */                    false,
+    /* .enmSyncProcess = */                         kScmSvnSyncProcess_Undefined,
     /* .fSkipUnicodeChecks = */                     false,
     /* .cchTab = */                                 8,
     /* .cchWidth = */                               130,
@@ -299,6 +302,7 @@ static RTGETOPTDEF  g_aScmOpts[] =
     { "--dont-set-svn-keywords",            SCMOPT_DONT_SET_SVN_KEYWORDS,           RTGETOPT_REQ_NOTHING },
     { "--skip-svn-sync-process",            SCMOPT_SKIP_SVN_SYNC_PROCESS,           RTGETOPT_REQ_NOTHING },
     { "--dont-skip-svn-sync-process",       SCMOPT_DONT_SKIP_SVN_SYNC_PROCESS,      RTGETOPT_REQ_NOTHING },
+    { "--svn-sync-process-export",          SCMOPT_SVN_SYNC_PROCESS_EXPORT,         RTGETOPT_REQ_STRING },
     { "--skip-unicode-checks",              SCMOPT_SKIP_UNICODE_CHECKS,             RTGETOPT_REQ_NOTHING },
     { "--dont-skip-unicode-checks",         SCMOPT_DONT_SKIP_UNICODE_CHECKS,        RTGETOPT_REQ_NOTHING },
     { "--tab-size",                         SCMOPT_TAB_SIZE,                        RTGETOPT_REQ_UINT8   },
@@ -490,6 +494,19 @@ static PCSCMREWRITERCFG const g_apRewritersFor_DTrace[] =
 };
 
 static PCSCMREWRITERCFG const g_apRewritersFor_DSL[] =
+{
+    &g_ForceNativeEol,
+    &g_ExpandTabs,
+    &g_StripTrailingBlanks,
+    &g_AdjustTrailingLines,
+    &g_SvnNoExecutable,
+    &g_SvnKeywords,
+    &g_SvnSyncProcess,
+    &g_UnicodeChecks,
+    &g_Copyright_CstyleComment,
+};
+
+static PCSCMREWRITERCFG const g_apRewritersFor_JSON5[] =
 {
     &g_ForceNativeEol,
     &g_ExpandTabs,
@@ -823,7 +840,8 @@ static SCMCFGENTRY const g_aConfigs[] =
     SCM_CFG_ENTRY("asm",        g_apRewritersFor_ASM,              false, "*.asm|*.mac|*.inc" ),
     SCM_CFG_ENTRY("dtrace",     g_apRewritersFor_DTrace,           false, "*.d" ),
     SCM_CFG_ENTRY("def",        g_apRewritersFor_DEF,              false, "*.def" ),
-    SCM_CFG_ENTRY("iasl",       g_apRewritersFor_DSL,              false, "*.dsl" ),
+    SCM_CFG_ENTRY("iasl",       g_apRewritersFor_DSL,              false, "*.dsl|*.asl" ),
+    SCM_CFG_ENTRY("json5",      g_apRewritersFor_JSON5,            false, "*.json" ),
     SCM_CFG_ENTRY("shell",      g_apRewritersFor_ShellScripts,     false, "*.sh|configure" ),
     SCM_CFG_ENTRY("batch",      g_apRewritersFor_BatchFiles,       false, "*.bat|*.cmd|*.btm" ),
     SCM_CFG_ENTRY("vbs",        g_apRewritersFor_BasicScripts,     false, "*.vbs|*.vb" ),
@@ -835,7 +853,8 @@ static SCMCFGENTRY const g_aConfigs[] =
     SCM_CFG_ENTRY("java",       g_apRewritersFor_Java,             false, "*.java" ),
     SCM_CFG_ENTRY("scm",        g_apRewritersFor_ScmSettings,      false, "*.scm-settings" ),
     SCM_CFG_ENTRY("image",      g_apRewritersFor_Images,           true,  "*.png|*.bmp|*.jpg|*.pnm|*.ico|*.icns|*.tiff|*.tif|"
-                                                                          "*.xcf|*.gif|*.jar|*.dll|*.exe|*.ttf|*.woff|*.woff2" ),
+                                                                          "*.xcf|*.gif|"
+                                                    /* other binaries: */ "*.jar|*.dll|*.exe|*.ttf|*.woff|*.woff2" ),
     SCM_CFG_ENTRY("xslt",       g_apRewritersFor_Xslt,             false, "*.xsl" ),
     SCM_CFG_ENTRY("xml",        g_apRewritersFor_Xml,              false, "*.xml|*.dist|*.dita|*.qhcp" ),
     SCM_CFG_ENTRY("wix",        g_apRewritersFor_Wix,              false, "*.wxi|*.wxs|*.wxl" ),
@@ -1320,6 +1339,22 @@ static int scmSettingsBaseHandleOpt(PSCMSETTINGSBASE pSettings, int rc, PRTGETOP
             return VINF_SUCCESS;
         case SCMOPT_DONT_SKIP_SVN_SYNC_PROCESS:
             pSettings->fSkipSvnSyncProcess = false;
+            return VINF_SUCCESS;
+
+        case SCMOPT_SVN_SYNC_PROCESS_EXPORT:
+            if (strcmp(pValueUnion->psz, "undefined") == 0 || strcmp(pValueUnion->psz, "whatever") == 0)
+                pSettings->enmSyncProcess = kScmSvnSyncProcess_All;
+            else if (strcmp(pValueUnion->psz, "all") == 0)
+                pSettings->enmSyncProcess = kScmSvnSyncProcess_All;
+            else if (strcmp(pValueUnion->psz, "none") == 0)
+                pSettings->enmSyncProcess = kScmSvnSyncProcess_None;
+            else if (strcmp(pValueUnion->psz, "subdir-either-or") == 0)
+                pSettings->enmSyncProcess = kScmSvnSyncProcess_SubdirEitherOr;
+            else
+            {
+                RTMsgError("Invalid --svn-sync-process-export value: %s\n", pValueUnion->psz);
+                return VERR_INVALID_PARAMETER;
+            }
             return VINF_SUCCESS;
 
         case SCMOPT_SKIP_UNICODE_CHECKS:
@@ -1935,6 +1970,43 @@ static int scmSettingsCreateFromFile(PSCMSETTINGS *ppSettings, const char *pszFi
 }
 #endif
 
+/**
+ * Called when entering a new directory and enmSyncProcess is set to
+ * kScmSvnSyncProcess_SubdirEitherOr.
+ */
+static int scmSettingsDeterminSyncProcessEitherOr(const char *pszPath, PSCMSETTINGSBASE pSettingsBase)
+{
+    pSettingsBase->enmSyncProcess = kScmSvnSyncProcess_None;
+
+    if (!pSettingsBase->fSkipSvnSyncProcess)
+        if (RTDirExists(pszPath))
+        {
+            /* Need rewrite state to use ScmSvnXxxx, which is a bit ugly... */
+            SCMRWSTATE State;
+            State.pszFilename           = pszPath;
+            State.fFirst                = false;
+            State.fNeedsManualRepair    = false;
+            State.fIsInSvnWorkingCopy   = 0;
+            State.cSvnPropChanges       = 0;
+            State.paSvnPropChanges      = NULL;
+            State.rc                    = VINF_SUCCESS;
+
+            char *pszSyncProcess;
+            int rc = ScmSvnQueryProperty(&State, "svn:sync-process", &pszSyncProcess);
+            if (RT_SUCCESS(rc))
+            {
+                if (strcmp(pszSyncProcess, "export") == 0)
+                    pSettingsBase->enmSyncProcess = kScmSvnSyncProcess_All;
+                RTStrFree(pszSyncProcess);
+            }
+            else if (rc != VERR_NOT_FOUND)
+            {
+                ScmError(&State, rc, "ScmSvnQueryProperty: %Rrc\n", rc);
+                return rc;
+            }
+        }
+    return VINF_SUCCESS;
+}
 
 /**
  * Create an initial settings structure when starting processing a new file or
@@ -1978,6 +2050,8 @@ static int scmSettingsCreateForPath(PSCMSETTINGS *ppSettings, PCSCMSETTINGSBASE 
     for (size_t i = 1; i <= cComponents; i++)
     {
         rc = RTPathCopyComponents(szFile, sizeof(szFile), pszPath, i);
+        if (pSettings->Base.enmSyncProcess == kScmSvnSyncProcess_SubdirEitherOr)
+            rc = scmSettingsDeterminSyncProcessEitherOr(szFile, &pSettings->Base);
         if (RT_SUCCESS(rc))
             rc = RTPathAppend(szFile, sizeof(szFile), SCM_SETTINGS_FILENAME);
         if (RT_FAILURE(rc))
@@ -2039,6 +2113,8 @@ static int scmSettingsStackPushDir(PSCMSETTINGS *ppSettingsStack, const char *ps
         rc = scmSettingsCreate(&pSettings, &(*ppSettingsStack)->Base);
         if (RT_SUCCESS(rc))
         {
+            if (pSettings->Base.enmSyncProcess == kScmSvnSyncProcess_SubdirEitherOr)
+                rc = scmSettingsDeterminSyncProcessEitherOr(pszDir, &pSettings->Base);
             if (RTFileExists(szFile))
                 rc = scmSettingsLoadFile(pSettings, szFile);
             if (RT_SUCCESS(rc))
@@ -2296,7 +2372,7 @@ static int scmProcessFileInner(PSCMRWSTATE pState, const char *pszFilename, cons
         && *pBaseSettings->pszFilterFiles
         && !RTStrSimplePatternMultiMatch(pBaseSettings->pszFilterFiles, RTSTR_MAX, pszBasename, cchBasename, NULL))
     {
-        ScmVerbose(NULL, 5, "skipping '%s': file filter mismatch\n", pszFilename);
+        ScmVerbose(NULL, 2, "skipping '%s': file filter mismatch\n", pszFilename);
         g_cFilesSkipped++;
         return VINF_SUCCESS;
     }
@@ -2305,14 +2381,14 @@ static int scmProcessFileInner(PSCMRWSTATE pState, const char *pszFilename, cons
         && (   RTStrSimplePatternMultiMatch(pBaseSettings->pszFilterOutFiles, RTSTR_MAX, pszBasename, cchBasename, NULL)
             || RTStrSimplePatternMultiMatch(pBaseSettings->pszFilterOutFiles, RTSTR_MAX, pszFilename, RTSTR_MAX, NULL)) )
     {
-        ScmVerbose(NULL, 5, "skipping '%s': filterd out\n", pszFilename);
+        ScmVerbose(NULL, 2, "skipping '%s': filtered out\n", pszFilename);
         g_cFilesSkipped++;
         return VINF_SUCCESS;
     }
     if (   pBaseSettings->fOnlySvnFiles
         && !ScmSvnIsInWorkingCopy(pState))
     {
-        ScmVerbose(NULL, 5, "skipping '%s': not in SVN WC\n", pszFilename);
+        ScmVerbose(NULL, 2, "skipping '%s': not in SVN WC\n", pszFilename);
         g_cFilesNotInSvn++;
         return VINF_SUCCESS;
     }
@@ -2711,6 +2787,11 @@ static int scmProcessDirTreeRecursion(char *pszBuf, size_t cchDir, PRTDIRENTRY p
                     scmSettingsStackPopAndDestroy(&pSettingsStack);
                 }
             }
+            else
+            {
+                g_cDirsSkipped++;
+                ScmVerbose(NULL, 2, "skipping directory '%s'\n", pszBuf);
+            }
         }
         if (RT_FAILURE(rc))
             break;
@@ -2801,16 +2882,17 @@ static int scmProcessSomething(const char *pszSomething, PSCMSETTINGS pSettingsS
  */
 static void scmPrintStats(void)
 {
-    ScmVerbose(NULL, 0,
-               g_fDryRun
-               ? "%u out of %u file%s in %u dir%s would be modified (%u without rewriter%s, %u binar%s, %u not in svn, %u skipped)\n"
-               : "%u out of %u file%s in %u dir%s was modified (%u without rewriter%s, %u binar%s, %u not in svn, %u skipped)\n",
+    ScmVerbose(NULL, 0, "stats: dirs:  %u skipped\n", g_cDirsSkipped);
+    ScmVerbose(NULL, 0, "stats: files: %u without rewriter%s, %u binar%s, %u not in svn, %u skipped\n",
+               g_cFilesNoRewriters, g_cFilesNoRewriters == 1 ? "" : "s",
+               g_cFilesBinaries,  g_cFilesBinaries == 1 ? "y" : "ies",
+               g_cFilesNotInSvn,
+               g_cFilesSkipped);
+    ScmVerbose(NULL, 0, "%u out of %u file%s in %u dir%s %s modified\n",
                g_cFilesModified,
                g_cFilesProcessed, g_cFilesProcessed == 1 ? "" : "s",
                g_cDirsProcessed,  g_cDirsProcessed == 1 ? "" : "s",
-               g_cFilesNoRewriters, g_cFilesNoRewriters == 1 ? "" : "s",
-               g_cFilesBinaries,  g_cFilesBinaries == 1 ? "y" : "ies",
-               g_cFilesNotInSvn, g_cFilesSkipped);
+               g_fDryRun ? "would be" : "was");
 }
 
 /**
@@ -2842,6 +2924,15 @@ static int scmHelpConfig(void)
             RTPrintf("    %s\n", g_aConfigs[iCfg].paRewriters[i]->pszName);
     }
     return RTEXITCODE_SUCCESS;
+}
+
+/** Wrapper for RTStrmWrappedPrintfV. */
+static void hlpPrntf(const char *pszFormat, ...)
+{
+    va_list va;
+    va_start(va, pszFormat);
+    RTStrmWrappedPrintfV(g_pStdOut, 0, pszFormat, va);
+    va_end(va);
 }
 
 /**
@@ -2889,12 +2980,12 @@ static int scmHelp(PCRTGETOPTDEF paOpts, size_t cOpts)
                              || (paOpts[i].iShort == 'd' && paOpts[i+1].iShort == 'D')
                             );
             if (cExtraAdvance)
-                RTPrintf("  %s, %s\n", paOpts[i].pszLong, paOpts[i + 1].pszLong);
+                hlpPrntf("  %s, %s\n", paOpts[i].pszLong, paOpts[i + 1].pszLong);
             else if (paOpts[i].iShort != SCMOPT_NO_UPDATE_LICENSE || i + 6 >= cOpts /* paranoia */)
-                RTPrintf("  %s\n", paOpts[i].pszLong);
+                hlpPrntf("  %s\n", paOpts[i].pszLong);
             else
             {
-                RTPrintf("  %s,\n"
+                hlpPrntf("  %s,\n"
                          "  %s,\n"
                          "  %s,\n"
                          "  %s,\n"
@@ -2915,134 +3006,133 @@ static int scmHelp(PCRTGETOPTDEF paOpts, size_t cOpts)
             switch (paOpts[i].iShort)
             {
                 case SCMOPT_DEL_ACTION:
-                    RTPrintf("  %s pattern\n", paOpts[i].pszLong);
+                    hlpPrntf("  %s pattern\n", paOpts[i].pszLong);
                     break;
                 case SCMOPT_FILTER_OUT_DIRS:
                 case SCMOPT_FILTER_FILES:
                 case SCMOPT_FILTER_OUT_FILES:
-                    RTPrintf("  %s multi-pattern\n", paOpts[i].pszLong);
+                    hlpPrntf("  %s multi-pattern\n", paOpts[i].pszLong);
                     break;
                 default:
-                    RTPrintf("  %s string\n", paOpts[i].pszLong);
+                    hlpPrntf("  %s string\n", paOpts[i].pszLong);
             }
         else
-            RTPrintf("  %s value\n", paOpts[i].pszLong);
+            hlpPrntf("  %s value\n", paOpts[i].pszLong);
         switch (paOpts[i].iShort)
         {
             case 'd':
-            case 'D':                           RTPrintf("      Default: --dry-run\n"); break;
-            case SCMOPT_CHECK_RUN:              RTPrintf("      Default: --dry-run\n"); break;
-            case 'f':                           RTPrintf("      Default: none\n"); break;
+            case 'D':                           hlpPrntf("      Default: --dry-run\n"); break;
+            case SCMOPT_CHECK_RUN:              hlpPrntf("      Default: --dry-run\n"); break;
+            case 'f':                           hlpPrntf("      Default: none\n"); break;
             case 'q':
-            case 'v':                           RTPrintf("      Default: -vv\n"); break;
-            case SCMOPT_HELP_CONFIG:            RTPrintf("      Shows the standard file rewriter configurations.\n"); break;
-            case SCMOPT_HELP_ACTIONS:           RTPrintf("      Shows the available rewriter actions.\n"); break;
+            case 'v':                           hlpPrntf("      Default: -vv\n"); break;
+            case SCMOPT_HELP_CONFIG:            hlpPrntf("      Shows the standard file rewriter configurations.\n"); break;
+            case SCMOPT_HELP_ACTIONS:           hlpPrntf("      Shows the available rewriter actions.\n"); break;
 
-            case SCMOPT_DIFF_IGNORE_EOL:        RTPrintf("      Default: false\n"); break;
-            case SCMOPT_DIFF_IGNORE_SPACE:      RTPrintf("      Default: false\n"); break;
-            case SCMOPT_DIFF_IGNORE_LEADING_SPACE:  RTPrintf("      Default: false\n"); break;
-            case SCMOPT_DIFF_IGNORE_TRAILING_SPACE: RTPrintf("      Default: false\n"); break;
-            case SCMOPT_DIFF_SPECIAL_CHARS:     RTPrintf("      Default: true\n"); break;
+            case SCMOPT_DIFF_IGNORE_EOL:        hlpPrntf("      Default: false\n"); break;
+            case SCMOPT_DIFF_IGNORE_SPACE:      hlpPrntf("      Default: false\n"); break;
+            case SCMOPT_DIFF_IGNORE_LEADING_SPACE:  hlpPrntf("      Default: false\n"); break;
+            case SCMOPT_DIFF_IGNORE_TRAILING_SPACE: hlpPrntf("      Default: false\n"); break;
+            case SCMOPT_DIFF_SPECIAL_CHARS:     hlpPrntf("      Default: true\n"); break;
 
-            case SCMOPT_CONVERT_EOL:            RTPrintf("      Default: %RTbool\n", g_Defaults.fConvertEol); break;
-            case SCMOPT_CONVERT_TABS:           RTPrintf("      Default: %RTbool\n", g_Defaults.fConvertTabs); break;
-            case SCMOPT_FORCE_FINAL_EOL:        RTPrintf("      Default: %RTbool\n", g_Defaults.fForceFinalEol); break;
-            case SCMOPT_FORCE_TRAILING_LINE:    RTPrintf("      Default: %RTbool\n", g_Defaults.fForceTrailingLine); break;
-            case SCMOPT_STRIP_TRAILING_BLANKS:  RTPrintf("      Default: %RTbool\n", g_Defaults.fStripTrailingBlanks); break;
-            case SCMOPT_STRIP_TRAILING_LINES:   RTPrintf("      Default: %RTbool\n", g_Defaults.fStripTrailingLines); break;
-            case SCMOPT_FIX_FLOWER_BOX_MARKERS: RTPrintf("      Default: %RTbool\n", g_Defaults.fFixFlowerBoxMarkers); break;
-            case SCMOPT_MIN_BLANK_LINES_BEFORE_FLOWER_BOX_MARKERS: RTPrintf("      Default: %u\n", g_Defaults.cMinBlankLinesBeforeFlowerBoxMakers); break;
+            case SCMOPT_CONVERT_EOL:            hlpPrntf("      Default: %RTbool\n", g_Defaults.fConvertEol); break;
+            case SCMOPT_CONVERT_TABS:           hlpPrntf("      Default: %RTbool\n", g_Defaults.fConvertTabs); break;
+            case SCMOPT_FORCE_FINAL_EOL:        hlpPrntf("      Default: %RTbool\n", g_Defaults.fForceFinalEol); break;
+            case SCMOPT_FORCE_TRAILING_LINE:    hlpPrntf("      Default: %RTbool\n", g_Defaults.fForceTrailingLine); break;
+            case SCMOPT_STRIP_TRAILING_BLANKS:  hlpPrntf("      Default: %RTbool\n", g_Defaults.fStripTrailingBlanks); break;
+            case SCMOPT_STRIP_TRAILING_LINES:   hlpPrntf("      Default: %RTbool\n", g_Defaults.fStripTrailingLines); break;
+            case SCMOPT_FIX_FLOWER_BOX_MARKERS: hlpPrntf("      Default: %RTbool\n", g_Defaults.fFixFlowerBoxMarkers); break;
+            case SCMOPT_MIN_BLANK_LINES_BEFORE_FLOWER_BOX_MARKERS: hlpPrntf("      Default: %u\n", g_Defaults.cMinBlankLinesBeforeFlowerBoxMakers); break;
 
             case SCMOPT_FIX_HEADER_GUARDS:
-                RTPrintf("      Fix header guards and #pragma once.  Default: %RTbool\n", g_Defaults.fFixHeaderGuards);
+                hlpPrntf("      Fix header guards and #pragma once.  Default: %RTbool\n", g_Defaults.fFixHeaderGuards);
                 break;
             case SCMOPT_PRAGMA_ONCE:
-                RTPrintf("      Whether to include #pragma once with the header guard.  Default: %RTbool\n", g_Defaults.fPragmaOnce);
+                hlpPrntf("      Whether to include #pragma once with the header guard.  Default: %RTbool\n", g_Defaults.fPragmaOnce);
                 break;
             case SCMOPT_FIX_HEADER_GUARD_ENDIF:
-                RTPrintf("      Whether to fix the #endif of a header guard.  Default: %RTbool\n", g_Defaults.fFixHeaderGuardEndif);
+                hlpPrntf("      Whether to fix the #endif of a header guard.  Default: %RTbool\n", g_Defaults.fFixHeaderGuardEndif);
                 break;
             case SCMOPT_ENDIF_GUARD_COMMENT:
-                RTPrintf("      Put a comment on the header guard #endif or not.  Default: %RTbool\n", g_Defaults.fEndifGuardComment);
+                hlpPrntf("      Put a comment on the header guard #endif or not.  Default: %RTbool\n", g_Defaults.fEndifGuardComment);
                 break;
             case SCMOPT_GUARD_RELATIVE_TO_DIR:
-                RTPrintf("      Header guard should be normalized relative to given dir.\n"
-                         "      When relative to settings files, no preceding slash.\n"
-                         "      Header relative directory specification: {dir} and {parent}\n"
-                         "      If empty no normalization takes place.  Default: '%s'\n", g_Defaults.pszGuardRelativeToDir);
+                hlpPrntf("      Header guard should be normalized relative to given dir. When relative to settings files, no "
+                         "preceding slash. Header relative directory specification: {dir} and {parent}. If empty no "
+                         "normalization takes place.  Default: '%s'\n", g_Defaults.pszGuardRelativeToDir);
                 break;
             case SCMOPT_GUARD_PREFIX:
-                RTPrintf("      Prefix to use with --guard-relative-to-dir.  Default: %s\n", g_Defaults.pszGuardPrefix);
+                hlpPrntf("      Prefix to use with --guard-relative-to-dir.  Default: %s\n", g_Defaults.pszGuardPrefix);
                 break;
             case SCMOPT_FIX_TODOS:
-                RTPrintf("      Fix @todo statements so doxygen sees them.  Default: %RTbool\n", g_Defaults.fFixTodos);
+                hlpPrntf("      Fix @todo statements so doxygen sees them.  Default: %RTbool\n", g_Defaults.fFixTodos);
                 break;
             case SCMOPT_FIX_ERR_H:
-                RTPrintf("      Fix err.h/errcore.h usage.  Default: %RTbool\n", g_Defaults.fFixErrH);
+                hlpPrntf("      Fix err.h/errcore.h usage.  Default: %RTbool\n", g_Defaults.fFixErrH);
                 break;
             case SCMOPT_ONLY_GUEST_HOST_PAGE:
-                RTPrintf("      No PAGE_SIZE, PAGE_SHIFT or PAGE_OFFSET_MASK allowed, must have\n"
-                         "      GUEST_ or HOST_ prefix.  Also forbids use of PAGE_BASE_MASK,\n"
-                         "      PAGE_BASE_HC_MASK, PAGE_BASE_GC_MASK, PAGE_ADDRESS,\n"
-                         "      PHYS_PAGE_ADDRESS.  Default: %RTbool\n", g_Defaults.fOnlyGuestHostPage);
+                hlpPrntf("      No PAGE_SIZE, PAGE_SHIFT or PAGE_OFFSET_MASK allowed, must have GUEST_ or HOST_ prefix. "
+                         "Also forbids use of PAGE_BASE_MASK, PAGE_BASE_HC_MASK, PAGE_BASE_GC_MASK, PAGE_ADDRESS, "
+                         "PHYS_PAGE_ADDRESS.  Default: %RTbool\n", g_Defaults.fOnlyGuestHostPage);
                 break;
             case SCMOPT_NO_ASM_MEM_PAGE_USE:
-                RTPrintf("      No ASMMemIsZeroPage or ASMMemZeroPage allowed, must instead use\n"
-                         "      ASMMemIsZero and RT_BZERO with appropriate page size.  Default: %RTbool\n",
-                         g_Defaults.fNoASMMemPageUse);
+                hlpPrntf("      No ASMMemIsZeroPage or ASMMemZeroPage allowed, must instead use ASMMemIsZero and RT_BZERO with "
+                         "appropriate page size.  Default: %RTbool\n", g_Defaults.fNoASMMemPageUse);
                 break;
             case SCMOPT_NO_RC_USE:
-                RTPrintf("      No rc declaration allowed, must instead use\n"
-                         "      vrc for IPRT status codes and hrc for COM status codes.  Default: %RTbool\n",
-                         g_Defaults.fOnlyHrcVrcInsteadOfRc);
+                hlpPrntf("      No rc declaration allowed, must instead use vrc for IPRT status codes and hrc for COM status "
+                         "codes.  Default: %RTbool\n", g_Defaults.fOnlyHrcVrcInsteadOfRc);
                 break;
             case SCMOPT_STANDARIZE_KMK:
-                RTPrintf("      Clean up kmk files (the makefile-kmk action).  Default: %RTbool\n", g_Defaults.fStandarizeKmk);
+                hlpPrntf("      Clean up kmk files (the makefile-kmk action).  Default: %RTbool\n", g_Defaults.fStandarizeKmk);
                 break;
             case SCMOPT_UPDATE_COPYRIGHT_YEAR:
-                RTPrintf("      Update the copyright year.  Default: %RTbool\n", g_Defaults.fUpdateCopyrightYear);
+                hlpPrntf("      Update the copyright year.  Default: %RTbool\n", g_Defaults.fUpdateCopyrightYear);
                 break;
             case SCMOPT_EXTERNAL_COPYRIGHT:
-                RTPrintf("      Only external copyright holders.  Default: %RTbool\n", g_Defaults.fExternalCopyright);
+                hlpPrntf("      Only external copyright holders.  Default: %RTbool\n", g_Defaults.fExternalCopyright);
                 break;
             case SCMOPT_NO_UPDATE_LICENSE:
-                RTPrintf("      License selection.  Default: --license-ose-gpl\n");
+                hlpPrntf("      License selection.  Default: --license-ose-gpl\n");
                 break;
 
             case SCMOPT_LGPL_DISCLAIMER:
-                RTPrintf("      Include LGPL version disclaimer.  Default: --no-lgpl-disclaimer\n");
+                hlpPrntf("      Include LGPL version disclaimer.  Default: --no-lgpl-disclaimer\n");
                 break;
 
-            case SCMOPT_SET_SVN_EOL:            RTPrintf("      Default: %RTbool\n", g_Defaults.fSetSvnEol); break;
-            case SCMOPT_SET_SVN_EXECUTABLE:     RTPrintf("      Default: %RTbool\n", g_Defaults.fSetSvnExecutable); break;
-            case SCMOPT_SET_SVN_KEYWORDS:       RTPrintf("      Default: %RTbool\n", g_Defaults.fSetSvnKeywords); break;
-            case SCMOPT_SKIP_SVN_SYNC_PROCESS:  RTPrintf("      Default: %RTbool\n", g_Defaults.fSkipSvnSyncProcess); break;
-            case SCMOPT_SKIP_UNICODE_CHECKS:    RTPrintf("      Default: %RTbool\n", g_Defaults.fSkipUnicodeChecks); break;
-            case SCMOPT_TAB_SIZE:               RTPrintf("      Default: %u\n", g_Defaults.cchTab); break;
-            case SCMOPT_WIDTH:                  RTPrintf("      Default: %u\n", g_Defaults.cchWidth); break;
+            case SCMOPT_SVN_SYNC_PROCESS_EXPORT:
+                hlpPrntf("      svn:sync-process value rules: all, none, subdir-either-or, whatever.  Default: whatever\n");
+                break;
 
-            case SCMOPT_ONLY_SVN_DIRS:          RTPrintf("      Default: %RTbool\n", g_Defaults.fOnlySvnDirs); break;
-            case SCMOPT_ONLY_SVN_FILES:         RTPrintf("      Default: %RTbool\n", g_Defaults.fOnlySvnFiles); break;
-            case SCMOPT_FILTER_OUT_DIRS:        RTPrintf("      Default: %s\n", g_Defaults.pszFilterOutDirs); break;
-            case SCMOPT_FILTER_FILES:           RTPrintf("      Default: %s\n", g_Defaults.pszFilterFiles); break;
-            case SCMOPT_FILTER_OUT_FILES:       RTPrintf("      Default: %s\n", g_Defaults.pszFilterOutFiles); break;
+            case SCMOPT_SET_SVN_EOL:            hlpPrntf("      Default: %RTbool\n", g_Defaults.fSetSvnEol); break;
+            case SCMOPT_SET_SVN_EXECUTABLE:     hlpPrntf("      Default: %RTbool\n", g_Defaults.fSetSvnExecutable); break;
+            case SCMOPT_SET_SVN_KEYWORDS:       hlpPrntf("      Default: %RTbool\n", g_Defaults.fSetSvnKeywords); break;
+            case SCMOPT_SKIP_SVN_SYNC_PROCESS:  hlpPrntf("      Default: %RTbool\n", g_Defaults.fSkipSvnSyncProcess); break;
+            case SCMOPT_SKIP_UNICODE_CHECKS:    hlpPrntf("      Default: %RTbool\n", g_Defaults.fSkipUnicodeChecks); break;
+            case SCMOPT_TAB_SIZE:               hlpPrntf("      Default: %u\n", g_Defaults.cchTab); break;
+            case SCMOPT_WIDTH:                  hlpPrntf("      Default: %u\n", g_Defaults.cchWidth); break;
+
+            case SCMOPT_ONLY_SVN_DIRS:          hlpPrntf("      Default: %RTbool\n", g_Defaults.fOnlySvnDirs); break;
+            case SCMOPT_ONLY_SVN_FILES:         hlpPrntf("      Default: %RTbool\n", g_Defaults.fOnlySvnFiles); break;
+            case SCMOPT_FILTER_OUT_DIRS:        hlpPrntf("      Default: %s\n", g_Defaults.pszFilterOutDirs); break;
+            case SCMOPT_FILTER_FILES:           hlpPrntf("      Default: %s\n", g_Defaults.pszFilterFiles); break;
+            case SCMOPT_FILTER_OUT_FILES:       hlpPrntf("      Default: %s\n", g_Defaults.pszFilterOutFiles); break;
 
             case SCMOPT_TREAT_AS:
-                RTPrintf("      For treat the input file(s) differently, restting any --add-action.\n"
-                         "      If the value is empty defaults will be used again.  Possible values:\n");
+                hlpPrntf("      For treat the input file(s) differently, restting any --add-action. If the value is empty "
+                         "defaults will be used again.  Possible values:\n");
                 for (size_t iCfg = 0; iCfg < RT_ELEMENTS(g_aConfigs); iCfg++)
-                    RTPrintf("          %s (%s)\n", g_aConfigs[iCfg].pszName, g_aConfigs[iCfg].pszFilePattern);
+                    RTStrmWrappedPrintf(g_pStdOut, RTSTRMWRAPPED_F_HANGING_INDENT | RTSTRMWRAPPED_F_SPLIT_ON_PIPE,
+                                        "          %s (%s)\n", g_aConfigs[iCfg].pszName, g_aConfigs[iCfg].pszFilePattern);
                 break;
 
             case SCMOPT_ADD_ACTION:
-                RTPrintf("      Adds a rewriter action.  The first use after a --treat-as will copy and\n"
-                         "      the action list selected by the --treat-as.  The action list will be\n"
-                         "      flushed by --treat-as.\n");
+                hlpPrntf("      Adds a rewriter action.  The first use after a --treat-as will copy and the action list selected "
+                         "by the --treat-as.  The action list will be flushed by --treat-as.\n");
                 break;
 
             case SCMOPT_DEL_ACTION:
-                RTPrintf("      Deletes one or more rewriter action (pattern). Best used after\n"
-                         "      a --treat-as.\n");
+                hlpPrntf("      Deletes one or more rewriter action (pattern). Best used after a --treat-as.\n");
                 break;
 
             default: AssertMsgFailed(("i=%d %d %s\n", i, paOpts[i].iShort, paOpts[i].pszLong));
@@ -3149,7 +3239,7 @@ int main(int argc, char **argv)
             case 'V':
             {
                 /* The following is assuming that svn does it's job here. */
-                static const char s_szRev[] = "$Revision: 110684 $";
+                static const char s_szRev[] = "$Revision: 112240 $";
                 const char *psz = RTStrStripL(strchr(s_szRev, ' '));
                 RTPrintf("r%.*s\n", strchr(psz, ' ') - psz, psz);
                 return 0;

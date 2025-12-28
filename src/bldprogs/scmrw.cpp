@@ -1,4 +1,4 @@
-/* $Id: scmrw.cpp 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $ */
+/* $Id: scmrw.cpp 112240 2025-12-28 14:45:18Z knut.osmundsen@oracle.com $ */
 /** @file
  * IPRT Testcase / Tool - Source Code Massager.
  */
@@ -1147,27 +1147,37 @@ SCMREWRITERRES rewrite_SvnSyncProcess(PSCMRWSTATE pState, PSCMSTREAM pIn, PSCMST
     {
         if (strcmp(pszSyncProcess, "export") == 0)
         {
-            char *pszParentSyncProcess;
-            rc = ScmSvnQueryParentProperty(pState, "svn:sync-process", &pszParentSyncProcess);
-            if (RT_SUCCESS(rc))
+            if (pSettings->enmSyncProcess == kScmSvnSyncProcess_None)
             {
-                if (strcmp(pszSyncProcess, "export") != 0)
-                    ScmError(pState, VERR_INVALID_STATE,
-                             "svn:sync-process=export, but parent directory differs: %s\n"
+                ScmVerbose(pState, 2, " * deleting svn:sync-process\n");
+                rc = ScmSvnSetProperty(pState, "svn:sync-process", NULL);
+                if (RT_FAILURE(rc))
+                    ScmError(pState, rc, "ScmSvnSetProperty: %Rrc\n", rc);
+            }
+            else
+            {
+                char *pszParentSyncProcess;
+                rc = ScmSvnQueryParentProperty(pState, "svn:sync-process", &pszParentSyncProcess);
+                if (RT_SUCCESS(rc))
+                {
+                    if (strcmp(pszSyncProcess, "export") != 0)
+                        ScmError(pState, VERR_INVALID_STATE,
+                                 "svn:sync-process=export, but parent directory differs: %s\n"
+                                 "WARNING! Make sure to unexport everything inside the directory first!\n"
+                                 "         Then you may export the directory and stuff inside it if you want.\n"
+                                 "         (Just exporting the directory will not make anything inside it externally visible.)\n"
+                                 , pszParentSyncProcess);
+                    RTStrFree(pszParentSyncProcess);
+                }
+                else if (rc == VERR_NOT_FOUND)
+                    ScmError(pState, VERR_NOT_FOUND,
+                             "svn:sync-process=export, but parent directory is not exported!\n"
                              "WARNING! Make sure to unexport everything inside the directory first!\n"
                              "         Then you may export the directory and stuff inside it if you want.\n"
-                             "         (Just exporting the directory will not make anything inside it externally visible.)\n"
-                             , pszParentSyncProcess);
-                RTStrFree(pszParentSyncProcess);
+                             "         (Just exporting the directory will not make anything inside it externally visible.)\n");
+                else
+                    ScmError(pState, rc, "ScmSvnQueryParentProperty: %Rrc\n", rc);
             }
-            else if (rc == VERR_NOT_FOUND)
-                ScmError(pState, VERR_NOT_FOUND,
-                         "svn:sync-process=export, but parent directory is not exported!\n"
-                         "WARNING! Make sure to unexport everything inside the directory first!\n"
-                         "         Then you may export the directory and stuff inside it if you want.\n"
-                         "         (Just exporting the directory will not make anything inside it externally visible.)\n");
-            else
-                ScmError(pState, rc, "ScmSvnQueryParentProperty: %Rrc\n", rc);
         }
         else if (strcmp(pszSyncProcess, "ignore") != 0)
             ScmError(pState, VERR_INVALID_NAME, "Bad sync-process value: %s\n", pszSyncProcess);
@@ -1175,6 +1185,13 @@ SCMREWRITERRES rewrite_SvnSyncProcess(PSCMRWSTATE pState, PSCMSTREAM pIn, PSCMST
     }
     else if (rc != VERR_NOT_FOUND)
         ScmError(pState, rc, "ScmSvnQueryProperty: %Rrc\n", rc);
+    else if (pSettings->enmSyncProcess == kScmSvnSyncProcess_All)
+    {
+        ScmVerbose(pState, 2, " * setting svn:sync-process to 'export'\n");
+        rc = ScmSvnSetProperty(pState, "svn:sync-process", "export");
+        if (RT_FAILURE(rc))
+            ScmError(pState, rc, "ScmSvnSetProperty: %Rrc\n", rc);
+    }
 
     return kScmUnmodified;
 }
