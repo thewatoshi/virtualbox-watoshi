@@ -49,7 +49,7 @@
 #include "nsReadableUtils.h"
 #ifdef VBOX
 # include <nsIExceptionService.h>
-# include <iprt/err.h>
+# include <iprt/errcore.h>
 # include <iprt/string.h>
 # include <iprt/stream.h>
 #endif

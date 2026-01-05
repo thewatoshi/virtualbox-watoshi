@@ -1480,7 +1480,7 @@ QueryMethodInfo(nsIInterfaceInfo* aIInfo, const char* aMethodName,
 
 #ifdef VBOX
 #include <nsIExceptionService.h>
-#include <iprt/err.h>
+#include <iprt/errcore.h>
 #include "nspr.h"
 
 static void makeErrorMessage(nsresult r, char* msg, size_t msgSize)

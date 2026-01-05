@@ -357,7 +357,7 @@ XPCOM_NATIVE(getComponentRegistrar) (JNIEnv *env, jobject)
 
 #ifdef VBOX
 #  include <VBox/com/NativeEventQueue.h>
-#  include <iprt/err.h>
+#  include <iprt/errcore.h>
 
 extern "C" NS_EXPORT jint JNICALL
 XPCOM_NATIVE2(waitForEvents) (JNIEnv *env, jobject, jlong aTimeout)

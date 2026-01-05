@@ -37,7 +37,7 @@
 #define LOG_GROUP LOG_GROUP_IPC
 #include <iprt/assert.h>
 #include <iprt/critsect.h>
-#include <iprt/err.h>
+#include <iprt/errcore.h>
 #include <iprt/env.h>
 #include <iprt/list.h>
 #include <iprt/mem.h>

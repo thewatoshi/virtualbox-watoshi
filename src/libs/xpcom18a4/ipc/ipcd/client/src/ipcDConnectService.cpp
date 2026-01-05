@@ -53,7 +53,7 @@
 # include <map>
 # include <list>
 # include <iprt/asm.h>
-# include <iprt/err.h>
+# include <iprt/errcore.h>
 # include <iprt/req.h>
 # include <iprt/mem.h>
 # include <iprt/time.h>
