@@ -1,4 +1,4 @@
-# $Id: .scm-settings 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $
+# $Id: .scm-settings 112267 2026-01-05 03:44:55Z knut.osmundsen@oracle.com $
 ## @file
 # Source code massager settings for the manual.
 #
@@ -32,4 +32,5 @@
 
 *.dita:    --treat-as xml --no-update-license --no-update-copyright-year --no-strip-trailing-blanks
 *.ditamap: --treat-as xml --no-update-license --no-update-copyright-year --no-strip-trailing-blanks
-
+*.ditaval: --treat-as xml --no-update-license --no-update-copyright-year --no-strip-trailing-blanks
+*.svg:     --treat-as plaintext
