@@ -6,7 +6,7 @@ Requires >= Python 3.4.
 """
 
 # -*- coding: utf-8 -*-
-# $Id: configure.py 112298 2026-01-06 19:40:01Z andreas.loeffler@oracle.com $
+# $Id: configure.py 112328 2026-01-07 09:54:18Z andreas.loeffler@oracle.com $
 # pylint: disable=bare-except
 # pylint: disable=consider-using-f-string
 # pylint: disable=global-statement
@@ -61,7 +61,7 @@ SPDX-License-Identifier: GPL-3.0-only
 # External Python modules or other dependencies are not allowed!
 #
 
-__revision__ = "$Revision: 112298 $"
+__revision__ = "$Revision: 112328 $"
 
 import argparse
 import ctypes
@@ -478,7 +478,8 @@ def hasCPPHeader(asHeader):
     for sCurHdr in asHeader:
         if sCurHdr.endswith(('.hpp', '.hxx', '.hh')):
             return True;
-        if sCurHdr in asCPPHdr:
+        sMatch = [h for h in asCPPHdr if h in sCurHdr];
+        if sMatch:
             return True;
     return False;
 
@@ -640,6 +641,7 @@ def compileAndExecute(sName, enmBuildTarget, enmBuildArch, asIncPaths, asLibPath
             printLog(f'Compilation of test program for {sName} successful');
             # Try executing the compiled binary and capture stdout + stderr.
             try:
+                printVerbose(2, f"Executing '{sFileImage}' ...");
                 oProc = subprocess.run([sFileImage], env = oProcEnv.env, shell = True, stdout = subprocess.PIPE, stderr = subprocess.STDOUT, check = False, timeout = 10);
                 if oProc.returncode == 0:
                     printLog(f'Running test program for {sName} successful (exit code 0)');
@@ -1116,35 +1118,30 @@ class LibraryCheck(CheckBase):
             printVerbose(1, f'Root path for library {self.sName} determined: {sRootPath}');
         return sRootPath, fInTree;
 
-    def getToolsPath(self, sCustomPath = None, sToolName = None):
+    def getToolPath(self):
         """
-        Returns the path of the dev tools package, if any.
+        Returns the path of the dev tools package.
 
         Dev tools packages are pre-compiled libraries / SDKs / Frameworks.
 
         Will return None if not found.
         """
 
-        sToolName = self.sName if not sToolName else sToolName;
-        self.printVerbose(1, 'Retrieving dev tools path ...');
-        sRootPath = None;
-        sPath = sCustomPath; # A custom path has precedence.
-        if not sPath:
-            sPath  = g_oEnv['PATH_DEVTOOLS'];
-            if not sPath:
-                sPath = os.path.join(g_sScriptPath, 'tools');
+        sRootPath = self.sRootPath; # A custom path has precedence.
+        if not sRootPath:
+            sToolsDir  = g_oEnv['PATH_DEVTOOLS'];
+            if not sToolsDir:
+                sToolsDir = g_sScriptPath, 'tools';
+            sPath = os.path.join(sToolsDir, f"{ g_oEnv['KBUILD_TARGET'] }.{ g_oEnv['KBUILD_TARGET_ARCH'] }", self.sName);
             if pathExists(sPath):
-                # Our devtools layout expect a certain format.
-                sPath = os.path.join(sPath, f"{ g_oEnv['KBUILD_TARGET'] }.{ g_oEnv['KBUILD_TARGET_ARCH'] }", sToolName);
+                _, sPath = self.getHighestVersionDir(sPath);
                 if pathExists(sPath):
-                    self.sVer, sPath = self.getHighestVersionDir(sPath);
-        if not pathExists(sPath):
-            printVerbose(1, 'No root path found');
-            return None;
+                    sRootPath = sPath;
 
-        if pathExists(sPath):
-            printVerbose(1, f'Root path for tool is: {sPath}');
-            sRootPath = sPath;
+        if not sRootPath:
+            printVerbose(1, f'No root path found for tool {self.sName}');
+        else:
+            printVerbose(1, f'Root path for tool {self.sName} determined: {sRootPath}');
         return sRootPath;
 
     def isPathInTree(self, sPath):
@@ -1301,55 +1298,66 @@ class LibraryCheck(CheckBase):
     def checkHdr(self):
         """
         Checks for headers in standard/custom include paths.
+
+        Returns a tuple of (True, list of lib paths found) on success or (False, None) on failure.
         """
         self.printVerbose(1, 'Checking headers ...');
         if not self.asHdrFiles:
-            return True;
+            return True, [];
         asHdrToSearch = [];
         if self.asHdrFiles:
             asHdrToSearch.extend(self.asHdrFiles);
         if hasCPPHeader(self.asHdrFiles):
             asHdrToSearch.extend([ 'iostream' ]); # Non-library headers must come last.
 
-        asHdrFound = [];
+        setHdrFound = {}; # Key = Header file, Value = Path to header file.
 
-        asSearchPaths = list(set(self.asIncPaths + self.getIncSearchPaths()));
-        self.printVerbose(2, f"asSearchPaths: {asSearchPaths}");
-        for sCurSearchPath in asSearchPaths:
-            self.printVerbose(1, f"Checking include path for '{asHdrToSearch}': {sCurSearchPath}");
+        asSearchPath = self.asIncPaths + self.getIncSearchPaths(); # Own include paths have precedence.
+        self.printVerbose(2, f"Search paths: {asSearchPath}");
+        for sCurSearchPath in asSearchPath:
             asResults, _ = self.findFiles(sCurSearchPath, asHdrToSearch, fAbsolute = True, fStripFilenames = True);
             for sResIncFile, dictRes in asResults.items():
                 sIncPath = dictRes['found_path'];
-                if sIncPath:
-                    self.asIncPaths.extend([ sIncPath ]);
-                    asHdrFound.extend([ sResIncFile ]);
+                if  sIncPath \
+                and sResIncFile not in setHdrFound: # Take the first match found.
+                    setHdrFound[sResIncFile] = sIncPath;
+
+        fRc = True;
+
+        asIncPaths = [];
+        self.printVerbose(1, 'Found header files:');
+        for sHdr, sPath in setHdrFound.items():
+            self.printVerbose(1, f'\t{os.path.join(sPath, sHdr)}');
+            asIncPaths.extend([ sPath ]);
 
         for sHdr in asHdrToSearch:
-            if sHdr not in asHdrFound:
-                self.printWarn(f"Header file {sHdr} not found in paths: {asSearchPaths}");
-                return False;
+            if sHdr not in setHdrFound:
+                self.printWarn(f'Header file missing: {sHdr}');
+                fRc = False;
 
-        self.printVerbose(1, 'All header files found');
-        return True;
+        if fRc:
+            self.printVerbose(1, 'All header files found');
+        return fRc, asIncPaths if fRc else None;
 
     def checkLib(self, fStatic = False):
         """
         Checks for libraries in standard/custom lib paths.
+
+        Returns a tuple of (True, list of lib paths found) on success or (False, None) on failure.
         """
         self.printVerbose(1, 'Checking library paths ...');
         if not self.asLibFiles:
             self.printVerbose(1, 'No libraries defined, skipping');
-            return True;
+            return True, [];
         if self.fInTree:
             self.printVerbose(1, 'Library in-tree, skipping');
-            self.asLibFiles = []; # Clear all libraries, as we don't have those in compiled form.
-            return True;
+            return True, [];
 
-        asSearchPaths = self.getLibSearchPaths();
-        asLibFound    = [];
+        asSearchPath = self.asLibPaths + self.getLibSearchPaths(); # Own lib paths have precedence.
+        setLibFound  = {}; # Key = Lib file, Value = Path to lib file.
         asLibToSearch = self.asLibFiles;
-        self.printVerbose(2, f"Search paths: {asSearchPaths}");
-        for sCurSearchPath in asSearchPaths:
+        self.printVerbose(2, f"Search paths: {asSearchPath}");
+        for sCurSearchPath in asSearchPath:
             for sCurLib in asLibToSearch:
                 if hasLibSuff(sCurLib):
                     sPattern = os.path.join(sCurSearchPath, sCurLib);
@@ -1359,21 +1367,26 @@ class LibraryCheck(CheckBase):
                 for sCurFile in glob.glob(sPattern):
                     if isFile(sCurFile) \
                     or os.path.islink(sCurFile):
-                        self.asLibPaths.extend([ sCurSearchPath ]);
-                        if sCurLib not in asLibFound: # Add first lib found.
-                            asLibFound.extend([ sCurLib ]);
+                        if sCurLib not in setLibFound:
+                            setLibFound[sCurLib] = os.path.dirname(sCurFile);
                         break;
 
-        if asLibToSearch == asLibFound:
+        fRc = True;
+
+        asLibPaths = [];
+        self.printVerbose(1, 'Found library files:');
+        for sLib, sPath in setLibFound.items():
+            self.printVerbose(1, f'\t{os.path.join(sPath, sLib)}');
+            asLibPaths.extend([ sPath ]);
+
+        for sLib in asLibToSearch:
+            if sLib not in setLibFound:
+                self.printWarn(f'Library file missing: {sLib}');
+                fRc = False;
+
+        if fRc:
             self.printVerbose(1, 'All libraries found');
-            return True;
-
-        if self.fInTree: # If in-tree, this is non fatal.
-            self.printVerbose(1, 'Library in-tree, skipping library check');
-            return True;
-
-        self.printWarn(f"Library files { ' '.join(asLibToSearch)} not found in paths: {asSearchPaths}");
-        return False;
+        return fRc, asLibPaths if fRc else None;
 
     def performCheck(self):
         """
@@ -1398,9 +1411,9 @@ class LibraryCheck(CheckBase):
         if self.fnCallback:
             fRc = self.fnCallback(self);
         if fRc:
-            fRc = self.checkHdr();
+            fRc, self.asIncPaths = self.checkHdr();
             if fRc:
-                fRc = self.checkLib();
+                fRc, self.asLibPaths = self.checkLib();
                 if      fRc \
                 and not self.fInTree:
                     self.fHave, _, _ = self.compileAndExecute(g_oEnv['KBUILD_TARGET'], g_oEnv['KBUILD_TARGET_ARCH']);
@@ -1489,9 +1502,16 @@ class LibraryCheck(CheckBase):
         sPathFramework = None;
 
         # Check if we have our own pre-compiled Qt in tools first.
-        sPathBase = self.getToolsPath(self.sRootPath, 'qt');
+        sPathBase = self.getToolPath();
         if sPathBase:
+            self.asIncPaths.insert(0, os.path.join(sPathBase, 'include'));
+            self.asLibPaths.insert(0, os.path.join(sPathBase, 'lib'));
+            self.asLibFiles = [ 'libQt6CoreVBox' ];
+            # Explicitly set the RPATH, so that our test program can find the dynamic libs.
+            self.asCompilerArgs.extend([ f'-Wl,-rpath,{sPathBase}/lib' ]);
+
             g_oEnv.set('VBOX_WITH_ORACLE_QT', '1');
+            return True;
 
         # Qt 6.x requires a recent compiler (>= C++17).
         # For MSVC this means at least 14.1 (VS 2017).
@@ -3086,8 +3106,8 @@ g_aoLibs = [
                  sSdkName = "VBoxOpenSslStatic"),
     # Note: The required libs for qt6 can differ (VBox infix and whatnot), and thus will
     #       be resolved in the check callback.
-    LibraryCheck("qt", [ "QtGlobal" ], [ ], aeTargets = [ BuildTarget.ANY ],
-                 sCode = '#define IN_RING3\n#include <QtGlobal>\nint main() { std::cout << QT_VERSION_STR; }',
+    LibraryCheck("qt", [ "QtCore/QtGlobal" ], [ ], aeTargets = [ BuildTarget.ANY ],
+                 sCode = '#define IN_RING3\n#include <QtCore/QtGlobal>\nint main() { std::cout << QT_VERSION_STR << std::endl; }',
                  fnCallback = LibraryCheck.checkCallback_qt6, sSdkName = 'QT6',
                  asDefinesToDisableIfNotFound = [ 'VBOX_WITH_QTGUI' ]),
     LibraryCheck("sdl2", [ "SDL2/SDL.h" ], [ "libSDL2" ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ],
