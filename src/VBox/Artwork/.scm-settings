@@ -1,4 +1,4 @@
-# $Id: .scm-settings 112315 2026-01-07 01:59:49Z knut.osmundsen@oracle.com $
+# $Id: .scm-settings 112364 2026-01-07 23:49:54Z knut.osmundsen@oracle.com $
 ## @file
 # Source code massager settings for the Artwork.
 #
@@ -31,9 +31,6 @@
 /unused/*: --svn-sync-process-export none
 ## @todo export: why is this secret?
 /resolutions.txt: --svn-sync-process-export none
-
-# SVG is xml, but apparently spec'ed to LF.
-*.svg: --treat-as xml --external-copyright --del-action force-native-eol --add-action force-lf --dont-set-svn-keywords
 
 # Some PDF related stuff.
 *.ai: --treat-as binary
