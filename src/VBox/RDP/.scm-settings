@@ -1,4 +1,4 @@
-# $Id: .scm-settings 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $
+# $Id: .scm-settings 112354 2026-01-07 21:23:29Z knut.osmundsen@oracle.com $
 ## @file
 # Source code massager settings for RDP.
 #
@@ -25,24 +25,6 @@
 # SPDX-License-Identifier: GPL-3.0-only
 #
 
---filter-out-dirs  /client-*/keymaps/.
---filter-out-dirs  /client-*/doc/.
-
---filter-out-files /client-*/bootstrap
---filter-out-files /client-*/config.*
---filter-out-files /client-*/configure.ac
---filter-out-files /client-*/install-sh
---filter-out-files /client-*/Makefile.in
---filter-out-files /client-*/proto.head
---filter-out-files /client-*/proto.tail
---filter-out-files /client-*/rdesktop.spec
---filter-out-files /client-*/README
-
-/client-*/*.c: --external-copyright --lgpl-disclaimer --no-convert-tabs --no-fix-todos --no-strip-trailing-blanks
-/client-*/*.h: --external-copyright --lgpl-disclaimer --no-convert-tabs --no-fix-todos --no-strip-trailing-blanks --no-fix-header-guards
-/client-*/configure: --external-copyright --lgpl-disclaimer --no-convert-tabs --no-fix-todos --no-strip-trailing-blanks
-/client-*/vrdp/*: --no-external-copyright --no-lgpl-disclaimer --fix-todos --strip-trailing-blanks
-
-/server/mixeng/*_template.h: --no-fix-header-guards
-/server/*.h: --guard-relative-to-dir server --guard-prefix VRDP_INCLUDED_SRC_
+# All is exported.
+--svn-sync-process-export all
 

@@ -1,4 +1,4 @@
-# $Id: .scm-settings 111617 2025-11-11 08:26:46Z alexander.eichner@oracle.com $
+# $Id: .scm-settings 112354 2026-01-07 21:23:29Z knut.osmundsen@oracle.com $
 ## @file
 # Source code massager settings for the RDP server.
 #
@@ -25,6 +25,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 #
 
-/mixeng/*: --external-copyright
---filter-out-files /TODO
+/mixeng/*:                      --external-copyright
+/TODO:                          --treat-as plaintext
+
+/*.h:                           --guard-relative-to-dir . --guard-prefix VRDP_INCLUDED_SRC_
+/mixeng/*_template.h:           --no-fix-header-guards
 
