@@ -1,4 +1,4 @@
-# $Id: .scm-settings 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $
+# $Id: .scm-settings 112333 2026-01-07 12:54:24Z knut.osmundsen@oracle.com $
 ## @file
 # Source code massager settings for the host HGCM services.
 #
@@ -25,5 +25,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 #
 
---filter-out-files *.txt
 /*.h: --guard-relative-to-dir .
+
+# The file ends with a '\0' byte, so we need to treat it as a binary.
+# This also makes sure we use CRLF as EOL, so VBoxOrgCfHtml1.h can be recreated
+# w/o differencing between unix & windows hosts.
+/VBoxOrgCfHtml1.txt: --treat-as binary
