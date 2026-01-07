@@ -6,7 +6,7 @@ Requires >= Python 3.4.
 """
 
 # -*- coding: utf-8 -*-
-# $Id: configure.py 112337 2026-01-07 15:55:27Z andreas.loeffler@oracle.com $
+# $Id: configure.py 112338 2026-01-07 17:22:34Z andreas.loeffler@oracle.com $
 # pylint: disable=bare-except
 # pylint: disable=consider-using-f-string
 # pylint: disable=global-statement
@@ -61,7 +61,7 @@ SPDX-License-Identifier: GPL-3.0-only
 # External Python modules or other dependencies are not allowed!
 #
 
-__revision__ = "$Revision: 112337 $"
+__revision__ = "$Revision: 112338 $"
 
 import argparse
 import ctypes
@@ -1670,8 +1670,13 @@ class LibraryCheck(CheckBase):
             sPathLib     = os.path.join(sPathBase, 'lib');
             sPathLibExec = os.path.join(sPathBase, 'libexec');
 
-            # Explicitly set the RPATH, so that our test program can find the dynamic libs.
-            self.asCompilerArgs.extend([ f'-Wl,-rpath,{sPathBase}/lib' ]);
+            if g_oEnv['KBUILD_TARGET'] != BuildTarget.WINDOWS:
+                # Tell g++ that we need C++17 -- otherwise Qt6 won't compile.
+                # Required for older compilers (i.e. G++ 9.4).
+                self.asCompilerArgs.extend([ '-std=c++17' ]);
+                # Explicitly set the RPATH, so that our test program can find the dynamic libs.
+                self.asCompilerArgs.extend([ f'-Wl,-rpath,{sPathBase}/lib' ]);
+
         else: # Ask the system.
             _, sPathBin = getPackageVar(sPkgName, PkgMgrVar.BINDIR);
             _, sPathInc = getPackageVar(sPkgName, PkgMgrVar.INCDIR);
