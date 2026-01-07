@@ -1,4 +1,4 @@
-# $Id: .scm-settings 112314 2026-01-07 01:59:04Z knut.osmundsen@oracle.com $
+# $Id: .scm-settings 112315 2026-01-07 01:59:49Z knut.osmundsen@oracle.com $
 ## @file
 # Source code massager settings for the Artwork.
 #
@@ -24,10 +24,6 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 #
-
-#--filter-out-files /unused/VirtualBox.ai
-#--filter-out-files *.svg
-#--filter-out-files *.txt
 
 # Exporting most things everything.
 --svn-sync-process-export all
