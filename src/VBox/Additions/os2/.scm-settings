@@ -1,4 +1,4 @@
-# $Id: .scm-settings 112307 2026-01-07 01:24:00Z knut.osmundsen@oracle.com $
+# $Id: .scm-settings 112308 2026-01-07 01:24:53Z knut.osmundsen@oracle.com $
 ## @file
 # Source code massager settings for the OS/2 guest additions.
 #
@@ -30,6 +30,8 @@
 /Bin/*|/VBoxGradd/*|/VBoxGrext/*|/VBoxMouse/*: --svn-sync-process-export none
 
 /VBoxSF/*:                      --external-copyright
+
+/Bin/*.sys:                     --treat-as binary
 
 /*/makefile:                    --external-copyright --dont-set-svn-keywords
 
