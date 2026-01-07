@@ -1,4 +1,4 @@
-# $Id: .scm-settings 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $
+# $Id: .scm-settings 112323 2026-01-07 03:41:39Z knut.osmundsen@oracle.com $
 ## @file
 # Source code massager settings for the PDM Devices and Drivers.
 #
@@ -25,6 +25,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 #
 
+## Export everything.
+#--svn-sync-process-export all
+
 /*.h: --guard-relative-to-dir .
 /Graphics/vmsvga_glext/*.h|/Graphics/vmsvga/*.h: --guard-relative-to-dir ''
 /*.h: --only-guest-host-page
@@ -34,15 +37,3 @@
 /*.cpp: --only-guest-host-page --no-ASMMemPage-use
 /*.m:   --only-guest-host-page --no-ASMMemPage-use
 
-# This defines it's own PAGE_XXX macros.
-/PC/ipxe/src/arch/arm/include/ipxe/arm_io.h: --no-page-restrictions
-/PC/ipxe/src/arch/x86/include/ipxe/x86_io.h: --no-page-restrictions
-/PC/ipxe/src/include/ipxe/virtio-ring.h:     --no-page-restrictions
-/PC/ipxe/src/include/ipxe/hyperv.h:          --no-page-restrictions
-/PC/ipxe/src/include/ipxe/io.h:              --no-page-restrictions
-/PC/ipxe/src/include/ipxe/vmbus.h:           --no-page-restrictions
-/PC/ipxe/src/include/ipxe/xengrant.h:        --no-page-restrictions
-/PC/ipxe/src/include/xen/io/ring.h:          --no-page-restrictions
-/PC/ipxe/src/drivers/net/netvsc.h:           --no-page-restrictions
-/PC/ipxe/src/drivers/net/bnxt/bnxt.h:        --skip-unicode-checks
-/PC/ipxe/vbox/config/local/*.h:              --external-copyright
