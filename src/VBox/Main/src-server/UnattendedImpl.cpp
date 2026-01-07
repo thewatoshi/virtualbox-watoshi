@@ -1,4 +1,4 @@
-/* $Id: UnattendedImpl.cpp 112329 2026-01-07 11:37:41Z serkan.bayraktar@oracle.com $ */
+/* $Id: UnattendedImpl.cpp 112352 2026-01-07 20:24:42Z serkan.bayraktar@oracle.com $ */
 /** @file
  * Unattended class implementation
  */
@@ -242,7 +242,7 @@ static int hlpVfsRecursiveFileSearchInt(HLPVFSRECURSIVE *pThis, RTVFSDIR hVfsDir
                 {
                     vrc = RTStrCopy(&pThis->pszFoundPath[offFoundPath], pThis->cbFoundPath - offFoundPath, pThis->DirEntry.szName);
                     AssertLogRelMsgReturn(RT_SUCCESS(vrc),
-                                          ("Appending '%s' to '%s': %Rrc\n", pThis->DirEntry.szName, pThis->pszFoundPath), vrc);
+                                          ("Appending '%s' to '%s': %Rrc\n", pThis->DirEntry.szName, pThis->pszFoundPath, vrc), vrc);
                     return VINF_SUCCESS;
                 }
                 break;
