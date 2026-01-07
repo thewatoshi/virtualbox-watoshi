@@ -1,4 +1,4 @@
-# $Id: .scm-settings 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $
+# $Id: .scm-settings 112318 2026-01-07 03:24:42Z knut.osmundsen@oracle.com $
 ## @file
 # Source code massager settings for graphics.
 #
@@ -39,16 +39,15 @@
 /BIOS/vgatables.h:      --external-copyright
 /BIOS/tests/testbios.c: --external-copyright
 
---filter-out-files /BIOS/BUGS
---filter-out-files /BIOS/ChangeLog
---filter-out-files /BIOS/makefile
---filter-out-files /BIOS/Notes
---filter-out-files /BIOS/README
---filter-out-files /BIOS/TODO
---filter-out-files /BIOS/vbe_display_api.txt
---filter-out-files /BIOS/VBoxVgaBiosAlternative*.asm
---filter-out-files /BIOS/VBoxVgaBiosAlternative*.md5sum
-
+/BIOS/BUGS:             --treat-as plaintext
+/BIOS/ChangeLog:        --treat-as plaintext
+/BIOS/makefile:         --treat-as make
+/BIOS/Notes:            --treat-as plaintext
+/BIOS/README:           --treat-as plaintext
+/BIOS/TODO:             --treat-as plaintext
+/BIOS/COPYING:          --treat-as plaintext
+/BIOS/VBoxVgaBiosAlternative*.asm: --external-copyright
+/BIOS/VBoxVgaBiosAlternative*.md5sum: --treat-as plaintext
 
 /shaderlib/*: --external-copyright --lgpl-disclaimer --no-convert-tabs --no-fix-todos --no-strip-trailing-blanks
 /shaderlib/wine/include/*.idl:       --treat-as .h --no-fix-header-guards
@@ -73,12 +72,12 @@
 /shaderlib/wine/vbox/VBoxWineEx.h:       --no-external-copyright --no-lgpl-disclaimer --convert-tabs --fix-todos --strip-trailing-blanks
 /shaderlib/winoverride.h:                --no-external-copyright --no-lgpl-disclaimer --convert-tabs --fix-todos --strip-trailing-blanks
 
-/shaders/*.h: --external-copyright --no-fix-header-guards --dont-set-svn-keywords --no-strip-trailing-blanks
-/shaders/*.hlsl: --treat-as .cpp
+/shaders/*.h:                   --external-copyright --no-fix-header-guards --dont-set-svn-keywords --no-strip-trailing-blanks
+/shaders/*.hlsl:                --treat-as .cpp
 
---filter-out-dirs  "/svgadump/."
+/svgadump/*:                    --external-copyright --no-fix-header-guards --dont-set-svn-keywords --no-strip-trailing-blanks
 
-/vmsvga_glext/*.h: --external-copyright --no-convert-tabs --no-strip-trailing-blanks
+/vmsvga_glext/*.h:              --external-copyright --no-convert-tabs --no-strip-trailing-blanks
 /vmsvga_include/includeCheck.h: --external-copyright --no-fix-header-guards
 /vmsvga_include/svga*.h:        --external-copyright --no-fix-header-guards --no-convert-tabs --no-strip-trailing-blanks --dont-set-svn-keywords --no-page-restrictions
 /vmsvga_include/vmware*.h:      --external-copyright --no-fix-header-guards --no-convert-tabs --no-strip-trailing-blanks --dont-set-svn-keywords

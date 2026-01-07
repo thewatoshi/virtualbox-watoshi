@@ -1,4 +1,4 @@
-; $Id: VBoxVgaBiosAlternative286.asm 111436 2025-10-17 08:46:53Z vadim.galitsyn@oracle.com $ 
+; $Id: VBoxVgaBiosAlternative286.asm 112318 2026-01-07 03:24:42Z knut.osmundsen@oracle.com $
 ;; @file
 ; Auto Generated source file. Do not edit.
 ;
@@ -7,71 +7,71 @@
 ; Source file: vgarom.asm
 ;
 ;  ============================================================================================
-;  
+;
 ;   Copyright (C) 2001,2002 the LGPL VGABios developers Team
-;  
+;
 ;   This library is free software; you can redistribute it and/or
 ;   modify it under the terms of the GNU Lesser General Public
 ;   License as published by the Free Software Foundation; either
 ;   version 2 of the License, or (at your option) any later version.
-;  
+;
 ;   This library is distributed in the hope that it will be useful,
 ;   but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ;   Lesser General Public License for more details.
-;  
+;
 ;   You should have received a copy of the GNU Lesser General Public
 ;   License along with this library; if not, write to the Free Software
 ;   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-;  
+;
 ;  ============================================================================================
-;  
+;
 ;   This VGA Bios is specific to the plex86/bochs Emulated VGA card.
 ;   You can NOT drive any physical vga card with it.
-;  
+;
 ;  ============================================================================================
-;  
+;
 
 ;
 ; Source file: vberom.asm
 ;
 ;  ============================================================================================
-;  
+;
 ;   Copyright (C) 2002 Jeroen Janssen
-;  
+;
 ;   This library is free software; you can redistribute it and/or
 ;   modify it under the terms of the GNU Lesser General Public
 ;   License as published by the Free Software Foundation; either
 ;   version 2 of the License, or (at your option) any later version.
-;  
+;
 ;   This library is distributed in the hope that it will be useful,
 ;   but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ;   Lesser General Public License for more details.
-;  
+;
 ;   You should have received a copy of the GNU Lesser General Public
 ;   License along with this library; if not, write to the Free Software
 ;   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-;  
+;
 ;  ============================================================================================
-;  
+;
 ;   This VBE is part of the VGA Bios specific to the plex86/bochs Emulated VGA card.
 ;   You can NOT drive any physical vga card with it.
-;  
+;
 ;  ============================================================================================
-;  
+;
 ;   This VBE Bios is based on information taken from :
 ;    - VESA BIOS EXTENSION (VBE) Core Functions Standard Version 3.0 located at www.vesa.org
-;  
+;
 ;  ============================================================================================
 
 ;
 ; Source file: vgabios.c
 ;
 ;  // ============================================================================================
-;  
+;
 ;  vgabios.c
-;  
+;
 ;  // ============================================================================================
 ;  //
 ;  //  Copyright (C) 2001,2002 the LGPL VGABios developers Team
