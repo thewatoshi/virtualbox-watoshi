@@ -1,4 +1,4 @@
-/* $Id: NEMR3Native-win-x86.cpp 111908 2025-11-27 09:18:56Z knut.osmundsen@oracle.com $ */
+/* $Id: NEMR3Native-win-x86.cpp 112327 2026-01-07 06:36:17Z ramshankar.venkataraman@oracle.com $ */
 /** @file
  * NEM - Native execution manager, native ring-3 Windows backend.
  *
@@ -1472,9 +1472,9 @@ static int nemR3WinInitCreatePartition(PVM pVM, PRTERRINFO pErrInfo)
                             Assert(FAILED(hrc)); /* Paranoia. */
                         }
                     }
-                    if (FAILED(hrc))
-                        pVM->nem.s.fLocalApicEmulation = false;
                     else
+                        Assert(SUCCEEDED(hrc)); /* Paranoia. */
+                    if (SUCCEEDED(hrc))
                     {
                         /* Rewrite the configuration tree to point to our APIC emulation. */
                         PCFGMNODE pCfgmDev = CFGMR3GetChild(CFGMR3GetRoot(pVM), "/Devices");
@@ -1492,6 +1492,11 @@ static int nemR3WinInitCreatePartition(PVM pVM, PRTERRINFO pErrInfo)
                         if (RT_FAILURE(rc))
                             rc = RTErrInfoSetF(pErrInfo, rc, "Failed replace APIC device config with Hyper-V one");
                     }
+                    else
+                    {
+                        /* Reason already logged above. */
+                        pVM->nem.s.fLocalApicEmulation = false;
+                    }
                 }
             }
             else
@@ -1504,7 +1509,7 @@ static int nemR3WinInitCreatePartition(PVM pVM, PRTERRINFO pErrInfo)
                  */
                 pVM->nem.s.fCreatedEmts     = false;
                 pVM->nem.s.hPartition       = hPartition;
-                LogRel(("NEM: Created partition %p. APIC emulation mode: %s\n", hPartition,
+                LogRel(("NEM: Created partition %p\nNEM: APIC emulation mode: %s\n", hPartition,
                         pVM->nem.s.fLocalApicEmulation ? "Hyper-V" : "VirtualBox"));
                 return VINF_SUCCESS;
             }
