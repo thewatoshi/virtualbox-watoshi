@@ -61,7 +61,7 @@
 # include <stdio.h>
 
 # include <iprt/alloca.h>
-# include <iprt/err.h>
+# include <iprt/errcore.h>
 # include <iprt/getopt.h>
 # include <iprt/initterm.h>
 # include <iprt/path.h>

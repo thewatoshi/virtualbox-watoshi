@@ -55,7 +55,7 @@
 # endif
 # include <fcntl.h>
 # include <stdlib.h>
-# include <iprt/err.h>
+# include <iprt/errcore.h>
 
 # if RT_GNUC_PREREQ(10, 0)
 #  pragma GCC diagnostic ignored "-Walloca-larger-than="

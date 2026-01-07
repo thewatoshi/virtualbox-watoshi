@@ -97,7 +97,7 @@
 # include <VBox/sup.h>
 # include <iprt/assert.h>
 # include <iprt/cpuset.h>
-# include <iprt/err.h>
+# include <iprt/errcore.h>
 # include <iprt/mem.h>
 # include <iprt/mp.h>
 # include <iprt/string.h>

@@ -1,4 +1,4 @@
-# $Id: .scm-settings 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $
+# $Id: .scm-settings 112325 2026-01-07 04:16:41Z knut.osmundsen@oracle.com $
 ## @file
 # Source code massager settings for VBoxDTrace.
 #
@@ -16,14 +16,50 @@
 # SPDX-License-Identifier: CDDL-1.0
 #
 
+# Exported.
+--svn-sync-process-export all
 
---filter-out-dirs  "/onnv/cmd/."
---filter-out-dirs  "/onnv/common/."
---filter-out-dirs  "/onnv/lib/."
---filter-out-dirs  "/onnv/uts/."
+# Reset the directory filter so we can scan onnv/cmd/dtrace/demo/out/.
+--filter-out-dirs ""
 
---filter-out-files "/generated/dt_*"
---filter-out-files "/CDDL-ONLY"
+/generated/dt_*:    --external-copyright --no-convert-tabs --no-strip-trailing-blanks --no-fix-header-guards --no-force-trailing-line --strip-no-trailing-lines
+/onnv/*:            --external-copyright --no-convert-tabs --no-strip-trailing-blanks --no-fix-header-guards --no-force-trailing-line --strip-no-trailing-lines
+/onnv/*.d:          --del-action force-native-eol
+#--add-action force-lf # we have hash-bang scripts which must be LF, then others which doesn't.
+/onnv/*.out:        --treat-as plaintext
+/onnv/*.ksh:        --treat-as shell --del-action force-native-eol
+
+/CDDL-ONLY:                                                 --treat-as plaintext
+/COPYING|/onnv/COPYING|/CDDL-ONLY:                          --treat-as plaintext --dont-set-svn-keywords
+
+/onnv/*.s:                                                  --treat-as gas
+/onnv/*.d.in:                                               --treat-as dtrace
+/onnv/*.sed.in:                                             --treat-as sed
+/onnv/*/Makefile.com:                                       --treat-as make
+/onnv/*/Makefile.subdirs:                                   --treat-as make
+/onnv/*/mapfile-vers:                                       --treat-as hashtext
+/onnv/cmd/dtrace/demo/chapters:                             --treat-as plaintext
+/onnv/cmd/dtrace/test/*:                                    --no-convert-eol ## @todo cleanup proper
+/onnv/cmd/dtrace/test/*.jar-manifest:                       --treat-as plaintext
+/onnv/cmd/dtrace/test/cmd/jdtrace/exception.lst:            --treat-as hashtext
+/onnv/cmd/dtrace/test/tst/*.exe:                            --treat-as shell
+/onnv/cmd/dtrace/test/tst/common/funcs/tst.basename.d.out:  --treat-as shell
+/onnv/cmd/dtrace/test/tst/common/funcs/tst.index.d.out:     --treat-as perl
+/onnv/cmd/dtrace/test/tst/common/funcs/tst.substr.d.out:    --treat-as perl
+/onnv/cmd/dtrace/test/tst/common/dtraceUtil/man.*:          --treat-as dtrace
+/onnv/lib/libctf/common/llib-lctf:                          --treat-as h
+/onnv/lib/libdtrace/common/dt_grammar.y:                    --treat-as c
+/onnv/lib/libdtrace/common/dt_lex.l:                        --treat-as c
+/onnv/lib/libdtrace/common/llib-ldtrace:                    --treat-as h
+/onnv/uts/*.conf:                                           --treat-as hashtext
+
+#--filter-out-dirs  "/onnv/cmd/."
+#--filter-out-dirs  "/onnv/common/."
+#--filter-out-dirs  "/onnv/lib/."
+#--filter-out-dirs  "/onnv/uts/."
+#
+#--filter-out-files "/generated/dt_*"
+#--filter-out-files "/CDDL-ONLY"
 
 # This is CDDL licensed
 --license-ose-cddl
