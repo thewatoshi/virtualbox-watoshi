@@ -1,4 +1,4 @@
-# $Id: .scm-settings 110684 2025-08-11 17:18:47Z klaus.espenlaub@oracle.com $
+# $Id: .scm-settings 112304 2026-01-07 01:04:38Z knut.osmundsen@oracle.com $
 ## @file
 # Source code massager settings for the FreeBSD guest additions.
 #
@@ -25,6 +25,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 #
 
---filter-out-files /Installer/pkg-descr
+# Exporting everything.
+--svn-sync-process-export all
+
+/Installer/pkg-descr: --treat-as plaintext --del-action force-native-eol --add-action force-lf
+
+# Based on 3rd-party code.
 /drm/vboxvideo_drm.c: --no-convert-tabs
 
