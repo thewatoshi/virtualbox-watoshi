@@ -6,7 +6,7 @@ Requires >= Python 3.4.
 """
 
 # -*- coding: utf-8 -*-
-# $Id: configure.py 112336 2026-01-07 15:50:48Z andreas.loeffler@oracle.com $
+# $Id: configure.py 112337 2026-01-07 15:55:27Z andreas.loeffler@oracle.com $
 # pylint: disable=bare-except
 # pylint: disable=consider-using-f-string
 # pylint: disable=global-statement
@@ -61,7 +61,7 @@ SPDX-License-Identifier: GPL-3.0-only
 # External Python modules or other dependencies are not allowed!
 #
 
-__revision__ = "$Revision: 112336 $"
+__revision__ = "$Revision: 112337 $"
 
 import argparse
 import ctypes
@@ -1460,11 +1460,11 @@ class LibraryCheck(CheckBase):
 
         printVerbose(1, f"Package Information for {sPackageName}:");
         fRc, sBinDir = getPackageVar(sPackageName, PkgMgrVar.BINDIR);
-        printVerbose(1, f"    BINDIR: {sBinDir if fRc else "<None>"}");
+        printVerbose(1, f'    BINDIR: {sBinDir if fRc else "<None>"}');
         fRc, sLibDir = getPackageVar(sPackageName, PkgMgrVar.LIBDIR);
-        printVerbose(1, f"    LIBDIR: {sLibDir if fRc else "<None>"}");
+        printVerbose(1, f'    LIBDIR: {sLibDir if fRc else "<None>"}');
         fRc, sCFlags = getPackageVar(sPackageName, PkgMgrVar.CFLAGS);
-        printVerbose(1, f"    CFLAGS: {sCFlags if fRc else "<None>"}");
+        printVerbose(1, f'    CFLAGS: {sCFlags if fRc else "<None>"}');
 
         #if self.sRootPath:
         #    g_oEnv.set(f'PATH_SDK_{self.sSdkName}', self.sRootPath);
