@@ -1,4 +1,4 @@
-/* $Id: dxvk_video_decoder.h 111911 2025-11-27 10:10:13Z vitali.pelenjow@oracle.com $ */
+/* $Id: dxvk_video_decoder.h 112399 2026-01-11 18:46:00Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBoxDxVk - Video decoder.
  */
@@ -153,7 +153,7 @@ namespace dxvk {
 
   /**
    * \brief Video session handle
-   * 
+   *
    * Manages a handle of video session object.
    */
   class DxvkVideoSessionHandle : public RcObject {
@@ -180,7 +180,7 @@ namespace dxvk {
 
   /**
    * \brief Video session parameters handle
-   * 
+   *
    * Manages a handle of video session parameters object.
    */
   class DxvkVideoSessionParametersHandle : public RcObject {
@@ -210,7 +210,7 @@ namespace dxvk {
 
   /**
    * \brief Video bitstream buffer
-   * 
+   *
    * Manages a buffer for source bitstream for the decoder.
    */
   class DxvkVideoBitstreamBuffer : public RcObject {
@@ -257,7 +257,7 @@ namespace dxvk {
    * Provides decoding.
    */
   class DxvkVideoDecoder : public RcObject {
-    
+
   public:
 
     DxvkVideoDecoder(
@@ -439,5 +439,5 @@ namespace dxvk {
       VkAccessFlags2        dstAccessMask,
       VkImageLayout         newLayout);
   };
-  
+
 }

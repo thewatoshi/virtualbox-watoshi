@@ -1,4 +1,4 @@
-/* $Id: xpidl_idl.c 108540 2025-02-25 07:41:51Z alexander.eichner@oracle.com $ */
+/* $Id: xpidl_idl.c 112399 2026-01-11 18:46:00Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBox xpidl clone - IDL parsing.
  */
@@ -268,7 +268,7 @@ static int xpidlParseSkipComments(PXPIDLPARSE pThis, PXPIDLINPUT pInput, bool *p
             || !strncmp(pTok->Type.Comment.pszComment, "%{ C++", sizeof("%{ C++") - 1))
         {
             if (pfRawBlock)
-                *pfRawBlock = true; 
+                *pfRawBlock = true;
             return VINF_SUCCESS;
         }
 

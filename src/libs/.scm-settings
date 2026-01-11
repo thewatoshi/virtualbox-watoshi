@@ -1,4 +1,4 @@
-# $Id: .scm-settings 112264 2026-01-05 03:35:53Z knut.osmundsen@oracle.com $
+# $Id: .scm-settings 112399 2026-01-11 18:46:00Z knut.osmundsen@oracle.com $
 ## @file
 # Source code massager settings for src/libs.
 #
@@ -40,7 +40,7 @@
 #
 # Default for all sub-dir content is external copyright and disabling almost all all rewriters
 #
-*!xcpt!*.kmk|.scm-settings|genjifaces.xsl|VBoxObjectBase.java|gen_python_deps.py|vboxxpcom.py|_iprt_atomic.h|xptc*_vbox.*|xpcom-namespace-cleanup.map|VBoxXPCOM*.def|ipcMsg*.h|openssl-mangling.h|threads_iprt.c|old-solaris-asm-trick.h|vbox-pragma-once.sed|mythread.h|sysdefs.h|tuklib_physmem.h|extF80_scale_extF80.c|*_sincos.*|extF80_log2.c|extF80_tan.c|*vbox/platform.h|VBoxDxVkDeps.cpp|jconfigint.h|sys_arch.c|VBoxLwipCore.cpp|VBoxLwipCore.h|/libslirp*/include/glib.h|/libslirp*/include/slirp/libslirp.h: \
+*!xcpt!*.kmk|.scm-settings|VBox*|vbox*|genjifaces.xsl|gen_python_deps.py|_iprt_atomic.h|xptc*_vbox.*|xpcom-namespace-cleanup.map|ipcMsg*.h|xpidl_idl.c|openssl-mangling.h|threads_iprt.c|old-solaris-asm-trick.h|mythread.h|sysdefs.h|tuklib_physmem.h|extF80_scale_extF80.c|*_sincos.*|extF80_log2.c|extF80_tan.c|*vbox/platform.h|jconfigint.h|sys_arch.c|/libslirp*/include/glib.h|/libslirp*/include/slirp/libslirp.h|/dxvk-*/src/dxvk/dxvk_video_decoder.*: \
         --3rd-party --no-strip-trailing-blanks
 
 
@@ -72,6 +72,8 @@ Makefile.release|*.mak|*.mk:                --treat-as make
 /dxmt*/*.metal:         --treat-as plaintext
 /dxmt*/*.options:       --treat-as plaintext
 /dxmt*/dxmt.conf:       --treat-as plaintext
+/dxmt-*/include/native/directx/d*.h:        --allow-lgpl-without-disclaimer
+/dxmt-*/include/native/directx/d*.inl:      --allow-lgpl-without-disclaimer
 
 /dxvk*/*.comp:          --treat-as plaintext
 /dxvk*/*.glsl:          --treat-as plaintext
@@ -87,6 +89,9 @@ Makefile.release|*.mak|*.mk:                --treat-as make
 /dxvk*/WORKSPACE:       --treat-as plaintext
 /dxvk*/dxvk.conf:       --treat-as plaintext
 /dxvk*/makeHeaders:     --treat-as shell
+/dxvk-*/include/native/directx/d*.h:        --allow-lgpl-without-disclaimer
+/dxvk-*/include/native/directx/d*.inl:      --allow-lgpl-without-disclaimer
+/dxvk-*/src/dxvk/dxvk_video_decoder.h:      --no-fix-header-guards
 
 /libjpeg*/java/doc/element-list:                     --treat-as plaintext
 /libjpeg*/java/doc/legal/ADDITIONAL_LICENSE_INFO:    --treat-as plaintext
@@ -140,6 +145,7 @@ Makefile.release|*.mak|*.mk:                --treat-as make
 /libslirp*/fuzzing/IN_udp6/tftp_capture.pcap:           --dont-set-svn-mime-type-on-binaries
 /libslirp*/fuzzing/IN_udp6/tftp_get_libslirp-txt.pcap:  --dont-set-svn-mime-type-on-binaries
 
+/libssh*/*:                                             --allow-lgpl-without-disclaimer
 /libssh*/.arcconfig:                                    --treat-as plaintext
 /libssh*/*.toml:                                        --treat-as hashtext
 /libssh*/BSD:                                           --treat-as plaintext
@@ -196,6 +202,7 @@ Makefile.release|*.mak|*.mk:                --treat-as make
 /libxml2*/fuzz/*.options:                               --treat-as plaintext
 /libxml2*/fuzz/static_seed/regexp/*:                    --treat-as binary
 /libxml2*/fuzz/static_seed/uri/*:                       --treat-as binary
+/libxml2-*/include/vboxconfig.h:                        --3rd-party
 
 /lwip*/BUILDING:                                        --treat-as plaintext
 /lwip*/FEATURES:                                        --treat-as plaintext
