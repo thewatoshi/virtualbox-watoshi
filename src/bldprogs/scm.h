@@ -1,10 +1,10 @@
-/* $Id: scm.h 112257 2026-01-05 02:18:01Z knut.osmundsen@oracle.com $ */
+/* $Id: scm.h 112400 2026-01-11 18:47:16Z knut.osmundsen@oracle.com $ */
 /** @file
  * IPRT Testcase / Tool - Source Code Massager.
  */
 
 /*
- * Copyright (C) 2010-2025 Oracle and/or its affiliates.
+ * Copyright (C) 2010-2026 Oracle and/or its affiliates.
  *
  * This file is part of VirtualBox base platform packages, as
  * available from https://www.virtualbox.org.
@@ -404,8 +404,11 @@ typedef struct SCMSETTINGSBASE
     bool            fUpdateCopyrightYear;
     /** Only external copyright holders. */
     bool            fExternalCopyright;
-    /** Whether there should be a LGPL disclaimer. */
+    /** Set if there must be a LGPL disclaimer when the LGPL license is used.
+     * @todo This is an odd option... (see fAllowLgplWithoutDisclaimer)  */
     bool            fLgplDisclaimer;
+    /** Whether LGPGL w/o disclaimer is allowed. */
+    bool            fAllowLgplWithoutDisclaimer;
     /** How to update the license. */
     SCMLICENSE      enmUpdateLicense;
 

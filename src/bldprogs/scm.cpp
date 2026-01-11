@@ -1,10 +1,10 @@
-/* $Id: scm.cpp 112293 2026-01-06 18:16:06Z knut.osmundsen@oracle.com $ */
+/* $Id: scm.cpp 112400 2026-01-11 18:47:16Z knut.osmundsen@oracle.com $ */
 /** @file
  * IPRT Testcase / Tool - Source Code Massager.
  */
 
 /*
- * Copyright (C) 2010-2025 Oracle and/or its affiliates.
+ * Copyright (C) 2010-2026 Oracle and/or its affiliates.
  *
  * This file is part of VirtualBox base platform packages, as
  * available from https://www.virtualbox.org.
@@ -119,6 +119,8 @@ typedef enum SCMOPT
     SCMOPT_LICENSE_BASED_ON_MIT,
     SCMOPT_LGPL_DISCLAIMER,
     SCMOPT_NO_LGPL_DISCLAIMER,
+    SCMOPT_ALLOW_LGPL_WITHOUT_DISCLAIMER,
+    SCMOPT_DONT_ALLOW_LGPL_WITHOUT_DISCLAIMER,
     SCMOPT_MIN_BLANK_LINES_BEFORE_FLOWER_BOX_MARKERS,
     SCMOPT_ONLY_SVN_DIRS,
     SCMOPT_NOT_ONLY_SVN_DIRS,
@@ -225,6 +227,7 @@ static SCMSETTINGSBASE const g_Defaults =
     /* .fUpdateCopyrightYear = */                   false,
     /* .fExternalCopyright = */                     false,
     /* .fLgplDisclaimer = */                        false,
+    /* .fAllowLgplWithoutDisclaimer = */            false,
     /* .enmUpdateLicense = */                       kScmLicense_OseGpl,
     /* .fOnlySvnFiles = */                          false,
     /* .fOnlySvnDirs = */                           false,
@@ -298,6 +301,8 @@ static RTGETOPTDEF  g_aScmOpts[] =
     { "--license-based-on-mit",             SCMOPT_LICENSE_BASED_ON_MIT,            RTGETOPT_REQ_NOTHING },
     { "--lgpl-disclaimer",                  SCMOPT_LGPL_DISCLAIMER,                 RTGETOPT_REQ_NOTHING },
     { "--no-lgpl-disclaimer",               SCMOPT_NO_LGPL_DISCLAIMER,              RTGETOPT_REQ_NOTHING },
+    { "--allow-lgpl-without-disclaimer",    SCMOPT_ALLOW_LGPL_WITHOUT_DISCLAIMER,   RTGETOPT_REQ_NOTHING },
+    { "--dont-allow-lgpl-without-disclaimer", SCMOPT_DONT_ALLOW_LGPL_WITHOUT_DISCLAIMER, RTGETOPT_REQ_NOTHING },
     { "--set-svn-eol",                      SCMOPT_SET_SVN_EOL,                     RTGETOPT_REQ_NOTHING },
     { "--dont-set-svn-eol",                 SCMOPT_DONT_SET_SVN_EOL,                RTGETOPT_REQ_NOTHING },
     { "--set-svn-executable",               SCMOPT_SET_SVN_EXECUTABLE,              RTGETOPT_REQ_NOTHING },
@@ -1380,6 +1385,13 @@ static int scmSettingsBaseHandleOpt(PSCMSETTINGSBASE pSettings, int rc, PRTGETOP
             return VINF_SUCCESS;
         case SCMOPT_NO_LGPL_DISCLAIMER:
             pSettings->fLgplDisclaimer = false;
+            return VINF_SUCCESS;
+
+        case SCMOPT_ALLOW_LGPL_WITHOUT_DISCLAIMER:
+            pSettings->fAllowLgplWithoutDisclaimer = true;
+            return VINF_SUCCESS;
+        case SCMOPT_DONT_ALLOW_LGPL_WITHOUT_DISCLAIMER:
+            pSettings->fAllowLgplWithoutDisclaimer = false;
             return VINF_SUCCESS;
 
         case SCMOPT_ONLY_SVN_DIRS:
@@ -3257,6 +3269,10 @@ static int scmHelp(PCRTGETOPTDEF paOpts, size_t cOpts)
                 hlpPrntf("      Include LGPL version disclaimer.  Default: --no-lgpl-disclaimer\n");
                 break;
 
+            case SCMOPT_ALLOW_LGPL_WITHOUT_DISCLAIMER:
+                hlpPrntf("      Allow LGPL without version disclaimer.  Default: --dont-allow-lgpl-without-disclaimer\n");
+                break;
+
             case SCMOPT_SVN_SYNC_PROCESS_EXPORT:
                 hlpPrntf("      svn:sync-process value rules: all, none, subdir-either-or, whatever.  Default: whatever\n");
                 break;
@@ -3404,7 +3420,7 @@ int main(int argc, char **argv)
             case 'V':
             {
                 /* The following is assuming that svn does it's job here. */
-                static const char s_szRev[] = "$Revision: 112293 $";
+                static const char s_szRev[] = "$Revision: 112400 $";
                 const char *psz = RTStrStripL(strchr(s_szRev, ' '));
                 RTPrintf("r%.*s\n", strchr(psz, ' ') - psz, psz);
                 return 0;

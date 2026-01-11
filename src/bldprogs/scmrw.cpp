@@ -1,10 +1,10 @@
-/* $Id: scmrw.cpp 112257 2026-01-05 02:18:01Z knut.osmundsen@oracle.com $ */
+/* $Id: scmrw.cpp 112400 2026-01-11 18:47:16Z knut.osmundsen@oracle.com $ */
 /** @file
  * IPRT Testcase / Tool - Source Code Massager.
  */
 
 /*
- * Copyright (C) 2010-2025 Oracle and/or its affiliates.
+ * Copyright (C) 2010-2026 Oracle and/or its affiliates.
  *
  * This file is part of VirtualBox base platform packages, as
  * available from https://www.virtualbox.org.
@@ -1988,14 +1988,14 @@ static SCMREWRITERRES rewrite_Copyright_Common(PSCMRWSTATE pState, PSCMSTREAM pI
             if (   Info.iLineLgplNotice != UINT32_MAX
                 && Info.iLineLgplDisclaimer == UINT32_MAX)
             {
-                if (!pSettings->fLgplDisclaimer) /** @todo reconcile options with common sense. */
-                    ScmError(pState, VERR_NOT_FOUND, "LGPL licence notice on line %u, but no LGPL disclaimer was found!\n",
-                             Info.iLineLgplNotice + 1);
-                else
+                if (pSettings->fLgplDisclaimer) /** @todo fix this setting. */
                 {
                     ScmVerbose(pState, 1, "* Need to add LGPL disclaimer\n");
                     fAddLgplDisclaimer = true;
                 }
+                else if (!pSettings->fAllowLgplWithoutDisclaimer)
+                    ScmError(pState, VERR_NOT_FOUND, "LGPL licence notice on line %u, but no LGPL disclaimer was found!\n",
+                             Info.iLineLgplNotice + 1);
             }
             else if (   Info.iLineLgplNotice == UINT32_MAX
                      && Info.iLineLgplDisclaimer != UINT32_MAX)
