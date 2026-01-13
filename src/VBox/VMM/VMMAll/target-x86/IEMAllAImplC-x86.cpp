@@ -1,4 +1,4 @@
-/* $Id: IEMAllAImplC-x86.cpp 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: IEMAllAImplC-x86.cpp 112524 2026-01-13 15:55:09Z knut.osmundsen@oracle.com $ */
 /** @file
  * IEM - Instruction Implementation in Assembly, x86 target, portable C variant.
  */
@@ -15585,7 +15585,7 @@ DECLINLINE(uint32_t) iemSseSoftStateAndR32ToMxcsrAndIprtResult(softfloat_state_t
     iemFpSoftF32ToIprt(pr32Result, r32Result);
     uint8_t fXcpt = pSoftState->exceptionFlags;
 
-    /**
+    /*
      * Important working variables here:
      *
      *    fMxcsr           MXCSR computed so far by emulated instruction, e.g. regarding
@@ -15596,8 +15596,8 @@ DECLINLINE(uint32_t) iemSseSoftStateAndR32ToMxcsrAndIprtResult(softfloat_state_t
      *    fXcpt            exceptions from softfloat regarding the current computation
      */
 
-    /** If an unmasked pre-computational exception is being raised by the current
-     *  operation, don't raise any post-computational exceptions.
+    /* If an unmasked pre-computational exception is being raised by the current
+     * operation, don't raise any post-computational exceptions.
      */
     uint32_t const fMxcsrExcpMask = ~((fMxcsr & X86_MXCSR_XCPT_MASK) >> X86_MXCSR_XCPT_MASK_SHIFT);
     if (  ((fMxcsr | fXcpt) & (X86_MXCSR_IE | X86_MXCSR_DE | X86_MXCSR_ZE))
@@ -15607,7 +15607,7 @@ DECLINLINE(uint32_t) iemSseSoftStateAndR32ToMxcsrAndIprtResult(softfloat_state_t
     /* Overflow handling */
     if (fXcpt & X86_MXCSR_OE)
     {
-        /**
+        /*
          * Intel SDM table D-16 '\#O - Numeric Overflow' says PE should be raised
          * always if OM (overflow exception masked), and this seems to agree with
          * hardware (i7-10700).  But if !OM, it says raise PE 'if the result is
@@ -15630,7 +15630,7 @@ DECLINLINE(uint32_t) iemSseSoftStateAndR32ToMxcsrAndIprtResult(softfloat_state_t
     /* Underflow handling */
     if (RTFLOAT32U_IS_SUBNORMAL(pr32Result))
     {
-        /**
+        /*
          * Underflow handling:
          *
          * An underflow exception is raised for a subnormal result if either:
@@ -15641,7 +15641,7 @@ DECLINLINE(uint32_t) iemSseSoftStateAndR32ToMxcsrAndIprtResult(softfloat_state_t
         if (!(fMxcsr & X86_MXCSR_UM) || (fXcpt & X86_MXCSR_PE))
             fXcpt |= X86_MXCSR_UE;
 
-        /**
+        /*
          * Flush-to-zero handling:
          *
          * By spec, FZ applies only when underflow exception is masked.
@@ -15702,7 +15702,7 @@ DECLINLINE(uint32_t) iemSseSoftStateAndR64ToMxcsrAndIprtResult(softfloat_state_t
     iemFpSoftF64ToIprt(pr64Result, r64Result);
     uint8_t fXcpt = pSoftState->exceptionFlags;
 
-    /**
+    /*
      * Important working variables here:
      *
      *    fMxcsr           MXCSR computed so far by emulated instruction, e.g. regarding
@@ -15713,7 +15713,7 @@ DECLINLINE(uint32_t) iemSseSoftStateAndR64ToMxcsrAndIprtResult(softfloat_state_t
      *    fXcpt            exceptions from softfloat regarding the current computation
      */
 
-    /** If an unmasked pre-computational exception is being raised by the current
+    /* If an unmasked pre-computational exception is being raised by the current
      *  operation, don't raise any post-computational exceptions.
      */
     uint32_t const fMxcsrExcpMask = ~((fMxcsr & X86_MXCSR_XCPT_MASK) >> X86_MXCSR_XCPT_MASK_SHIFT);
@@ -15724,7 +15724,7 @@ DECLINLINE(uint32_t) iemSseSoftStateAndR64ToMxcsrAndIprtResult(softfloat_state_t
     /* Overflow handling */
     if (fXcpt & X86_MXCSR_OE)
     {
-        /**
+        /*
          * Intel SDM table D-16 '\#O - Numeric Overflow' says PE should be raised
          * always if OM (overflow exception masked), and this seems to agree with
          * hardware (i7-10700).  But if !OM, it says raise PE 'if the result is
@@ -15747,7 +15747,7 @@ DECLINLINE(uint32_t) iemSseSoftStateAndR64ToMxcsrAndIprtResult(softfloat_state_t
     /* Underflow handling */
     if (RTFLOAT64U_IS_SUBNORMAL(pr64Result))
     {
-        /**
+        /*
          * Underflow handling:
          *
          * An underflow exception is raised for a subnormal result if either:
@@ -15758,7 +15758,7 @@ DECLINLINE(uint32_t) iemSseSoftStateAndR64ToMxcsrAndIprtResult(softfloat_state_t
         if (!(fMxcsr & X86_MXCSR_UM) || (fXcpt & X86_MXCSR_PE))
             fXcpt |= X86_MXCSR_UE;
 
-        /**
+        /*
          * Flush-to-zero handling:
          *
          * By spec, FZ applies only when underflow exception is masked.
