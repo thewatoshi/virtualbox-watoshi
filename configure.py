@@ -6,7 +6,7 @@ Requires >= Python 3.4.
 """
 
 # -*- coding: utf-8 -*-
-# $Id: configure.py 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $
+# $Id: configure.py 112515 2026-01-13 15:34:04Z andreas.loeffler@oracle.com $
 # pylint: disable=bare-except
 # pylint: disable=consider-using-f-string
 # pylint: disable=global-statement
@@ -61,7 +61,7 @@ SPDX-License-Identifier: GPL-3.0-only
 # External Python modules or other dependencies are not allowed!
 #
 
-__revision__ = "$Revision: 112403 $"
+__revision__ = "$Revision: 112515 $"
 
 import argparse
 import ctypes
@@ -703,9 +703,9 @@ def compileAndExecute(sName, enmBuildTarget, enmBuildArch, asIncPaths, asLibPath
             sStdOut = oProc.stdout.decode("utf-8", errors="ignore");
             if fLog:
                 fnLog = printWarn if fCompileMayFail else printError;
-                fnLog   (f'Compilation of test program for {sName} failed:');
-                printLog(f'    { " ".join(asCmd) }');
-                printLog(sStdOut);
+                fnLog(f'Compilation of test program for {sName} failed');
+                fnLog(f'    { " ".join(asCmd) }', fDontCount = True);
+                fnLog(sStdOut, fDontCount = True);
         else:
             printLog(f'Compilation of test program for {sName} successful');
             # Try executing the compiled binary and capture stdout + stderr.
@@ -1941,7 +1941,7 @@ class ToolCheck(CheckBase):
         sPathBin = None;
         if sPath:
             asPathBin = [ os.path.join(sPath, 'bin', g_oEnv['KBUILD_TARGET'] + '.' + g_oEnv['KBUILD_TARGET_ARCH']) ];
-            asFile    = ['soapcpp2', 'wsdl2h' ];
+            asFile    = [ 'soapcpp2', 'wsdl2h' ];
             for sCurPath in asPathBin:
                 if pathExists(sCurPath):
                     for sFile in asFile:
