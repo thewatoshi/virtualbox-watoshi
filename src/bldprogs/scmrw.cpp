@@ -1,4 +1,4 @@
-/* $Id: scmrw.cpp 112425 2026-01-12 21:36:00Z knut.osmundsen@oracle.com $ */
+/* $Id: scmrw.cpp 112430 2026-01-13 07:57:53Z knut.osmundsen@oracle.com $ */
 /** @file
  * IPRT Testcase / Tool - Source Code Massager.
  */
@@ -1703,7 +1703,7 @@ rewrite_Copyright_CommentCallback(PCSCMCOMMENTINFO pInfo, const char *pszBody, s
                 cchWellFormed = RTStrPrintf(szWellFormed, sizeof(szWellFormed), "Copyright (C) %u-%u %s%s",
                                             pState->uFirstYear, pState->uLastYear, g_szCopyrightHolder,
                                             pState->fUefiWithHtmlBr ? "<BR>" : "");
-            pState->fWellFormedCopyright = cchWellFormed == cchLine 
+            pState->fWellFormedCopyright = cchWellFormed == cchLine
                                         && memcmp(pszBody, szWellFormed, cchWellFormed) == 0;
             if (!pState->fWellFormedCopyright)
                 ScmVerbose(pState->pState, 1, "* copyright isn't well formed\n");
