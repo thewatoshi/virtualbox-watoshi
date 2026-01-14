@@ -6,7 +6,7 @@ Requires >= Python 3.4.
 """
 
 # -*- coding: utf-8 -*-
-# $Id: configure.py 112547 2026-01-13 16:58:54Z andreas.loeffler@oracle.com $
+# $Id: configure.py 112552 2026-01-14 10:03:04Z andreas.loeffler@oracle.com $
 # pylint: disable=bare-except
 # pylint: disable=consider-using-f-string
 # pylint: disable=global-statement
@@ -61,7 +61,7 @@ SPDX-License-Identifier: GPL-3.0-only
 # External Python modules or other dependencies are not allowed!
 #
 
-__revision__ = "$Revision: 112547 $"
+__revision__ = "$Revision: 112552 $"
 
 import argparse
 import ctypes
@@ -427,25 +427,6 @@ def stripLibSuff(sLib):
     # Handle .dylib (macOS), .dll/.lib (Windows), .a (static).
     sLib = re.sub(r'\.(dylib|dll|lib|a)$', '', sLib, flags = re.IGNORECASE);
     return sLib;
-
-def getLinuxGnuTypeFromPlatform():
-    """
-    Returns the Linux GNU type based on the platform.
-    """
-    mapPlatform2GnuType = {
-        "x86_64": "x86_64-linux-gnu",
-        "amd64": "x86_64-linux-gnu",
-        "i386": "i386-linux-gnu",
-        "i686": "i386-linux-gnu",
-        "aarch64": "aarch64-linux-gnu",
-        "arm64": "aarch64-linux-gnu",
-        "armv7l": "arm-linux-gnueabihf",
-        "armv6l": "arm-linux-gnueabi",
-        "ppc64le": "powerpc64le-linux-gnu",
-        "s390x": "s390x-linux-gnu",
-        "riscv64": "riscv64-linux-gnu",
-    };
-    return mapPlatform2GnuType.get(platform.machine().lower());
 
 def checkWhich(sCmdName, sToolDesc = None, sCustomPath = None, asVersionSwitches = None, fMultiline = False):
     """
@@ -866,7 +847,7 @@ def getPackageVar(sPackageName, enmPkgMgrVar : PkgMgrVar):
                 return True, sRet;
 
         # If pkg-config fails on Darwin, try asking brew instead.
-        if BuildTarget.DARWIN:
+        if g_enmHostTarget == BuildTarget.DARWIN:
             sCmd = f'brew {enmPkgMgrVar[PkgMgr.BREW]} {sPackageName}';
             oProc = subprocess.run(sCmd, shell = True, check = False, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text =True);
             if oProc.returncode == 0 and oProc.stdout.strip():
@@ -1317,13 +1298,11 @@ class LibraryCheck(CheckBase):
                              os.path.join(g_oEnv['VBOX_PATH_MACOSX_SDK'], 'usr', 'include', 'c++', 'v1') ]);
 
         #
-        # Linux / MacOS / Solaris
+        # Linux
         #
-        else:
-            sGnuType = getLinuxGnuTypeFromPlatform();
+        elif g_oEnv['KBUILD_TARGET'] == BuildTarget.LINUX:
             # Sorted by most likely-ness.
             asPaths.extend([ "/usr/include", "/usr/local/include",
-                             "/usr/include/" + sGnuType, "/usr/local/include/" + sGnuType,
                              "/usr/include/" + self.sName, "/usr/local/include/" + self.sName,
                              "/opt/include", "/opt/local/include" ]);
         #
@@ -1387,11 +1366,6 @@ class LibraryCheck(CheckBase):
                                  "/usr/lib", "/usr/local/lib",
                                  "/usr/lib64", "/lib", "/lib64",
                                  "/opt/lib", "/opt/local/lib" ]);
-
-                if g_oEnv['KBUILD_TARGET'] == BuildTarget.LINUX:
-                    sGnuType = getLinuxGnuTypeFromPlatform();
-                    asPaths.extend([ "/lib/" + sGnuType, "/lib64/" + sGnuType,
-                                     "/usr/lib/" + sGnuType, "/opt/local/lib/" + sGnuType ]);
             else: # Darwin
                 asPaths.append("/opt/homebrew/lib");
         #
@@ -1443,8 +1417,7 @@ class LibraryCheck(CheckBase):
 
         for sHdr in asHdrToSearch:
             if sHdr not in setHdrFound:
-                self.printWarn(f'Header file missing: {sHdr}');
-                fRc = False;
+                self.printWarn(f'Header file not found: {sHdr}');
 
         if fRc:
             self.printVerbose(1, 'All header files found');
@@ -3210,20 +3183,20 @@ g_aoLibs = [
     LibraryCheck("dxvk", [ "version.h" ], [ "libdxvk" ],  aeTargets = [ BuildTarget.LINUX ], fUseInTree = True,
                  sCode = '#include <version.h>\nint main() { printf(DXVK_VERSION); return 0; }\n',
                  asDefinesToDisableIfNotFound = [ 'VBOX_WITH_DXVK' ]),
-    LibraryCheck("libasound", [ "alsa/asoundlib.h", "alsa/version.h" ], [ "libasound" ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ],
+    LibraryCheck("libasound", [ "alsa/asoundlib.h", "alsa/version.h" ], [ "libasound" ], aeTargets = [ BuildTarget.LINUX ],
                  sCode = '#include <alsa/asoundlib.h>\n#include <alsa/version.h>\nint main() { snd_pcm_info_sizeof(); printf("%s", SND_LIB_VERSION_STR); return 0; }\n'),
-    LibraryCheck("libcap", [ "sys/capability.h" ], [ "libcap" ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ],
+    LibraryCheck("libcap", [ "sys/capability.h" ], [ "libcap" ], aeTargets = [ BuildTarget.LINUX ],
                  sCode = '#include <sys/capability.h>\nint main() { cap_t c = cap_init(); printf("<found>"); return 0; }\n'),
     LibraryCheck("libXcursor", [ "X11/cursorfont.h" ], [ "libXcursor" ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ],
                  sCode = '#include <X11/Xcursor/Xcursor.h>\nint main() { XcursorImage *cursor = XcursorImageCreate (10, 10); XcursorImageDestroy(cursor); printf("%d.%d", XCURSOR_LIB_MAJOR, XCURSOR_LIB_MINOR); return 0; }\n'),
     LibraryCheck("curl", [ "curl/curl.h" ], [ "libcurl" ], aeTargets = [ BuildTarget.ANY ], fUseInTree = True,
                  sCode = '#include <curl/curl.h>\nint main() { printf("%s", LIBCURL_VERSION); return 0; }\n',
                  sSdkName = "VBoxLibCurl"),
-    LibraryCheck("libdevmapper", [ "libdevmapper.h" ], [ "libdevmapper" ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ],
+    LibraryCheck("libdevmapper", [ "libdevmapper.h" ], [ "libdevmapper" ], aeTargets = [ BuildTarget.LINUX ],
                  sCode = '#include <libdevmapper.h>\nint main() { char v[64]; dm_get_library_version(v, sizeof(v)); printf("%s", v); return 0; }\n'),
     # Dragging in libgsoapssl++ when linking requires certain stubs to be implemented (soap_faultcode, soap_fault_subcode, ++) by the user (depending on the libgsoap version),
     # so we only do the bare minimum here (hence the empty lib definition) to return the installed version of libgsoap[ssl][++].
-    LibraryCheck("libgsoapssl++", [ "stdsoap2.h" ], [ ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ],
+    LibraryCheck("libgsoapssl++", [ "stdsoap2.h" ], [ ], aeTargets = [ BuildTarget.LINUX ],
                  sCode = '#include <stdsoap2.h>\nint main() { printf("%ld", GSOAP_VERSION); return 0; }\n',
                  asDefinesToDisableIfNotFound = [ 'VBOX_WITH_WEBSERVICES' ]),
     LibraryCheck("libjpeg-turbo", [ "turbojpeg.h" ], [ "libturbojpeg" ], aeTargets = [ BuildTarget.ANY ], fUseInTree = True,
@@ -3235,7 +3208,7 @@ g_aoLibs = [
     LibraryCheck("libogg", [ "ogg/ogg.h" ], [ "libogg" ], aeTargets = [ BuildTarget.ANY ], fUseInTree = True,
                  sCode = '#include <ogg/ogg.h>\nint main() { oggpack_buffer o; oggpack_get_buffer(&o); printf("<found>"); return 0; }\n',
                  sSdkName = "VBoxLibOgg"),
-    LibraryCheck("libpam", [ "security/pam_appl.h" ], [ "libpam" ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ],
+    LibraryCheck("libpam", [ "security/pam_appl.h" ], [ "libpam" ], aeTargets = [ BuildTarget.LINUX ],
                  sCode = '#include <security/pam_appl.h>\nint main() { \n#ifdef __LINUX_PAM__\nprintf("%d.%d", __LINUX_PAM__, __LINUX_PAM_MINOR__); if (__LINUX_PAM__ >= 1) return 0;\n#endif\nreturn 1; }\n'),
     LibraryCheck("libpng", [ "png.h" ], [ "libpng" ], aeTargets = [ BuildTarget.ANY ], fUseInTree = True,
                  sCode = '#include <png.h>\nint main() { printf("%s", PNG_LIBPNG_VER_STRING); return 0; }\n'),
@@ -3245,7 +3218,7 @@ g_aoLibs = [
                  sCode = '#include <pulse/version.h>\nint main() { printf("%s", pa_get_library_version()); return 0; }\n'),
     LibraryCheck("libslirp", [ "slirp/libslirp.h", "slirp/libslirp-version.h" ], [ "libslirp" ], aeTargets = [ BuildTarget.ANY ], fUseInTree = True,
                  sCode = '#include <slirp/libslirp.h>\n#include <slirp/libslirp-version.h>\nint main() { printf("%d.%d.%d", SLIRP_MAJOR_VERSION, SLIRP_MINOR_VERSION, SLIRP_MICRO_VERSION); return 0; }\n'),
-    LibraryCheck("libssh", [ "libssh/libssh.h" ], [ "libssh" ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ], fUseInTree = True,
+    LibraryCheck("libssh", [ "libssh/libssh.h" ], [ "libssh" ], aeTargets = [ BuildTarget.DARWIN, BuildTarget.LINUX, BuildTarget.WINDOWS ], fUseInTree = True,
                  sCode = '#include <libssh/libssh.h>\n#include <libssh/libssh_version.h>\nint main() { printf("%d.%d.%d", LIBSSH_VERSION_MAJOR, LIBSSH_VERSION_MINOR, LIBSSH_VERSION_MICRO); return 0; }\n'),
     LibraryCheck("libtpms", [ "libtpms/tpm_library.h" ], [ "libtpms" ], aeTargets = [ BuildTarget.ANY ], fUseInTree = True,
                  sCode = '#include <libtpms/tpm_library.h>\nint main() { printf("%d.%d.%d", TPM_LIBRARY_VER_MAJOR, TPM_LIBRARY_VER_MINOR, TPM_LIBRARY_VER_MICRO); return 0; }\n'),
@@ -3274,21 +3247,21 @@ g_aoLibs = [
                  sSdkName = "VBoxOpenSslStatic"),
     # Note: The required libs for qt6 can differ (VBox infix and whatnot), and thus will
     #       be resolved in the check callback.
-    LibraryCheck("qt", [ "QtCore/QtGlobal" ], [ ], aeTargets = [ BuildTarget.ANY ],
+    LibraryCheck("qt6", [ "QtCore/QtGlobal" ], [ ], aeTargets = [ BuildTarget.ANY ],
                  sCode = '#define IN_RING3\n#include <QtCore/QtGlobal>\nint main() { std::cout << QT_VERSION_STR << std::endl; }',
                  fnCallback = LibraryCheck.checkCallback_qt6,
                  sSdkName = 'QT', asDefinesToDisableIfNotFound = [ 'VBOX_WITH_QTGUI' ]),
-    LibraryCheck("sdl2", [ "SDL2/SDL.h" ], [ "libSDL2" ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ],
+    LibraryCheck("libsdl2", [ "SDL2/SDL.h" ], [ "libSDL2" ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ],
                  sCode = '#include <SDL2/SDL.h>\nint main() { printf("%d.%d.%d", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL); return 0; }\n',
                  asDefinesToDisableIfNotFound = [ 'VBOX_WITH_VBOXSDL' ]),
-    LibraryCheck("sdl2_ttf", [ "SDL2/SDL_ttf.h" ], [ "libSDL2_ttf" ],
+    LibraryCheck("libsdl2_ttf", [ "SDL2/SDL_ttf.h" ], [ "libSDL2_ttf" ],
                  sCode = '#include <SDL2/SDL_ttf.h>\nint main() { printf("%d.%d.%d", SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, SDL_TTF_PATCHLEVEL); return 0; }\n',
                  asDefinesToDisableIfNotFound = [ 'VBOX_WITH_SECURE_LABEL' ]),
-    LibraryCheck("x11", [ "X11/Xlib.h" ], [ "libX11" ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ],
+    LibraryCheck("libx11", [ "X11/Xlib.h" ], [ "libX11" ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ],
                  sCode = '#include <X11/Xlib.h>\nint main() { Display *d = XOpenDisplay(NULL); XCloseDisplay(d); printf("<found>"); return 0; }\n'),
-    LibraryCheck("xext", [ "X11/extensions/Xext.h" ], [ "libXext" ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ],
+    LibraryCheck("libxext", [ "X11/extensions/Xext.h" ], [ "libXext" ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ],
                  sCode = '#include <X11/Xlib.h>\n#include <X11/extensions/Xext.h>\nint main() { XSetExtensionErrorHandler(NULL); printf("<found>"); return 0; }\n'),
-    LibraryCheck("libXmu", [ "X11/Xmu/Xmu.h" ], [ "libXmu" ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ],
+    LibraryCheck("libxmu", [ "X11/Xmu/Xmu.h" ], [ "libXmu" ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ],
                  sCode = '#include <X11/Xmu/Xmu.h>\nint main() { XmuMakeAtom("test"); printf("<found>"); return 0; }\n', aeTargetsExcluded=[ BuildTarget.DARWIN ]),
     LibraryCheck("libxrandr", [ "X11/extensions/Xrandr.h" ], [ "libXrandr", "libX11" ], aeTargets = [ BuildTarget.LINUX, BuildTarget.SOLARIS ],
                  sCode = '#include <X11/Xlib.h>\n#include <X11/extensions/Xrandr.h>\nint main() { Display *dpy = XOpenDisplay(NULL); Window root = RootWindow(dpy, 0); XRRScreenConfiguration *c = XRRGetScreenInfo(dpy, root); printf("<found>"); return 0; }\n'),
@@ -3312,7 +3285,8 @@ g_aoTools = [
     ToolCheck("jdk", asCmd = [ ], fnCallback = ToolCheck.checkCallback_JDK,
               asDefinesToDisableIfNotFound = [ 'VBOX_WITH_WEBSERVICES' ]),
     ToolCheck("makeself", asCmd = [ ], fnCallback = ToolCheck.checkCallback_makeself, aeTargets = [ BuildTarget.LINUX ]),
-    ToolCheck("nasm", asCmd = [ "nasm" ], fnCallback = ToolCheck.checkCallback_NASM),
+    # On Solaris nasm is not officially supported.
+    ToolCheck("nasm", asCmd = [ "nasm" ], fnCallback = ToolCheck.checkCallback_NASM, aeTargetsExcluded = [ BuildTarget.SOLARIS ]),
     ToolCheck("openwatcom", asCmd = [ "wcl", "wcl386", "wlink" ], fnCallback = ToolCheck.checkCallback_OpenWatcom,
               asDefinesToDisableIfNotFound = [ 'VBOX_WITH_OPEN_WATCOM' ]),
     ToolCheck("python_c_api", asCmd = [ ], fnCallback = ToolCheck.checkCallback_PythonC_API,
@@ -3574,7 +3548,7 @@ def main():
     oParser.add_argument('--disable-java', '--without-java', help='Disables building components which require Java', action='store_true', default=None, dest='config_disable_java');
     oParser.add_argument('--disable-python', '--without-python', help='Disables building the Python bindings', action='store_true', default=None, dest='config_disable_python');
     oParser.add_argument('--disable-pylint', '--without-pylint', help='Disables using pylint', action='store_true', default=None, dest='VBOX_WITH_PYLINT=');
-    oParser.add_argument('--disable-sdl', '--without-sdl', help='Disables building the SDL frontend', action='store_true', default=None, dest='VBOX_WITH_SDL=');
+    oParser.add_argument('--disable-sdl', '--without-sdl', help='Disables building the SDL frontend', action='store_true', default=None, dest='config_libs_disable_libsdl2');
     oParser.add_argument('--disable-udptunnel', '--without-udptunnel', help='Disables building UDP tunnel support', action='store_true', default=None, dest='VBOX_WITH_UDPTUNNEL=');
     oParser.add_argument('--disable-additions', '--without-additions', help='Disables building the Guest Additions', action='store_true', default=None, dest='VBOX_WITH_ADDITIONS=');
     oParser.add_argument('--disable-opengl', '--without-opengl', help='Disables building features which require OpenGL', action='store_true', default=None, dest='config_disable_opengl');
@@ -3858,6 +3832,9 @@ def main():
         # Disable DTrace stuff if specified.
         lambda env: { 'VBOX_WITH_EXTPACK_VBOXDTRACE': '', \
                       'VBOX_WITH_DTRACE': ''  } if g_oEnv['config_disable_dtrace'] else {},
+        # Disable other stuff depending on SDL if SDL is disabled (like libsdl2_ttf).
+        lambda env: { 'VBOX_WITH_SDL': '', \
+                      'VBOX_WITH_SECURE_LABEL': '' } if g_oEnv['config_libs_disable_libsdl2'] else {},
 
         #
         # Windows
@@ -3897,7 +3874,7 @@ def main():
         BuildTarget.LINUX:   [ 'pkg-config', 'gcc', 'make', 'xsltproc' ],
         BuildTarget.DARWIN:  [ 'clang', 'make', 'brew' ],
         BuildTarget.WINDOWS: [ ], # Done via own callbacks in the ToolCheck class down below.
-        BuildTarget.SOLARIS: [ 'pkg-config', 'cc', 'gmake' ]
+        BuildTarget.SOLARIS: [ 'pkg-config', 'gcc', 'gmake' ]
     };
     aOsToolsToCheck = aOsTools.get( g_oEnv[ 'KBUILD_TARGET' ], None);
     printVerbose(1, f'Checking for essential OS tools: {aOsToolsToCheck}');
