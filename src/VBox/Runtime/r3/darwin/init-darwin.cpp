@@ -1,4 +1,4 @@
-/* $Id: init-darwin.cpp 112569 2026-01-14 15:52:02Z alexander.eichner@oracle.com $ */
+/* $Id: init-darwin.cpp 112570 2026-01-14 15:54:59Z alexander.eichner@oracle.com $ */
 /** @file
  * IPRT - Init Ring-3, POSIX Specific Code.
  */
@@ -418,17 +418,17 @@ static void rtR3DarwinSigSegvBusHandler(int iSignum, siginfo_t *pSigInfo, void *
              * the slide to in order to get at the final boundaries of the executable code of the shared
              * library.
              */
-#if ARCH_BITS == 64
-# define MY_MACHO_HEADER          mach_header_64
-# define MY_MACHO_LC_SEGMENT      LC_SEGMENT_64
-# define MY_MACHO_SEGMENT_COMMAND segment_command_64
-#elif ARCH_BITS == 32
-# define MY_MACHO_HEADER          mach_header_32
-# define MY_MACHO_LC_SEGMENT      LC_SEGMENT_32
-# define MY_MACHO_SEGMENT_COMMAND segment_command_32
-#else
-# error "Port me"
-#endif
+# if ARCH_BITS == 64
+#  define MY_MACHO_HEADER          mach_header_64
+#  define MY_MACHO_LC_SEGMENT      LC_SEGMENT_64
+#  define MY_MACHO_SEGMENT_COMMAND segment_command_64
+# elif ARCH_BITS == 32
+#  define MY_MACHO_HEADER          mach_header_32
+#  define MY_MACHO_LC_SEGMENT      LC_SEGMENT_32
+#  define MY_MACHO_SEGMENT_COMMAND segment_command_32
+# else
+#  error "Port me"
+# endif
             intptr_t VmSlide = _dyld_get_image_vmaddr_slide(i);
             const struct MY_MACHO_HEADER *pHdr = (const struct MY_MACHO_HEADER *)_dyld_get_image_header(i);
             const struct load_command *pLoadCmd = (struct load_command *)(pHdr + 1);
