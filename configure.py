@@ -6,7 +6,7 @@ Requires >= Python 3.4.
 """
 
 # -*- coding: utf-8 -*-
-# $Id: configure.py 112554 2026-01-14 11:25:14Z andreas.loeffler@oracle.com $
+# $Id: configure.py 112555 2026-01-14 13:16:36Z andreas.loeffler@oracle.com $
 # pylint: disable=bare-except
 # pylint: disable=consider-using-f-string
 # pylint: disable=global-statement
@@ -61,7 +61,7 @@ SPDX-License-Identifier: GPL-3.0-only
 # External Python modules or other dependencies are not allowed!
 #
 
-__revision__ = "$Revision: 112554 $"
+__revision__ = "$Revision: 112555 $"
 
 import argparse
 import ctypes
@@ -1559,7 +1559,7 @@ class LibraryCheck(CheckBase):
             if self.dictDefinesToSetIfFailed: # Implies being optional.
                 self.printWarn('Library check failed and is optional');
                 for sKey, sVal in self.dictDefinesToSetIfFailed.items():
-                    self.printWarn(f'    - {sKey} -> {sVal if sVal else '<Unset>'}', fDontCount = True);
+                    self.printWarn(f"    - {sKey} -> {sVal if sVal else '<Unset>'}", fDontCount = True);
                     g_oEnv.set(sKey, sVal);
                 return True;
             else:
