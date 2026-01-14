@@ -1,4 +1,4 @@
-/* $Id: DevVGA-SVGA.h 112586 2026-01-14 23:38:37Z vitali.pelenjow@oracle.com $ */
+/* $Id: DevVGA-SVGA.h 112588 2026-01-14 23:53:53Z vitali.pelenjow@oracle.com $ */
 /** @file
  * VMware SVGA device
  */
@@ -261,11 +261,10 @@ typedef struct VMSVGAVIEWPORT
 #ifdef VBOX_WITH_VMSVGA3D
 /// @todo Development define. Remove.
 # define DX_NEW_HWSCREEN
-# ifdef DX_NEW_HWSCREEN
-#  define VMSVGA_VRAM_OFFSET_SCREEN_TARGET UINT32_C(0xFFFFFFFF)
-# endif
 typedef struct VMSVGAHWSCREEN *PVMSVGAHWSCREEN;
 #endif
+
+#define VMSVGA_VRAM_OFFSET_SCREEN_TARGET UINT32_C(0xFFFFFFFF)
 
 /* Allocates VMSVGASCREENOBJECT::pvScreenBitmap with maximum possible size
  * (pThis->svga.u32MaxWidth x pThis->svga.u32MaxHeight)
