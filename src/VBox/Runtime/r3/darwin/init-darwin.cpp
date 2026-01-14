@@ -1,4 +1,4 @@
-/* $Id: init-darwin.cpp 112564 2026-01-14 14:53:14Z alexander.eichner@oracle.com $ */
+/* $Id: init-darwin.cpp 112565 2026-01-14 14:59:27Z alexander.eichner@oracle.com $ */
 /** @file
  * IPRT - Init Ring-3, POSIX Specific Code.
  */
@@ -97,14 +97,14 @@ static const char *rtR3DarwinVmUserTagStringify(unsigned int uTag)
         case VM_MEMORY_MALLOC_MEDIUM:                       return "MALLOC_MEDIUM";
         case VM_MEMORY_MALLOC_PROB_GUARD:                   return "MALLOC_PROB_GUARD";
         case VM_MEMORY_MACH_MSG:                            return "MACH_MSG";
-        case VM_MEMORY_IOKIT:                               return "IOKIT"; 
-        case VM_MEMORY_STACK:                               return "STACK"; 
-        case VM_MEMORY_GUARD:                               return "GUARD"; 
+        case VM_MEMORY_IOKIT:                               return "IOKIT";
+        case VM_MEMORY_STACK:                               return "STACK";
+        case VM_MEMORY_GUARD:                               return "GUARD";
         case VM_MEMORY_SHARED_PMAP:                         return "SHARED_PMAP";
-        case VM_MEMORY_DYLIB:                               return "DYLIB"; 
+        case VM_MEMORY_DYLIB:                               return "DYLIB";
         case VM_MEMORY_OBJC_DISPATCHERS:                    return "OBJC_DISPATCHERS";
         case VM_MEMORY_UNSHARED_PMAP:                       return "UNSHARED_PMAP";
-        case VM_MEMORY_APPKIT:                              return "APPKIT"; 
+        case VM_MEMORY_APPKIT:                              return "APPKIT";
         case VM_MEMORY_FOUNDATION:                          return "FOUNDATION";
         case VM_MEMORY_COREGRAPHICS:                        return "CoreGraphics";
         case VM_MEMORY_CORESERVICES:                        return "CoreServices";
@@ -120,8 +120,8 @@ static const char *rtR3DarwinVmUserTagStringify(unsigned int uTag)
         case VM_MEMORY_COREGRAPHICS_FRAMEBUFFERS:           return "CoreGaphics Framebuffers";
         case VM_MEMORY_COREGRAPHICS_BACKINGSTORES:          return "CoreGaphics BackingStores";
         case VM_MEMORY_COREGRAPHICS_XALLOC:                 return "CoreGaphics XAlloc";
-        case VM_MEMORY_DYLD:                                return "Dyld"; 
-        case VM_MEMORY_DYLD_MALLOC:                         return "Dyld Malloc"; 
+        case VM_MEMORY_DYLD:                                return "Dyld";
+        case VM_MEMORY_DYLD_MALLOC:                         return "Dyld Malloc";
         case VM_MEMORY_SQLITE:                              return "SQlite";
         case VM_MEMORY_JAVASCRIPT_CORE:                     return "Javascript Core";
         case VM_MEMORY_JAVASCRIPT_JIT_EXECUTABLE_ALLOCATOR: return "Javascript JIT ExecAlloc";
@@ -145,7 +145,7 @@ static const char *rtR3DarwinVmUserTagStringify(unsigned int uTag)
         case VM_MEMORY_SWIFT_RUNTIME:                       return "Swift Runtime";
         case VM_MEMORY_SWIFT_METADATA:                      return "Swift Metadata";
         case VM_MEMORY_DHMM:                                return "DHMM";
-        case VM_MEMORY_SCENEKIT:                            return "SceneKit"; 
+        case VM_MEMORY_SCENEKIT:                            return "SceneKit";
         case VM_MEMORY_SKYWALK:                             return "SkyWalk";
         case VM_MEMORY_IOSURFACE:                           return "IOSurface";
         case VM_MEMORY_LIBNETWORK:                          return "libnetwork";
