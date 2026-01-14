@@ -6,7 +6,7 @@ Requires >= Python 3.4.
 """
 
 # -*- coding: utf-8 -*-
-# $Id: configure.py 112552 2026-01-14 10:03:04Z andreas.loeffler@oracle.com $
+# $Id: configure.py 112553 2026-01-14 10:55:50Z andreas.loeffler@oracle.com $
 # pylint: disable=bare-except
 # pylint: disable=consider-using-f-string
 # pylint: disable=global-statement
@@ -61,7 +61,7 @@ SPDX-License-Identifier: GPL-3.0-only
 # External Python modules or other dependencies are not allowed!
 #
 
-__revision__ = "$Revision: 112552 $"
+__revision__ = "$Revision: 112553 $"
 
 import argparse
 import ctypes
@@ -1417,7 +1417,7 @@ class LibraryCheck(CheckBase):
 
         for sHdr in asHdrToSearch:
             if sHdr not in setHdrFound:
-                self.printWarn(f'Header file not found: {sHdr}');
+                self.printVerbose(1, f'Header file not found: {sHdr}');
 
         if fRc:
             self.printVerbose(1, 'All header files found');
@@ -1437,6 +1437,12 @@ class LibraryCheck(CheckBase):
         if self.fUseInTree:
             self.printVerbose(1, 'Library needs to be used in-tree and thus is source only, skipping');
             return True, [], [];
+
+        # On some OSes the compiler / linker should know where to find its stuff,
+        # so just return the unmodified lists.
+        if g_oEnv['KBUILD_TARGET'] in [ BuildTarget.LINUX, BuildTarget.SOLARIS ]:
+            self.printVerbose(1, 'Library paths should be automatically determined by compiler / linker, skipping');
+            return True, self.asLibPaths, self.asLibFiles;
 
         asSearchPath = self.asLibPaths + self.getLibSearchPaths(); # Own lib paths have precedence.
         setLibFound  = {}; # Key = Lib file, Value = Path to lib file.
@@ -1470,8 +1476,7 @@ class LibraryCheck(CheckBase):
 
         for sLib in asLibToSearch:
             if sLib not in setLibFound:
-                self.printWarn(f'Library file missing: {sLib}');
-                fRc = False;
+                self.printVerbose(1, f'Library file not found: {sLib}');
 
         if fRc:
             self.printVerbose(1, 'All libraries found');
