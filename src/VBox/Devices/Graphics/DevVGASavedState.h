@@ -1,4 +1,4 @@
-/* $Id: DevVGASavedState.h 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: DevVGASavedState.h 112574 2026-01-14 17:50:05Z vitali.pelenjow@oracle.com $ */
 /** @file
  * DevVGA - Saved state versions.
  *
@@ -56,7 +56,8 @@
         } \
     } while (0)
 
-#define VGA_SAVEDSTATE_VERSION                   30
+#define VGA_SAVEDSTATE_VERSION                   31
+#define VGA_SAVEDSTATE_VERSION_VMSVGA_COTABLES   31 /* COTable content. See @bugref{11021}. */
 #define VGA_SAVEDSTATE_VERSION_VHWA_REMOVED      30 /* 2D video acceleration (VHWA) removed. See @bugref{10756}. */
 #define VGA_SAVEDSTATE_VERSION_VMSVGA_VIDEO      29 /* Video decoding and processing (new COTables). */
 #define VGA_SAVEDSTATE_VERSION_VMSVGA_SVGA3      28 /* SVGA 3 interface. */

@@ -1,4 +1,4 @@
-/* $Id: DevVGA-SVGA3d-dx.cpp 112468 2026-01-13 12:39:05Z vitali.pelenjow@oracle.com $ */
+/* $Id: DevVGA-SVGA3d-dx.cpp 112574 2026-01-14 17:50:05Z vitali.pelenjow@oracle.com $ */
 /** @file
  * DevSVGA3d - VMWare SVGA device, 3D parts - Common code for DX backend interface.
  */
@@ -49,7 +49,6 @@
 #include "DevVGA-SVGA-internal.h"
 
 
-#define COTABLE_NO_BACKING
 /*
  * Helpers.
  */
