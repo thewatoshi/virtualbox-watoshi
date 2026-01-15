@@ -1,4 +1,4 @@
-/* $Id: tstUnattendedScript.cpp 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: tstUnattendedScript.cpp 112611 2026-01-15 13:52:52Z serkan.bayraktar@oracle.com $ */
 /** @file
  * tstUnattendedScript - testcases for UnattendedScript.
  */
@@ -586,6 +586,11 @@ Utf8Str const &Unattended::i_getAdminPassword() const
     /* If no Administrator / 'root' password is being set, the user password will be used instead.
      * Also see API documentation. */
     return mStrAdminPassword.isEmpty() ? mStrUserPassword : mStrAdminPassword;
+}
+
+bool          Unattended::i_getIsAdminPasswordEmpty() const
+{
+    return mStrAdminPassword.isEmpty();
 }
 
 Utf8Str const &Unattended::i_getFullUserName() const

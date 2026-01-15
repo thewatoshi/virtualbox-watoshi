@@ -1,4 +1,4 @@
-/* $Id: UnattendedImpl.cpp 112503 2026-01-13 14:49:48Z serkan.bayraktar@oracle.com $ */
+/* $Id: UnattendedImpl.cpp 112611 2026-01-15 13:52:52Z serkan.bayraktar@oracle.com $ */
 /** @file
  * Unattended class implementation
  */
@@ -4471,6 +4471,12 @@ Utf8Str const &Unattended::i_getAdminPassword() const
     /* If no Administrator / 'root' password is being set, the user password will be used instead.
      * Also see API documentation. */
     return mStrAdminPassword.isEmpty() ? mStrUserPassword : mStrAdminPassword;
+}
+
+bool          Unattended::i_getIsAdminPasswordEmpty() const
+{
+    Assert(isReadLockedOnCurrentThread());
+    return mStrAdminPassword.isEmpty();
 }
 
 Utf8Str const &Unattended::i_getFullUserName() const
