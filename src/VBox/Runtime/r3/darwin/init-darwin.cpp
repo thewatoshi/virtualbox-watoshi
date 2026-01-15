@@ -1,4 +1,4 @@
-/* $Id: init-darwin.cpp 112587 2026-01-14 23:51:41Z knut.osmundsen@oracle.com $ */
+/* $Id: init-darwin.cpp 112591 2026-01-15 07:13:42Z alexander.eichner@oracle.com $ */
 /** @file
  * IPRT - Init Ring-3, POSIX Specific Code.
  */
@@ -290,7 +290,7 @@ static struct sigaction g_SigActionAbort; /**< The default action for SIGABRT. *
 /**
  * Returns a description of the given VM user tag if known.
  */
-static const char *rtR3DarwinVmUserTagStringify(unsigned int uTag, char pszTmp, size_t cbTmp)
+static const char *rtR3DarwinVmUserTagStringify(unsigned int uTag, char *pszTmp, size_t cbTmp)
 {
     switch (uTag)
     {
