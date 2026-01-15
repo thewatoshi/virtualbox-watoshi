@@ -1,4 +1,4 @@
-/* $Id: fileio-r0drv-linux.c 112594 2026-01-15 08:37:34Z knut.osmundsen@oracle.com $ */
+/* $Id: fileio-r0drv-linux.c 112595 2026-01-15 09:11:16Z knut.osmundsen@oracle.com $ */
 /** @file
  * IPRT - File I/O, R0 Driver, Linux.
  */
@@ -59,7 +59,7 @@
 #include "internal/magics.h"
 
 
-#if RTLNX_VER_MIN(5,10,0)  /** @todo support this for older kernels (see also dbgkrnlinfo-r0drv-linux.c and fileio-r0drv-linux.c) */
+#if RTLNX_VER_MIN(5,8,0)  /** @todo support this for older kernels (see also dbgkrnlinfo-r0drv-linux.c and fileio-r0drv-linux.c) */
 
 
 /*********************************************************************************************************************************
@@ -221,7 +221,7 @@ RTDECL(int) RTFileReadAt(RTFILE hFile, RTFOFF off, void *pvBuf, size_t cbToRead,
      * With Linux 5.10 they got rid of this DS_KERNEL stuff, and 'read' was
      * no longer able to handle kernel buffers.  kernel_read() started check
      * that only 'read_iter' was implemented and would fail if missing but
-     * also if 'read' was implemented (claining complicated semantics).
+     * also if 'read' was implemented (claiming complicated semantics).
      */
 # if RTLNX_VER_MIN(5,10,0)
     if (pFile->f_op->read_iter)
@@ -243,6 +243,8 @@ RTDECL(int) RTFileReadAt(RTFILE hFile, RTFOFF off, void *pvBuf, size_t cbToRead,
         cbRead = vfs_iter_read(pFile, &IovIter, &offNative);
 #  endif
 
+# elif RTLNX_VER_MIN(4,14,0)
+        cbRead = kernel_read(pThis->pFile, (char *)pvBuf, cbToRead, &offNative);
 # elif RTLNX_VER_MIN(2,6,31)
         cbRead = kernel_read(pThis->pFile, &offNative, (char *)pvBuf, cbToRead);
 # else
