@@ -1,4 +1,4 @@
-/* $Id: 03-grammar.asl 112622 2026-01-16 09:47:04Z alexander.eichner@oracle.com $ */
+/* $Id: 03-grammar.asl 112624 2026-01-16 12:17:13Z alexander.eichner@oracle.com $ */
 /** @file
  * VirtualBox ACPI - Testcase.
  */
@@ -29,6 +29,8 @@ DefinitionBlock ("", "SSDT", 1, "VBOX  ", "VBOXTPMT", 2)
 {
     Scope (_SB_)
     {
+        OperationRegion(REGI, SystemMemory, 0xdeadc0de, 0x1000)
+
         Device (DUT_)
         {
             Method (TEST, 7, NotSerialized, 0)

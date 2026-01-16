@@ -1,4 +1,4 @@
-/* $Id: acpi-decompiler.cpp 112621 2026-01-16 09:46:12Z alexander.eichner@oracle.com $ */
+/* $Id: acpi-decompiler.cpp 112624 2026-01-16 12:17:13Z alexander.eichner@oracle.com $ */
 /** @file
  * IPRT - Advanced Configuration and Power Interface (ACPI) Table generation API.
  */
@@ -168,6 +168,7 @@ typedef enum ACPIAMLOPCTYPE
     kAcpiAmlOpcType_TermArg,
     kAcpiAmlOpcType_SuperName,
     kAcpiAmlOpcType_Target,
+    kAcpiAmlOpcType_RegionSpace,
     kAcpiAmlOpcType_32BitHack = 0x7fffffff
 } ACPIAMLOPCTYPE;
 
@@ -1191,6 +1192,32 @@ static DECLCALLBACK(int) rtAcpiTblAmlDecodeSimple(PRTACPITBLAMLDECODE pThis, PCR
                 cbPkgConsumed += pThis->offTbl - offTblOrig;
                 break;
             }
+            case kAcpiAmlOpcType_RegionSpace:
+            {
+                uint8_t bVal = 0;
+                rc = rtAcpiTblAmlDecodeReadU8(pThis, &bVal, pErrInfo);
+                if (RT_FAILURE(rc)) return rc;
+
+                pAstNd->aArgs[i].enmType = kAcpiAstArgType_RegionSpace;
+                switch (bVal)
+                {
+                    case 0x00: pAstNd->aArgs[i].u.enmRegionSpace = kAcpiOperationRegionSpace_SystemMemory;     break;
+                    case 0x01: pAstNd->aArgs[i].u.enmRegionSpace = kAcpiOperationRegionSpace_SystemIo;         break;
+                    case 0x02: pAstNd->aArgs[i].u.enmRegionSpace = kAcpiOperationRegionSpace_PciConfig;        break;
+                    case 0x03: pAstNd->aArgs[i].u.enmRegionSpace = kAcpiOperationRegionSpace_EmbeddedControl;  break;
+                    case 0x04: pAstNd->aArgs[i].u.enmRegionSpace = kAcpiOperationRegionSpace_SmBus;            break;
+                    case 0x05: pAstNd->aArgs[i].u.enmRegionSpace = kAcpiOperationRegionSpace_SystemCmos;       break;
+                    case 0x06: pAstNd->aArgs[i].u.enmRegionSpace = kAcpiOperationRegionSpace_PciBarTarget;     break;
+                    case 0x07: pAstNd->aArgs[i].u.enmRegionSpace = kAcpiOperationRegionSpace_Ipmi;             break;
+                    case 0x08: pAstNd->aArgs[i].u.enmRegionSpace = kAcpiOperationRegionSpace_Gpio;             break;
+                    case 0x09: pAstNd->aArgs[i].u.enmRegionSpace = kAcpiOperationRegionSpace_GenericSerialBus; break;
+                    case 0x0a: pAstNd->aArgs[i].u.enmRegionSpace = kAcpiOperationRegionSpace_Pcc;              break;
+                    default:
+                        AssertFailedReturn(VERR_INTERNAL_ERROR);
+                }
+
+                break;
+            }
             case kAcpiAmlOpcType_Invalid:
             default:
                 AssertReleaseFailed();
@@ -1650,7 +1677,7 @@ static const RTACPIAMLOPC g_aAmlExtOpcodeDecode[] =
     /* 0x7e */ RTACPI_AML_OPC_INVALID,
     /* 0x7f */ RTACPI_AML_OPC_INVALID,
 
-    /* 0x80 */ RTACPI_AML_OPC_SIMPLE_4("OperationRegion",   kAcpiAstNodeOp_OperationRegion, RTACPI_AML_OPC_F_NONE, kAcpiAmlOpcType_NameString, kAcpiAmlOpcType_Byte, kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_TermArg),
+    /* 0x80 */ RTACPI_AML_OPC_SIMPLE_4("OperationRegion",   kAcpiAstNodeOp_OperationRegion, RTACPI_AML_OPC_F_NONE, kAcpiAmlOpcType_NameString, kAcpiAmlOpcType_RegionSpace, kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_TermArg),
     /* 0x81 */ RTACPI_AML_OPC_HANDLER( "Field",             kAcpiAstNodeOp_Field,           rtAcpiTblAmlDecodeField),
     /* 0x82 */ RTACPI_AML_OPC_SIMPLE_1("Device",            kAcpiAstNodeOp_Device,          RTACPI_AML_OPC_F_HAS_PKG_LENGTH | RTACPI_AML_OPC_F_NEW_SCOPE, kAcpiAmlOpcType_NameString),
     /* 0x83 */ RTACPI_AML_OPC_SIMPLE_4("Processor",         kAcpiAstNodeOp_Processor,       RTACPI_AML_OPC_F_HAS_PKG_LENGTH | RTACPI_AML_OPC_F_NEW_SCOPE, kAcpiAmlOpcType_NameString, kAcpiAmlOpcType_Byte, kAcpiAmlOpcType_DWord,   kAcpiAmlOpcType_Byte),

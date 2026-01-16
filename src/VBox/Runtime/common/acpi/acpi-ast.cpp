@@ -1,4 +1,4 @@
-/* $Id: acpi-ast.cpp 112621 2026-01-16 09:46:12Z alexander.eichner@oracle.com $ */
+/* $Id: acpi-ast.cpp 112624 2026-01-16 12:17:13Z alexander.eichner@oracle.com $ */
 /** @file
  * IPRT - Advanced Configuration and Power Interface (ACPI) AST handling.
  */
@@ -973,6 +973,113 @@ static int rtAcpiAstDumpAstListToAsl(PCRTLISTANCHOR pLst, RTVFSIOSTREAM hVfsIosO
 }
 
 
+/**
+ * Operations encoding table, indexed by kAcpiAstNodeOp_XXX.
+ */
+static const char *g_apszAslOps[] =
+{
+    /* kAcpiAstNodeOp_Invalid                 */  NULL,
+    /* kAcpiAstNodeOp_Identifier              */  NULL,
+    /* kAcpiAstNodeOp_StringLiteral           */  NULL,
+    /* kAcpiAstNodeOp_Number                  */  NULL,
+    /* kAcpiAstNodeOp_Scope                   */  "Scope",
+    /* kAcpiAstNodeOp_Processor               */  "Processor",
+    /* kAcpiAstNodeOp_External                */  "External",
+    /* kAcpiAstNodeOp_Method                  */  "Method",
+    /* kAcpiAstNodeOp_Device                  */  "Device",
+    /* kAcpiAstNodeOp_If                      */  "If",
+    /* kAcpiAstNodeOp_Else                    */  "Else",
+    /* kAcpiAstNodeOp_LAnd                    */  "LAnd",
+    /* kAcpiAstNodeOp_LOr                     */  "LOr",
+    /* kAcpiAstNodeOp_LEqual                  */  "LEqual",
+    /* kAcpiAstNodeOp_LGreater                */  "LGreater",
+    /* kAcpiAstNodeOp_LGreaterEqual           */  "LGreaterEqual",
+    /* kAcpiAstNodeOp_LLess                   */  "LLess",
+    /* kAcpiAstNodeOp_LLessEqual              */  "LLessEqual",
+    /* kAcpiAstNodeOp_LNot                    */  "LNot",
+    /* kAcpiAstNodeOp_LNotEqual               */  "LNotEqual",
+    /* kAcpiAstNodeOp_Zero                    */  "Zero",
+    /* kAcpiAstNodeOp_One                     */  "One",
+    /* kAcpiAstNodeOp_Ones                    */  "Ones",
+    /* kAcpiAstNodeOp_Return                  */  "Return",
+    /* kAcpiAstNodeOp_Unicode                 */  "Unicode",
+    /* kAcpiAstNodeOp_OperationRegion         */  "OperationRegion",
+    /* kAcpiAstNodeOp_Field                   */  "Field",
+    /* kAcpiAstNodeOp_Name                    */  "Name",
+    /* kAcpiAstNodeOp_ResourceTemplate        */  "ResourceTemplate",
+    /* kAcpiAstNodeOp_Arg0                    */  "Arg0",
+    /* kAcpiAstNodeOp_Arg1                    */  "Arg1",
+    /* kAcpiAstNodeOp_Arg2                    */  "Arg2",
+    /* kAcpiAstNodeOp_Arg3                    */  "Arg3",
+    /* kAcpiAstNodeOp_Arg4                    */  "Arg4",
+    /* kAcpiAstNodeOp_Arg5                    */  "Arg5",
+    /* kAcpiAstNodeOp_Arg6                    */  "Arg6",
+    /* kAcpiAstNodeOp_Local0                  */  "Local0",
+    /* kAcpiAstNodeOp_Local1                  */  "Local1",
+    /* kAcpiAstNodeOp_Local2                  */  "Local2",
+    /* kAcpiAstNodeOp_Local3                  */  "Local3",
+    /* kAcpiAstNodeOp_Local4                  */  "Local4",
+    /* kAcpiAstNodeOp_Local5                  */  "Local5",
+    /* kAcpiAstNodeOp_Local6                  */  "Local6",
+    /* kAcpiAstNodeOp_Local7                  */  "Local7",
+    /* kAcpiAstNodeOp_Package                 */  "Package",
+    /* kAcpiAstNodeOp_Buffer                  */  "Buffer",
+    /* kAcpiAstNodeOp_ToUUid                  */  "ToUUID",
+    /* kAcpiAstNodeOp_DerefOf                 */  "DerefOf",
+    /* kAcpiAstNodeOp_Index                   */  "Index",
+    /* kAcpiAstNodeOp_Store                   */  "Store",
+    /* kAcpiAstNodeOp_Break                   */  "Break",
+    /* kAcpiAstNodeOp_Continue                */  "Continue",
+    /* kAcpiAstNodeOp_Add                     */  "Add",
+    /* kAcpiAstNodeOp_Subtract                */  "Subtract",
+    /* kAcpiAstNodeOp_Multiply                */  "Multiply",
+    /* kAcpiAstNodeOp_And                     */  "And",
+    /* kAcpiAstNodeOp_Nand                    */  "Nand",
+    /* kAcpiAstNodeOp_Or                      */  "Or",
+    /* kAcpiAstNodeOp_Xor                     */  "Xor",
+    /* kAcpiAstNodeOp_ShiftLeft               */  "ShiftLeft",
+    /* kAcpiAstNodeOp_ShiftRight              */  "ShiftRight",
+    /* kAcpiAstNodeOp_Not                     */  "Not",
+    /* kAcpiAstNodeOp_Notify                  */  "Notify",
+    /* kAcpiAstNodeOp_SizeOf                  */  "SizeOf",
+    /* kAcpiAstNodeOp_While                   */  "While",
+    /* kAcpiAstNodeOp_Increment               */  "Increment",
+    /* kAcpiAstNodeOp_Decrement               */  "Decrement",
+    /* kAcpiAstNodeOp_CondRefOf               */  "CondRefOf",
+    /* kAcpiAstNodeOp_IndexField              */  "IndexField",
+    /* kAcpiAstNodeOp_EisaId                  */  "EisaId",
+    /* kAcpiAstNodeOp_CreateField             */  "CreateField",
+    /* kAcpiAstNodeOp_CreateBitField          */  "CreateBitField",
+    /* kAcpiAstNodeOp_CreateByteField         */  "CreateByteField",
+    /* kAcpiAstNodeOp_CreateWordField         */  "CreateWordField",
+    /* kAcpiAstNodeOp_CreateDWordField        */  "CreateDWordField",
+    /* kAcpiAstNodeOp_CreateQWordField        */  "CreateQWordField",
+    /* kAcpiAstNodeOp_ConcatenateResTemplate  */  "ConcatenateResTemplate",
+    /* kAcpiAstNodeOp_FindSetLeftBit          */  "FindSetLeftBit",
+    /* kAcpiAstNodeOp_FindSetRightBit         */  "FindSetRightBit",
+};
+
+
+/**
+ * Region space encoding table, indexed by kAcpiOperationRegionSpace_XXX.
+ */
+static const char *g_apszRegionSpace[] =
+{
+    /* kAcpiOperationRegionSpace_Invalid          */ NULL,
+    /* kAcpiOperationRegionSpace_SystemMemory     */ "SystemMemory",
+    /* kAcpiOperationRegionSpace_SystemIo         */ "SystemIO",
+    /* kAcpiOperationRegionSpace_PciConfig        */ "PCI_Config",
+    /* kAcpiOperationRegionSpace_EmbeddedControl  */ "EmbeddedControl",
+    /* kAcpiOperationRegionSpace_SmBus            */ "SMBus",
+    /* kAcpiOperationRegionSpace_SystemCmos       */ "SystemCMOS",
+    /* kAcpiOperationRegionSpace_PciBarTarget     */ "PciBarTarget",
+    /* kAcpiOperationRegionSpace_Ipmi             */ "IPMI",
+    /* kAcpiOperationRegionSpace_Gpio             */ "GeneralPurposeIO",
+    /* kAcpiOperationRegionSpace_GenericSerialBus */ "GenericSerialBus",
+    /* kAcpiOperationRegionSpace_Pcc              */ "PCC"
+};
+
+
 DECLHIDDEN(int) rtAcpiAstDumpToAsl(PCRTACPIASTNODE pAstNd, RTVFSIOSTREAM hVfsIosOut, uint32_t uLvl)
 {
     int rc = VINF_SUCCESS;
@@ -1011,31 +1118,6 @@ DECLHIDDEN(int) rtAcpiAstDumpToAsl(PCRTACPIASTNODE pAstNd, RTVFSIOSTREAM hVfsIos
         case kAcpiAstNodeOp_Number:
             rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "%#RX64", pAstNd->u64);
             break;
-        case kAcpiAstNodeOp_Scope:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 1
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_NameString,
-                            rc = VERR_INTERNAL_ERROR);
-            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "Scope(%s)", pAstNd->aArgs[0].u.pszNameString);
-            if (RT_SUCCESS(rc))
-                rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "{");
-            if (RT_SUCCESS(rc))
-                rc = rtAcpiAstDumpAstListToAsl(&pAstNd->LstScopeNodes, hVfsIosOut, uLvl + 1);
-            if (RT_SUCCESS(rc))
-                rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "}\n");
-            break;
-        }
-        case kAcpiAstNodeOp_Processor:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 4
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_NameString
-                            && pAstNd->aArgs[1].enmType == kAcpiAstArgType_U8
-                            && pAstNd->aArgs[2].enmType == kAcpiAstArgType_U32
-                            && pAstNd->aArgs[3].enmType == kAcpiAstArgType_U8,
-                            rc = VERR_INTERNAL_ERROR);
-            AssertFailed();
-            break;
-        }
         case kAcpiAstNodeOp_Method:
         {
             AssertBreakStmt(   pAstNd->cArgs == 4
@@ -1057,494 +1139,83 @@ DECLHIDDEN(int) rtAcpiAstDumpToAsl(PCRTACPIASTNODE pAstNd, RTVFSIOSTREAM hVfsIos
                 rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "}\n");
             break;
         }
-        case kAcpiAstNodeOp_Device:
+        default:
         {
-            AssertBreakStmt(   pAstNd->cArgs == 1
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_NameString,
-                            rc = VERR_INTERNAL_ERROR);
-            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "Device(%s)", pAstNd->aArgs[0].u.pszNameString);
-            if (RT_SUCCESS(rc))
-                rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "{");
-            if (RT_SUCCESS(rc))
-                rc = rtAcpiAstDumpAstListToAsl(&pAstNd->LstScopeNodes, hVfsIosOut, uLvl + 1);
-            if (RT_SUCCESS(rc))
-                rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "}\n");
-            break;
-        }
-        case kAcpiAstNodeOp_If:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 1
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_AstNode,
-                            rc = VERR_INTERNAL_ERROR);
-            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "If (");
-            if (RT_SUCCESS(rc))
+            /* Generic case for most of the types. */
+            const char *pszOp = g_apszAslOps[pAstNd->enmOp];
+            if (pAstNd->enmOp == kAcpiAstNodeOp_Identifier)
+                pszOp = pAstNd->pszIde;
+
+            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "%s", pszOp);
+            if (   RT_SUCCESS(rc)
+                && pAstNd->cArgs)
             {
-                rc = rtAcpiAstDumpToAsl(pAstNd->aArgs[0].u.pAstNd, hVfsIosOut, 0 /*uLvl*/);
+                rc = rtAcpiAstNodeFormat(0, hVfsIosOut, "(");
                 if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstNodeFormat(0, hVfsIosOut, ")");
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "{");
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstDumpAstListToAsl(&pAstNd->LstScopeNodes, hVfsIosOut, uLvl + 1);
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "}");
-            }
-            break;
-        }
-        case kAcpiAstNodeOp_Else:
-        {
-            AssertBreakStmt(pAstNd->cArgs == 0, rc = VERR_INTERNAL_ERROR);
-            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "Else");
-            if (RT_SUCCESS(rc))
-            {
-                rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "{");
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstDumpAstListToAsl(&pAstNd->LstScopeNodes, hVfsIosOut, uLvl + 1);
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "}");
-            }
-            break;
-        }
-        case kAcpiAstNodeOp_While:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 1
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_AstNode,
-                            rc = VERR_INTERNAL_ERROR);
-            AssertFailed();
-            break;
-        }
-        case kAcpiAstNodeOp_LAnd:
-        case kAcpiAstNodeOp_LOr:
-        case kAcpiAstNodeOp_LEqual:
-        case kAcpiAstNodeOp_LGreater:
-        case kAcpiAstNodeOp_LGreaterEqual:
-        case kAcpiAstNodeOp_LLess:
-        case kAcpiAstNodeOp_LLessEqual:
-        case kAcpiAstNodeOp_LNotEqual:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 2
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_AstNode
-                            && pAstNd->aArgs[1].enmType == kAcpiAstArgType_AstNode,
-                            rc = VERR_INTERNAL_ERROR);
-            const char *pszOp;
-            switch (pAstNd->enmOp)
-            {
-                case kAcpiAstNodeOp_LAnd:           pszOp = "LAnd"; break;
-                case kAcpiAstNodeOp_LOr:            pszOp = "LOr"; break;
-                case kAcpiAstNodeOp_LEqual:         pszOp = "LEqual"; break;
-                case kAcpiAstNodeOp_LGreater:       pszOp = "LGreater"; break;
-                case kAcpiAstNodeOp_LGreaterEqual:  pszOp = "LGreaterEqual"; break;
-                case kAcpiAstNodeOp_LLess:          pszOp = "LLess"; break;
-                case kAcpiAstNodeOp_LLessEqual:     pszOp = "LLessEqual"; break;
-                case kAcpiAstNodeOp_LNotEqual:      pszOp = "LNotEqual"; break;
-                default:
-                    AssertReleaseFailed(); /* Impossible */
-                    return VERR_INTERNAL_ERROR;
-            }
-
-            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "%s(", pszOp);
-            if (RT_SUCCESS(rc))
-            {
-                rc = rtAcpiAstDumpToAsl(pAstNd->aArgs[0].u.pAstNd, hVfsIosOut, 0 /*uLvl*/);
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstNodeFormat(0, hVfsIosOut, ",");
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstDumpToAsl(pAstNd->aArgs[1].u.pAstNd, hVfsIosOut, 0 /*uLvl*/);
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstNodeFormat(0, hVfsIosOut, ")");
-            }
-            break;
-        }
-        case kAcpiAstNodeOp_LNot:
-            AssertBreakStmt(   pAstNd->cArgs == 1
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_AstNode,
-                            rc = VERR_INTERNAL_ERROR);
-            AssertFailed();
-            break;
-        case kAcpiAstNodeOp_Zero:
-        {
-            AssertBreakStmt(pAstNd->cArgs == 0, rc = VERR_INTERNAL_ERROR);
-            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "Zero");
-            break;
-        }
-        case kAcpiAstNodeOp_One:
-        {
-            AssertBreakStmt(pAstNd->cArgs == 0, rc = VERR_INTERNAL_ERROR);
-            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "One");
-            break;
-        }
-        case kAcpiAstNodeOp_Ones:
-        {
-            AssertBreakStmt(pAstNd->cArgs == 0, rc = VERR_INTERNAL_ERROR);
-            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "Ones");
-            break;
-        }
-        case kAcpiAstNodeOp_Return:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 1
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_AstNode,
-                            rc = VERR_INTERNAL_ERROR);
-            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "Return (");
-            if (RT_SUCCESS(rc))
-            {
-                rc = rtAcpiAstDumpToAsl(pAstNd->aArgs[0].u.pAstNd, hVfsIosOut, 0 /*uLvl*/);
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstNodeFormat(0, hVfsIosOut, ")");
-            }
-            break;
-        }
-        case kAcpiAstNodeOp_Unicode:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 1
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_AstNode
-                            && pAstNd->aArgs[0].u.pAstNd->enmOp == kAcpiAstNodeOp_StringLiteral,
-                            rc = VERR_INTERNAL_ERROR);
-
-            AssertFailed();
-            break;
-        }
-        case kAcpiAstNodeOp_OperationRegion:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 4
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_NameString
-                            && pAstNd->aArgs[1].enmType == kAcpiAstArgType_U8
-                            && pAstNd->aArgs[2].enmType == kAcpiAstArgType_AstNode
-                            && pAstNd->aArgs[3].enmType == kAcpiAstArgType_AstNode,
-                            rc = VERR_INTERNAL_ERROR);
-
-            const char *pszRegionSpace;
-            switch (pAstNd->aArgs[1].u.u8)
-            {
-                case 0x00: pszRegionSpace = "SystemMemory"; break;
-                case 0x01: pszRegionSpace = "SystemIO"; break;
-                case 0x02: pszRegionSpace = "PCI_Config"; break;
-                case 0x03: pszRegionSpace = "EmbeddedControl"; break;
-                case 0x04: pszRegionSpace = "SMBus"; break;
-                case 0x05: pszRegionSpace = "SystemCMOS"; break;
-                case 0x06: pszRegionSpace = "PciBarTarget"; break;
-                case 0x07: pszRegionSpace = "IPMI"; break;
-                case 0x08: pszRegionSpace = "GeneralPurposeIO"; break;
-                case 0x09: pszRegionSpace = "GenericSerialBus"; break;
-                case 0x0a: pszRegionSpace = "PCC"; break;
-                default:
-                    AssertReleaseFailed(); /* Impossible */
-                    return VERR_INTERNAL_ERROR;
-            }
-
-            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "OperationRegion(%s, %s, ", pAstNd->aArgs[0].u.pszNameString, pszRegionSpace);
-            if (RT_SUCCESS(rc))
-            {
-                rc = rtAcpiAstDumpToAsl(pAstNd->aArgs[2].u.pAstNd, hVfsIosOut, 0 /*uLvl*/);
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstNodeFormat(0, hVfsIosOut, ", ");
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstDumpToAsl(pAstNd->aArgs[3].u.pAstNd, hVfsIosOut, 0 /*uLvl*/);
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstNodeFormat(0, hVfsIosOut, ")");
-            }
-
-            break;
-        }
-        case kAcpiAstNodeOp_Field:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 4
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_NameString
-                            && pAstNd->aArgs[1].enmType == kAcpiAstArgType_FieldAcc
-                            && pAstNd->aArgs[2].enmType == kAcpiAstArgType_Bool
-                            && pAstNd->aArgs[3].enmType == kAcpiAstArgType_FieldUpdate,
-                            rc = VERR_INTERNAL_ERROR);
-            AssertFailed();
-            break;
-        }
-        case kAcpiAstNodeOp_IndexField:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 5
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_NameString
-                            && pAstNd->aArgs[1].enmType == kAcpiAstArgType_NameString
-                            && pAstNd->aArgs[2].enmType == kAcpiAstArgType_FieldAcc
-                            && pAstNd->aArgs[3].enmType == kAcpiAstArgType_Bool
-                            && pAstNd->aArgs[4].enmType == kAcpiAstArgType_FieldUpdate,
-                            rc = VERR_INTERNAL_ERROR);
-
-            AssertFailed();
-            break;
-        }
-        case kAcpiAstNodeOp_Name:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 2
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_NameString
-                            && pAstNd->aArgs[1].enmType == kAcpiAstArgType_AstNode,
-                            rc = VERR_INTERNAL_ERROR);
-
-            AssertFailed();
-            break;
-        }
-        case kAcpiAstNodeOp_ResourceTemplate:
-            AssertFailed();
-            break;
-        case kAcpiAstNodeOp_Arg0:
-        case kAcpiAstNodeOp_Arg1:
-        case kAcpiAstNodeOp_Arg2:
-        case kAcpiAstNodeOp_Arg3:
-        case kAcpiAstNodeOp_Arg4:
-        case kAcpiAstNodeOp_Arg5:
-        case kAcpiAstNodeOp_Arg6:
-        {
-            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "Arg%u", pAstNd->enmOp - kAcpiAstNodeOp_Arg0);
-            break;
-        }
-        case kAcpiAstNodeOp_Local0:
-        case kAcpiAstNodeOp_Local1:
-        case kAcpiAstNodeOp_Local2:
-        case kAcpiAstNodeOp_Local3:
-        case kAcpiAstNodeOp_Local4:
-        case kAcpiAstNodeOp_Local5:
-        case kAcpiAstNodeOp_Local6:
-        case kAcpiAstNodeOp_Local7:
-        {
-            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "Local%u", pAstNd->enmOp - kAcpiAstNodeOp_Local0);
-            break;
-        }
-        case kAcpiAstNodeOp_Package:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 1
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_AstNode,
-                            rc = VERR_INTERNAL_ERROR);
-
-            AssertFailed();
-            break;
-        }
-        case kAcpiAstNodeOp_Buffer:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 1
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_U64,
-                            rc = VERR_INTERNAL_ERROR);
-
-            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "Buffer (%#RX64) {", pAstNd->aArgs[0].u.u64);
-            if (RT_SUCCESS(rc))
-            {
-                PRTACPIASTNODE pIt;
-                RTListForEach(&pAstNd->LstScopeNodes, pIt, RTACPIASTNODE, NdAst)
                 {
-                    AssertBreakStmt(pIt->enmOp == kAcpiAstNodeOp_Number,
-                                    rc = VERR_INTERNAL_ERROR);
-
-                    rc = rtAcpiAstNodeFormat(0, hVfsIosOut, "%#RX64", pIt->u64);
-                    if (RT_FAILURE(rc))
-                        break;
-
-                    if (!RTListNodeIsLast(&pAstNd->LstScopeNodes, &pIt->NdAst))
+                    for (uint8_t i = 0; i < pAstNd->cArgs; i++)
                     {
-                        rc = rtAcpiAstNodeFormat(0, hVfsIosOut, ", ");
+                        switch (pAstNd->aArgs[i].enmType)
+                        {
+                            case kAcpiAstArgType_AstNode:
+                                rc = rtAcpiAstDumpToAsl(pAstNd->aArgs[i].u.pAstNd, hVfsIosOut, 0);
+                                break;
+                            case kAcpiAstArgType_NameString:
+                                rc = rtAcpiAstNodeFormat(0, hVfsIosOut, "%s", pAstNd->aArgs[i].u.pszNameString);
+                                break;
+                            case kAcpiAstArgType_Bool:
+                                rc = rtAcpiAstNodeFormat(0, hVfsIosOut, "%s", pAstNd->aArgs[i].u.f ? "True" : "False");
+                                break;
+                            case kAcpiAstArgType_U8:
+                                rc = rtAcpiAstNodeFormat(0, hVfsIosOut, "%RU8", pAstNd->aArgs[i].u.u8);
+                                break;
+                            case kAcpiAstArgType_U16:
+                                rc = rtAcpiAstNodeFormat(0, hVfsIosOut, "%#RX8", pAstNd->aArgs[i].u.u16);
+                                break;
+                            case kAcpiAstArgType_U32:
+                                rc = rtAcpiAstNodeFormat(0, hVfsIosOut, "%#RX32", pAstNd->aArgs[i].u.u32);
+                                break;
+                            case kAcpiAstArgType_U64:
+                                rc = rtAcpiAstNodeFormat(0, hVfsIosOut, "%#RX64", pAstNd->aArgs[i].u.u64);
+                                break;
+                            case kAcpiAstArgType_StringLiteral:
+                                rc = rtAcpiAstNodeFormat(0, hVfsIosOut, "%s", pAstNd->aArgs[i].u.pszStrLit);
+                                break;
+                            case kAcpiAstArgType_RegionSpace:
+                                rc = rtAcpiAstNodeFormat(0, hVfsIosOut, "%s", g_apszRegionSpace[pAstNd->aArgs[i].u.enmRegionSpace]);
+                                break;
+                            case kAcpiAstArgType_ObjType:
+                            case kAcpiAstArgType_FieldAcc:
+                            case kAcpiAstArgType_FieldUpdate:
+                            default:
+                                AssertReleaseFailed();
+                        }
+
                         if (RT_FAILURE(rc))
                             break;
+
+                        if (i < pAstNd->cArgs - 1)
+                        {
+                            rc = rtAcpiAstNodeFormat(0, hVfsIosOut, ", ");
+                            if (RT_FAILURE(rc))
+                                break;
+                        }
                     }
                 }
                 if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "}");
-            }
-            break;
-        }
-        case kAcpiAstNodeOp_ToUuid:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 1
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_AstNode
-                            && pAstNd->aArgs[0].u.pAstNd->enmOp == kAcpiAstNodeOp_StringLiteral,
-                            rc = VERR_INTERNAL_ERROR);
-            AssertFailed();
-            break;
-        }
-        case kAcpiAstNodeOp_Break:
-        {
-            AssertBreakStmt(pAstNd->cArgs == 0, rc = VERR_INTERNAL_ERROR);
-            AssertFailed();
-            break;
-        }
-        case kAcpiAstNodeOp_Continue:
-        {
-            AssertBreakStmt(pAstNd->cArgs == 0, rc = VERR_INTERNAL_ERROR);
-            AssertFailed();
-            break;
-        }
-        case kAcpiAstNodeOp_DerefOf:
-        case kAcpiAstNodeOp_SizeOf:
-        case kAcpiAstNodeOp_Increment:
-        case kAcpiAstNodeOp_Decrement:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 1
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_AstNode,
-                            rc = VERR_INTERNAL_ERROR);
-
-            const char *pszOp = NULL;
-            switch (pAstNd->enmOp)
-            {
-                case kAcpiAstNodeOp_DerefOf:   pszOp = "DerefOf";   break;
-                case kAcpiAstNodeOp_SizeOf:    pszOp = "SizeOf";    break;
-                case kAcpiAstNodeOp_Increment: pszOp = "Increment"; break;
-                case kAcpiAstNodeOp_Decrement: pszOp = "Decrement"; break;
-                default:
-                    AssertReleaseFailed(); /* Impossible */
-                    return VERR_INTERNAL_ERROR;
-            }
-
-            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "%s(", pszOp);
-            if (RT_SUCCESS(rc))
-            {
-                rc = rtAcpiAstDumpToAsl(pAstNd->aArgs[0].u.pAstNd, hVfsIosOut, 0 /*uLvl*/);
-                if (RT_SUCCESS(rc))
                     rc = rtAcpiAstNodeFormat(0, hVfsIosOut, ")");
             }
-            break;
-        }
-        case kAcpiAstNodeOp_Store:
-        case kAcpiAstNodeOp_Notify:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 2
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_AstNode
-                            && pAstNd->aArgs[1].enmType == kAcpiAstArgType_AstNode,
-                            rc = VERR_INTERNAL_ERROR);
 
-            const char *pszOp = NULL;
-            switch (pAstNd->enmOp)
+            if (   RT_SUCCESS(rc)
+                && (pAstNd->fFlags & RTACPI_AST_NODE_F_NEW_SCOPE))
             {
-                case kAcpiAstNodeOp_Store:  pszOp = "Store";  break;
-                case kAcpiAstNodeOp_Notify: pszOp = "Notify"; break;
-                default:
-                    AssertReleaseFailed(); /* Impossible */
-                    return VERR_INTERNAL_ERROR;
+                rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "{");
+                if (RT_SUCCESS(rc))
+                    rc = rtAcpiAstDumpAstListToAsl(&pAstNd->LstScopeNodes, hVfsIosOut, uLvl + 1);
+                if (RT_SUCCESS(rc))
+                    rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "}\n");
             }
-
-            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "%s(", pszOp);
-            if (RT_SUCCESS(rc))
-            {
-                rc = rtAcpiAstDumpToAsl(pAstNd->aArgs[0].u.pAstNd, hVfsIosOut, 0 /*uLvl*/);
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstNodeFormat(0, hVfsIosOut, ", ");
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstDumpToAsl(pAstNd->aArgs[1].u.pAstNd, hVfsIosOut, 0 /*uLvl*/);
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstNodeFormat(0, hVfsIosOut, ")");
-            }
-            break;
         }
-        case kAcpiAstNodeOp_Not:
-        case kAcpiAstNodeOp_CondRefOf:
-        case kAcpiAstNodeOp_FindSetLeftBit:
-        case kAcpiAstNodeOp_FindSetRightBit:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 2
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_AstNode
-                            && pAstNd->aArgs[1].enmType == kAcpiAstArgType_AstNode,
-                            rc = VERR_INTERNAL_ERROR);
-
-            RTACPISTMT enmStmt;
-            switch (pAstNd->enmOp)
-            {
-                case kAcpiAstNodeOp_Not:             enmStmt = kAcpiStmt_Not;             break;
-                case kAcpiAstNodeOp_CondRefOf:       enmStmt = kAcpiStmt_CondRefOf;       break;
-                case kAcpiAstNodeOp_FindSetLeftBit:  enmStmt = kAcpiStmt_FindSetLeftBit;  break;
-                case kAcpiAstNodeOp_FindSetRightBit: enmStmt = kAcpiStmt_FindSetRightBit; break;
-                default:
-                    AssertReleaseFailed(); /* Impossible */
-                    return VERR_INTERNAL_ERROR;
-            }
-
-            AssertFailed();
-            break;
-        }
-        case kAcpiAstNodeOp_Index:
-        case kAcpiAstNodeOp_Add:
-        case kAcpiAstNodeOp_Subtract:
-        case kAcpiAstNodeOp_Multiply:
-        case kAcpiAstNodeOp_And:
-        case kAcpiAstNodeOp_Nand:
-        case kAcpiAstNodeOp_Or:
-        case kAcpiAstNodeOp_Xor:
-        case kAcpiAstNodeOp_ShiftLeft:
-        case kAcpiAstNodeOp_ShiftRight:
-        case kAcpiAstNodeOp_ConcatenateResTemplate:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 3
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_AstNode
-                            && pAstNd->aArgs[1].enmType == kAcpiAstArgType_AstNode
-                            && pAstNd->aArgs[2].enmType == kAcpiAstArgType_AstNode,
-                            rc = VERR_INTERNAL_ERROR);
-
-            const char *pszOp = NULL;
-            switch (pAstNd->enmOp)
-            {
-                case kAcpiAstNodeOp_Index:      pszOp = "Index";      break;
-                case kAcpiAstNodeOp_Add:        pszOp = "Add";        break;
-                case kAcpiAstNodeOp_Subtract:   pszOp = "Subtract";   break;
-                case kAcpiAstNodeOp_Multiply:   pszOp = "Multiply";   break;
-                case kAcpiAstNodeOp_And:        pszOp = "And";        break;
-                case kAcpiAstNodeOp_Nand:       pszOp = "Nand";       break;
-                case kAcpiAstNodeOp_Or:         pszOp = "Or";         break;
-                case kAcpiAstNodeOp_Xor:        pszOp = "Xor";        break;
-                case kAcpiAstNodeOp_ShiftLeft:  pszOp = "ShiftLeft";  break;
-                case kAcpiAstNodeOp_ShiftRight: pszOp = "ShiftRight"; break;
-                case kAcpiAstNodeOp_ConcatenateResTemplate: pszOp = "ConcatenateResTemplate"; break;
-                default:
-                    AssertReleaseFailed(); /* Impossible */
-                    return VERR_INTERNAL_ERROR;
-            }
-
-            rc = rtAcpiAstNodeFormat(uLvl, hVfsIosOut, "%s(", pszOp);
-            if (RT_SUCCESS(rc))
-            {
-                rc = rtAcpiAstDumpToAsl(pAstNd->aArgs[0].u.pAstNd, hVfsIosOut, 0 /*uLvl*/);
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstNodeFormat(0, hVfsIosOut, ", ");
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstDumpToAsl(pAstNd->aArgs[1].u.pAstNd, hVfsIosOut, 0 /*uLvl*/);
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstNodeFormat(0, hVfsIosOut, ", ");
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstDumpToAsl(pAstNd->aArgs[2].u.pAstNd, hVfsIosOut, 0 /*uLvl*/);
-                if (RT_SUCCESS(rc))
-                    rc = rtAcpiAstNodeFormat(0, hVfsIosOut, ")");
-            }
-            break;
-        }
-        case kAcpiAstNodeOp_EisaId:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 1
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_StringLiteral,
-                            rc = VERR_INTERNAL_ERROR);
-            AssertFailed();
-            break;
-        }
-        case kAcpiAstNodeOp_CreateBitField:
-        case kAcpiAstNodeOp_CreateByteField:
-        case kAcpiAstNodeOp_CreateWordField:
-        case kAcpiAstNodeOp_CreateDWordField:
-        case kAcpiAstNodeOp_CreateQWordField:
-        {
-            AssertBreakStmt(   pAstNd->cArgs == 3
-                            && pAstNd->aArgs[0].enmType == kAcpiAstArgType_AstNode
-                            && pAstNd->aArgs[1].enmType == kAcpiAstArgType_AstNode
-                            && pAstNd->aArgs[2].enmType == kAcpiAstArgType_NameString,
-                            rc = VERR_INTERNAL_ERROR);
-
-            RTACPISTMT enmStmt;
-            switch (pAstNd->enmOp)
-            {
-                case kAcpiAstNodeOp_CreateBitField:   enmStmt = kAcpiStmt_CreateBitField;   break;
-                case kAcpiAstNodeOp_CreateByteField:  enmStmt = kAcpiStmt_CreateByteField;  break;
-                case kAcpiAstNodeOp_CreateWordField:  enmStmt = kAcpiStmt_CreateWordField;  break;
-                case kAcpiAstNodeOp_CreateDWordField: enmStmt = kAcpiStmt_CreateDWordField; break;
-                case kAcpiAstNodeOp_CreateQWordField: enmStmt = kAcpiStmt_CreateQWordField; break;
-                default:
-                    AssertReleaseFailed(); /* Impossible */
-                    return VERR_INTERNAL_ERROR;
-            }
-
-            AssertFailed();
-            break;
-        }
-        case kAcpiAstNodeOp_External:
-        default:
-            AssertFailedStmt(rc = VERR_NOT_IMPLEMENTED);
     }
 
     AssertRC(rc);
