@@ -1,4 +1,4 @@
-/* $Id: UIConsoleEventHandler.cpp 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: UIConsoleEventHandler.cpp 112641 2026-01-19 13:59:27Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIConsoleEventHandler class implementation.
  */
@@ -26,6 +26,7 @@
  */
 
 /* GUI includes: */
+#include "UICommon.h"
 #include "UIConsoleEventHandler.h"
 #include "UIExtraDataManager.h"
 #include "UIMainEventListener.h"
@@ -49,6 +50,11 @@ class UIConsoleEventHandlerProxy : public QObject
 
 signals:
 
+    /** Notifies about guest property change.
+      * @param  strName   Brings the guest property name.
+      * @param  strValue  Brings the guest property value. */
+    void sigGuestPropertyChange(const QString &strName,
+                                const QString &strValue);
     /** Notifies about mouse pointer @a shapeData change. */
     void sigMousePointerShapeChange(const UIMousePointerShapeData &shapeData);
     /** Notifies about mouse capability change to @a fSupportsAbsolute, @a fSupportsRelative,
@@ -109,6 +115,13 @@ public:
 
 private slots:
 
+    /** Handles signal about guest property change.
+      * @param  uMachineId  Brings the machine ID.
+      * @param  strName     Brings the guest property name.
+      * @param  strValue    Brings the guest property value. */
+    void sltGuestPropertyChange(const QUuid &uMachineId,
+                                const QString &strName,
+                                const QString &strValue);
     /** Returns whether VM window can be shown. */
     void sltCanShowWindow(bool &fVeto, QString &strReason);
     /** Shows VM window if possible. */
@@ -154,6 +167,14 @@ UIConsoleEventHandlerProxy::UIConsoleEventHandlerProxy(QObject *pParent, UISessi
 UIConsoleEventHandlerProxy::~UIConsoleEventHandlerProxy()
 {
     cleanup();
+}
+
+void UIConsoleEventHandlerProxy::sltGuestPropertyChange(const QUuid &uMachineId,
+                                                        const QString &strName,
+                                                        const QString &strValue)
+{
+    if (uiCommon().managedVMUuid() == uMachineId)
+        emit sigGuestPropertyChange(strName, strValue);
 }
 
 void UIConsoleEventHandlerProxy::sltCanShowWindow(bool & /* fVeto */, QString & /* strReason */)
@@ -205,6 +226,7 @@ void UIConsoleEventHandlerProxy::prepareListener()
     /* Enumerate all the required event-types: */
     QVector<KVBoxEventType> eventTypes;
     eventTypes
+        << KVBoxEventType_OnGuestPropertyChanged
         << KVBoxEventType_OnMousePointerShapeChanged
         << KVBoxEventType_OnMouseCapabilityChanged
         << KVBoxEventType_OnCursorPositionChanged
@@ -242,14 +264,17 @@ void UIConsoleEventHandlerProxy::prepareListener()
 void UIConsoleEventHandlerProxy::prepareConnections()
 {
     /* Create direct (sync) connections for signals of main listener: */
+    connect(m_pQtListener->getWrapped(), &UIMainEventListener::sigGuestPropertyChange,
+            this, &UIConsoleEventHandlerProxy::sltGuestPropertyChange,
+            Qt::DirectConnection);
     connect(m_pQtListener->getWrapped(), &UIMainEventListener::sigMousePointerShapeChange,
-        this, &UIConsoleEventHandlerProxy::sigMousePointerShapeChange,
+            this, &UIConsoleEventHandlerProxy::sigMousePointerShapeChange,
             Qt::DirectConnection);
     connect(m_pQtListener->getWrapped(), &UIMainEventListener::sigMouseCapabilityChange,
-           this, &UIConsoleEventHandlerProxy::sigMouseCapabilityChange,
+            this, &UIConsoleEventHandlerProxy::sigMouseCapabilityChange,
             Qt::DirectConnection);
     connect(m_pQtListener->getWrapped(), &UIMainEventListener::sigCursorPositionChange,
-           this, &UIConsoleEventHandlerProxy::sigCursorPositionChange,
+            this, &UIConsoleEventHandlerProxy::sigCursorPositionChange,
             Qt::DirectConnection);
     connect(m_pQtListener->getWrapped(), &UIMainEventListener::sigKeyboardLedsChange,
             this, &UIConsoleEventHandlerProxy::sigKeyboardLedsChange,
@@ -353,6 +378,9 @@ UIConsoleEventHandler::UIConsoleEventHandler(UISession *pSession)
 void UIConsoleEventHandler::prepare()
 {
     /* Create queued (async) connections for signals of event proxy object: */
+    connect(m_pProxy, &UIConsoleEventHandlerProxy::sigGuestPropertyChange,
+            this, &UIConsoleEventHandler::sigGuestPropertyChange,
+            Qt::QueuedConnection);
     connect(m_pProxy, &UIConsoleEventHandlerProxy::sigMousePointerShapeChange,
             this, &UIConsoleEventHandler::sigMousePointerShapeChange,
             Qt::QueuedConnection);

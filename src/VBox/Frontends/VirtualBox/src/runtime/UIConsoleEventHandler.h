@@ -1,4 +1,4 @@
-/* $Id: UIConsoleEventHandler.h 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: UIConsoleEventHandler.h 112641 2026-01-19 13:59:27Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIConsoleEventHandler class declaration.
  */
@@ -59,6 +59,11 @@ class UIConsoleEventHandler : public QObject
 
 signals:
 
+    /** Notifies about guest property change.
+      * @param  strName   Brings the guest property name.
+      * @param  strValue  Brings the guest property value. */
+    void sigGuestPropertyChange(const QString &strName,
+                                const QString &strValue);
     /** Notifies about mouse pointer @a shapeData change. */
     void sigMousePointerShapeChange(const UIMousePointerShapeData &shapeData);
     /** Notifies about mouse capability change to @a fSupportsAbsolute, @a fSupportsRelative,

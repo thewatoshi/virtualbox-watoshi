@@ -1,4 +1,4 @@
-/* $Id: UISession.cpp 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: UISession.cpp 112641 2026-01-19 13:59:27Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UISession class implementation.
  */
@@ -2593,6 +2593,8 @@ void UISession::prepareConsoleEventHandlers()
     m_pConsoleEventhandler = new UIConsoleEventHandler(this);
 
     /* Console event connections: */
+    connect(m_pConsoleEventhandler, &UIConsoleEventHandler::sigGuestPropertyChange,
+            this, &UISession::sigGuestPropertyChange);
     connect(m_pConsoleEventhandler, &UIConsoleEventHandler::sigAdditionsChange,
             this, &UISession::sltAdditionsChange);
     connect(m_pConsoleEventhandler, &UIConsoleEventHandler::sigAudioAdapterChange,

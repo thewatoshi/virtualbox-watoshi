@@ -1,4 +1,4 @@
-/* $Id: UIMachine.cpp 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: UIMachine.cpp 112641 2026-01-19 13:59:27Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIMachine class implementation.
  */
@@ -1543,6 +1543,8 @@ bool UIMachine::prepareSession()
     AssertPtrReturn(uisession(), false);
 
     /* Console events stuff: */
+    connect(uisession(), &UISession::sigGuestPropertyChange,
+            this, &UIMachine::sigGuestPropertyChange);
     connect(uisession(), &UISession::sigAudioAdapterChange,
             this, &UIMachine::sltHandleAudioAdapterChange);
     connect(uisession(), &UISession::sigAdditionsStateChange,
