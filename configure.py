@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# $Id: configure.py 112635 2026-01-19 11:07:31Z andreas.loeffler@oracle.com $
+# $Id: configure.py 112636 2026-01-19 11:11:51Z andreas.loeffler@oracle.com $
 """
 Configuration script for building VirtualBox.
 
@@ -61,7 +61,7 @@ SPDX-License-Identifier: GPL-3.0-only
 # External Python modules or other dependencies are not allowed!
 #
 
-__revision__ = "$Revision: 112635 $"
+__revision__ = "$Revision: 112636 $"
 
 import argparse
 import ctypes
@@ -3575,7 +3575,7 @@ def main():
     #
     oParser = argparse.ArgumentParser(description='Checks and configures the build environment', add_help=False);
     oParser.add_argument('-h', '--help', help="Displays this help", action='store_true');
-    oParser.add_argument('-v', '--verbose', help="Enables verbose output", action='count', default=4, dest='config_verbose');
+    oParser.add_argument('-v', '--verbose', help="Enables verbose output", action='count', default=0, dest='config_verbose');
     oParser.add_argument('-V', '--version', help="Prints the version of this script", action='store_true');
     for oLibCur in g_aoLibs:
         oParser.add_argument(f'--build-{oLibCur.sName}', help=f'Explicitly build {oLibCur.sName} from in-tree sources', action='store_true', default=None, dest=f'config_libs_build_{oLibCur.sName}');
@@ -3615,7 +3615,7 @@ def main():
     oParser.add_argument('--output-build-dir', '--out-base-dir', help='Specifies the build output directory', default=os.path.join(g_sScriptPath, 'out'), dest='config_build_dir');
     oParser.add_argument('--ose', help='Builds the OSE version', action='store_true', default=None, dest='config_ose');
     oParser.add_argument('--compat', help='Runs in compatibility mode. Only use for development', action='store_true', default=False, dest='config_compat');
-    oParser.add_argument('--debug', help='Runs in debug mode. Only use for development', action='store_true', default=True, dest='config_debug');
+    oParser.add_argument('--debug', help='Runs in debug mode. Only use for development', action='store_true', default=False, dest='config_debug');
     oParser.add_argument('--nofatal', '--continue-on-error', help='Continues execution on fatal errors', action='store_true', dest='config_nofatal');
     oParser.add_argument('--build-profile', help='Build with a profiling support', action='store_true', default=None, dest='KBUILD_TYPE=profile');
     oParser.add_argument('--build-target', help='Specifies the build target', default = g_enmBuildTarget, dest='config_build_target');
