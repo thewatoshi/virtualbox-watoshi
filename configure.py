@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# $Id: configure.py 112636 2026-01-19 11:11:51Z andreas.loeffler@oracle.com $
+# $Id: configure.py 112640 2026-01-19 13:23:49Z andreas.loeffler@oracle.com $
 """
 Configuration script for building VirtualBox.
 
@@ -61,7 +61,7 @@ SPDX-License-Identifier: GPL-3.0-only
 # External Python modules or other dependencies are not allowed!
 #
 
-__revision__ = "$Revision: 112636 $"
+__revision__ = "$Revision: 112640 $"
 
 import argparse
 import ctypes
@@ -1083,14 +1083,15 @@ class LibraryCheck(CheckBase):
     """
     Describes and checks for a library / package.
     """
-    def __init__(self, sName, asIncFiles, asLibFiles, aeTargets = None, aeArchs = None, sCode = None,
+    def __init__(self, sName, asIncFiles, asLibFiles,
+                 enmBuildTarget = g_enmBuildTarget, enmBuildArch = g_enmBuildArch, aeTargets = None, aeArchs = None, sCode = None,
                  asIncPaths = None, asLibPaths = None,
                  fnCallback = None, aeTargetsExcluded = None, fUseInTree = False, sSdkName = None,
                  dictDefinesToSetIfFailed = None):
         """
         Constructor.
         """
-        super().__init__(sName, aeTargets, aeArchs, aeTargetsExcluded);
+        super().__init__(sName, enmBuildTarget, enmBuildArch, aeTargets, aeArchs, aeTargetsExcluded);
 
         # List of library header (.h) files required to be found.
         self.asHdrFiles = asIncFiles or [];
@@ -1781,11 +1782,12 @@ class ToolCheck(CheckBase):
     Describes and checks for a build tool.
     """
     def __init__(self, sName, asCmd = None, fnCallback = None, aeTargets = None, aeArchs = None,
+                 enmBuildTarget = g_enmBuildTarget, enmBuildArch = g_enmBuildArch,
                  aeTargetsExcluded = None, dictDefinesToSetIfFailed = None):
         """
         Constructor.
         """
-        super().__init__(sName, aeTargets, aeArchs, aeTargetsExcluded);
+        super().__init__(sName, enmBuildTarget, enmBuildArch, aeTargets, aeArchs, aeTargetsExcluded);
 
         # Optional callback function to assist handling the tool check.
         # Will be executed before anything else. The success value (True / False) will decide whether the
