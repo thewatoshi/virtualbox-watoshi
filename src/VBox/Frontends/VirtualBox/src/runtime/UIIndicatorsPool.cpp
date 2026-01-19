@@ -1,4 +1,4 @@
-/* $Id: UIIndicatorsPool.cpp 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: UIIndicatorsPool.cpp 112642 2026-01-19 14:01:32Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIIndicatorsPool class implementation.
  */
@@ -600,6 +600,8 @@ public:
                 this, &UIIndicatorNetwork::updateAppearance);
         connect(m_pMachine, &UIMachine::sigAdditionsStateActualChange,
                 this, &UIIndicatorNetwork::updateAppearance);
+        connect(m_pMachine, &UIMachine::sigGuestPropertyChange,
+                this, &UIIndicatorNetwork::sltGuestPropertyChange);
         /* Update & translate finally: */
         updateAppearance();
     }
@@ -628,6 +630,31 @@ protected slots:
 
         /* Retranslate finally: */
         sltRetranslateUI();
+    }
+
+    /** Handles signal about guest property change.
+      * @param  strName   Brings the guest property name.
+      * @param  strValue  Brings the guest property value. */
+    void sltGuestPropertyChange(const QString &strName,
+                                const QString &strValue)
+    {
+        Q_UNUSED(strValue);
+
+        /* Handle only specific signals related to IP and MAC.  These two
+         * events can come in arbitrary order one after another.  First one
+         * isn't enough, but the second one will be, waiting for both. */
+        QRegularExpression re1("/VirtualBox/GuestInfo/Net/[\\d]+/V4/IP");
+        QRegularExpression re2("/VirtualBox/GuestInfo/Net/[\\d]+/MAC");
+        QRegularExpressionMatch rematch1 = re1.match(strName);
+        QRegularExpressionMatch rematch2 = re2.match(strName);
+        if (rematch1.hasMatch() || rematch2.hasMatch())
+        {
+            // printf("Guest property change: name = %s, value = %s\n",
+            //        strName.toUtf8().constData(),
+            //        strValue.toUtf8().constData());
+
+            updateAppearance();
+        }
     }
 
     /** Handles translation event. */
