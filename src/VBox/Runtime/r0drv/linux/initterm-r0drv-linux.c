@@ -1,4 +1,4 @@
-/* $Id: initterm-r0drv-linux.c 112619 2026-01-15 20:48:24Z knut.osmundsen@oracle.com $ */
+/* $Id: initterm-r0drv-linux.c 112632 2026-01-19 10:51:49Z knut.osmundsen@oracle.com $ */
 /** @file
  * IPRT - Initialization & Termination, R0 Driver, Linux.
  */
@@ -125,13 +125,12 @@ DECLHIDDEN(int) rtR0InitNative(void)
 
 
     /* Try get hold of 'init_mm' so we can protect kernel memory. */
-#if RTLNX_VER_MIN(4,9,0) /** @todo support this for older kernels (see also dbgkrnlinfo-r0drv-linux.c and fileio-r0drv-linux.c) */
+#if RTLNX_VER_MIN(3,16,0) /** @todo support this for older kernels (see also dbgkrnlinfo-r0drv-linux.c and fileio-r0drv-linux.c) */
     {
         RTDBGKRNLINFO hKrnlInfo;
         int rc2 = RTR0DbgKrnlInfoOpen(&hKrnlInfo, 0);
         if (RT_SUCCESS(rc2))
         {
-            g_pLnxInitMm = (struct mm_struct *)RTR0DbgKrnlInfoGetSymbol(hKrnlInfo, NULL,  "init_mm");
             //printk("rtR0InitNative: g_pLnxInitMm=%#lx\n", (unsigned long)g_pLnxInitMm);
             printk("rtR0InitNative: g_pLnxInitMm=%p\n", g_pLnxInitMm);
 
