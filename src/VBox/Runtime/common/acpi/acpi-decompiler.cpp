@@ -1,4 +1,4 @@
-/* $Id: acpi-decompiler.cpp 112654 2026-01-21 09:33:31Z alexander.eichner@oracle.com $ */
+/* $Id: acpi-decompiler.cpp 112656 2026-01-21 11:13:11Z alexander.eichner@oracle.com $ */
 /** @file
  * IPRT - Advanced Configuration and Power Interface (ACPI) Table generation API.
  */
@@ -1505,12 +1505,12 @@ static const RTACPIAMLOPC g_aAmlOpcodeDecode[] =
     /* 0x87 */ RTACPI_AML_OPC_INVALID,
     /* 0x88 */ RTACPI_AML_OPC_SIMPLE_3("Index",             kAcpiAstNodeOp_Index,       RTACPI_AML_OPC_F_NONE,     kAcpiAmlOpcType_TermArg,   kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_SuperName),
     /* 0x89 */ RTACPI_AML_OPC_INVALID,
-    /* 0x8a */ RTACPI_AML_OPC_INVALID,
-    /* 0x8b */ RTACPI_AML_OPC_INVALID,
-    /* 0x8c */ RTACPI_AML_OPC_INVALID,
-    /* 0x8d */ RTACPI_AML_OPC_INVALID,
+    /* 0x8a */ RTACPI_AML_OPC_SIMPLE_3("CreateDWordField",  kAcpiAstNodeOp_CreateDWordField, RTACPI_AML_OPC_F_NONE,     kAcpiAmlOpcType_TermArg,   kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_NameString),
+    /* 0x8b */ RTACPI_AML_OPC_SIMPLE_3("CreateWordField",   kAcpiAstNodeOp_CreateWordField,  RTACPI_AML_OPC_F_NONE,     kAcpiAmlOpcType_TermArg,   kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_NameString),
+    /* 0x8c */ RTACPI_AML_OPC_SIMPLE_3("CreateByteField",   kAcpiAstNodeOp_CreateByteField,  RTACPI_AML_OPC_F_NONE,     kAcpiAmlOpcType_TermArg,   kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_NameString),
+    /* 0x8d */ RTACPI_AML_OPC_SIMPLE_3("CreateBitField",    kAcpiAstNodeOp_CreateBitField,   RTACPI_AML_OPC_F_NONE,     kAcpiAmlOpcType_TermArg,   kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_NameString),
     /* 0x8e */ RTACPI_AML_OPC_INVALID,
-    /* 0x8f */ RTACPI_AML_OPC_INVALID,
+    /* 0x8f */ RTACPI_AML_OPC_SIMPLE_3("CreateQWordField",  kAcpiAstNodeOp_CreateQWordField, RTACPI_AML_OPC_F_NONE,     kAcpiAmlOpcType_TermArg,   kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_NameString),
 
     /* 0x90 */ RTACPI_AML_OPC_INVALID,
     /* 0x91 */ RTACPI_AML_OPC_SIMPLE_2("LOr",               kAcpiAstNodeOp_LOr,         RTACPI_AML_OPC_F_NONE,     kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_TermArg),
@@ -1658,7 +1658,7 @@ static const RTACPIAMLOPC g_aAmlExtOpcodeDecode[] =
     /* 0x10 */ RTACPI_AML_OPC_INVALID,
     /* 0x11 */ RTACPI_AML_OPC_INVALID,
     /* 0x12 */ RTACPI_AML_OPC_INVALID,
-    /* 0x13 */ RTACPI_AML_OPC_INVALID,
+    /* 0x13 */ RTACPI_AML_OPC_SIMPLE_4("CreateField",  kAcpiAstNodeOp_CreateField, RTACPI_AML_OPC_F_NONE,     kAcpiAmlOpcType_TermArg,   kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_NameString),
     /* 0x14 */ RTACPI_AML_OPC_INVALID,
     /* 0x15 */ RTACPI_AML_OPC_INVALID,
     /* 0x16 */ RTACPI_AML_OPC_INVALID,

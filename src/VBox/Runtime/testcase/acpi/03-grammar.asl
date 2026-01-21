@@ -1,4 +1,4 @@
-/* $Id: 03-grammar.asl 112654 2026-01-21 09:33:31Z alexander.eichner@oracle.com $ */
+/* $Id: 03-grammar.asl 112656 2026-01-21 11:13:11Z alexander.eichner@oracle.com $ */
 /** @file
  * VirtualBox ACPI - Testcase.
  */
@@ -99,6 +99,12 @@ DefinitionBlock ("", "SSDT", 1, "VBOX  ", "VBOXTPMT", 2)
                 Decrement(Local6)
 
                 Notify(DUT_, 0xbeefca5e)
+
+                CreateWordField (CRS_, TPMR, MIN1)
+                CreateDWordField(CRS_, TPMR, MIN2)
+                CreateQWordField(CRS_, TPMR, MIN3)
+                CreateByteField (CRS_, TPMR, MIN4)
+                CreateBitField  (CRS_, TPMR, MIN5)
 
                 While (LEqual(Local0, Arg3))
                 {
