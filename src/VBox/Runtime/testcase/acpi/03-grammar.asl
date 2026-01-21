@@ -1,4 +1,4 @@
-/* $Id: 03-grammar.asl 112661 2026-01-21 13:43:01Z alexander.eichner@oracle.com $ */
+/* $Id: 03-grammar.asl 112662 2026-01-21 13:54:53Z alexander.eichner@oracle.com $ */
 /** @file
  * VirtualBox ACPI - Testcase.
  */
@@ -124,7 +124,10 @@ DefinitionBlock ("", "SSDT", 1, "VBOX  ", "VBOXTPMT", 2)
 
             Method(SLEN, 1, NotSerialized, 0)
             {
-                Store(Arg0, Local0)
+                Store(Arg0, Not(Local0))
+                FindSetLeftBit(Arg0, Local1)
+                FindSetRightBit(Arg0, Local2)
+                ConcatenateResTemplate (CRS_, TOM_, Local2)
                 Return(Sizeof(Local0))
             }
         }

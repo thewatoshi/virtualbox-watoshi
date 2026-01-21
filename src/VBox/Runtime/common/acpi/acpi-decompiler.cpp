@@ -1,4 +1,4 @@
-/* $Id: acpi-decompiler.cpp 112661 2026-01-21 13:43:01Z alexander.eichner@oracle.com $ */
+/* $Id: acpi-decompiler.cpp 112662 2026-01-21 13:54:53Z alexander.eichner@oracle.com $ */
 /** @file
  * IPRT - Advanced Configuration and Power Interface (ACPI) Table generation API.
  */
@@ -1499,11 +1499,11 @@ static const RTACPIAMLOPC g_aAmlOpcodeDecode[] =
     /* 0x7e */ RTACPI_AML_OPC_INVALID,
     /* 0x7f */ RTACPI_AML_OPC_SIMPLE_3("Xor",               kAcpiAstNodeOp_Xor,         RTACPI_AML_OPC_F_NONE,     kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_Target),
 
-    /* 0x80 */ RTACPI_AML_OPC_INVALID,
-    /* 0x81 */ RTACPI_AML_OPC_INVALID,
-    /* 0x82 */ RTACPI_AML_OPC_INVALID,
+    /* 0x80 */ RTACPI_AML_OPC_SIMPLE_2("Not",               kAcpiAstNodeOp_Not,         RTACPI_AML_OPC_F_NONE,     kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_Target),
+    /* 0x81 */ RTACPI_AML_OPC_SIMPLE_2("FindSetLeftBit",    kAcpiAstNodeOp_FindSetLeftBit,  RTACPI_AML_OPC_F_NONE,  kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_Target),
+    /* 0x82 */ RTACPI_AML_OPC_SIMPLE_2("FindSetRightBit",   kAcpiAstNodeOp_FindSetRightBit, RTACPI_AML_OPC_F_NONE,  kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_Target),
     /* 0x83 */ RTACPI_AML_OPC_SIMPLE_1("DerefOf",           kAcpiAstNodeOp_DerefOf,     RTACPI_AML_OPC_F_NONE,     kAcpiAmlOpcType_TermArg),
-    /* 0x84 */ RTACPI_AML_OPC_INVALID,
+    /* 0x84 */ RTACPI_AML_OPC_SIMPLE_3("ConcatenateResTemplate", kAcpiAstNodeOp_ConcatenateResTemplate, RTACPI_AML_OPC_F_NONE,     kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_TermArg, kAcpiAmlOpcType_Target),
     /* 0x85 */ RTACPI_AML_OPC_INVALID,
     /* 0x86 */ RTACPI_AML_OPC_SIMPLE_2("Notify",            kAcpiAstNodeOp_Notify,      RTACPI_AML_OPC_F_NONE,     kAcpiAmlOpcType_SuperName, kAcpiAmlOpcType_TermArg),
     /* 0x87 */ RTACPI_AML_OPC_SIMPLE_1("SizeOf",            kAcpiAstNodeOp_SizeOf,      RTACPI_AML_OPC_F_NONE,     kAcpiAmlOpcType_SuperName),
@@ -2064,6 +2064,14 @@ DECLHIDDEN(int) rtAcpiTblConvertFromAmlToAsl(RTVFSIOSTREAM hVfsIosOut, RTVFSIOST
                 }
                 else
                     rc = RTErrInfoSetF(pErrInfo, VERR_NO_MEMORY, "Allocating memory for the ACPI table failed");
+            }
+            else
+            {
+                ssize_t cch = RTVfsIoStrmPrintf(hVfsIosOut, "DefinitionBlock(\"\", \"%s\", %u, \"%.6s\", \"%.8s\", %u)\n{\n}\n",
+                                                Hdr.u32Signature == ACPI_TABLE_HDR_SIGNATURE_SSDT ? "SSDT" : "DSDT",
+                                                1, &Hdr.abOemId[0], &Hdr.abOemTblId[0], Hdr.u32OemRevision);
+                if (cch <= 0)
+                    rc = RTErrInfoSetF(pErrInfo, cch == 0 ? VERR_NO_MEMORY : (int)cch, "Failed to emit DefinitionBlock()");
             }
         }
         else
