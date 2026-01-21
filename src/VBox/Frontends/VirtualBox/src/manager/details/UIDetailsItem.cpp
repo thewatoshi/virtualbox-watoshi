@@ -1,4 +1,4 @@
-/* $Id: UIDetailsItem.cpp 112659 2026-01-21 12:35:57Z sergey.dubov@oracle.com $ */
+/* $Id: UIDetailsItem.cpp 112660 2026-01-21 12:59:36Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIDetailsItem class definition.
  */
@@ -90,30 +90,39 @@ public:
     /** Returns the parent. */
     virtual QAccessibleInterface *parent() const RT_OVERRIDE
     {
-        /* Make sure item still alive: */
-        AssertPtrReturn(item(), 0);
-
         /* Return the parent: */
         switch (item()->type())
         {
             /* For a set: */
             case UIDetailsItemType_Set:
             {
+                /* Sanity check: */
+                AssertPtrReturn(item(), 0);
+                AssertPtrReturn(item()->model(), 0);
+                AssertPtrReturn(item()->model()->view(), 0);
+
                 /* Always return parent view: */
-                return QAccessible::queryAccessibleInterface(item()->model()->details()->view());
+                return QAccessible::queryAccessibleInterface(item()->model()->view());
             }
             /* For an element: */
             case UIDetailsItemType_Element:
             {
+                /* Sanity check: */
+                AssertPtrReturn(item(), 0);
+                AssertPtrReturn(item()->model(), 0);
+                AssertPtrReturn(item()->model()->root(), 0);
+
                 /* What amount of children root has? */
                 const int cChildCount = item()->model()->root()->items().size();
-
-                /* Return our parent (if root has many of children): */
+                /* Return our parent (if root has many children): */
                 if (cChildCount > 1)
                     return QAccessible::queryAccessibleInterface(item()->parentItem());
 
+                /* Sanity check: */
+                AssertPtrReturn(item()->model()->view(), 0);
+
                 /* Return parent view (otherwise): */
-                return QAccessible::queryAccessibleInterface(item()->model()->details()->view());
+                return QAccessible::queryAccessibleInterface(item()->model()->view());
             }
             default:
                 break;
@@ -126,11 +135,16 @@ public:
     /** Returns the rect. */
     virtual QRect rect() const RT_OVERRIDE
     {
+        /* Sanity check: */
+        AssertPtrReturn(item(), QRect());
+        AssertPtrReturn(item()->model(), QRect());
+        AssertPtrReturn(item()->model()->view(), QRect());
+
         /* Now goes the mapping: */
         const QSize   itemSize         = item()->size().toSize();
         const QPointF itemPosInScene   = item()->mapToScene(QPointF(0, 0));
-        const QPoint  itemPosInView    = item()->model()->details()->view()->mapFromScene(itemPosInScene);
-        const QPoint  itemPosInScreen  = item()->model()->details()->view()->mapToGlobal(itemPosInView);
+        const QPoint  itemPosInView    = item()->model()->view()->mapFromScene(itemPosInScene);
+        const QPoint  itemPosInScreen  = item()->model()->view()->mapToGlobal(itemPosInView);
         const QRect   itemRectInScreen = QRect(itemPosInScreen, itemSize);
         return itemRectInScreen;
     }
@@ -138,7 +152,7 @@ public:
     /** Returns the number of children. */
     virtual int childCount() const RT_OVERRIDE
     {
-        /* Make sure item still alive: */
+        /* Sanity check: */
         AssertPtrReturn(item(), 0);
 
         /* Return the number of children: */
@@ -156,10 +170,9 @@ public:
     /** Returns the child with the passed @a iIndex. */
     virtual QAccessibleInterface *child(int iIndex) const RT_OVERRIDE
     {
-        /* Make sure item still alive: */
-        AssertPtrReturn(item(), 0);
-        /* Make sure index is valid: */
+        /* Sanity check: */
         AssertReturn(iIndex >= 0 && iIndex < childCount(), 0);
+        AssertPtrReturn(item(), 0);
 
         /* Return the child with the iIndex: */
         switch (item()->type())
@@ -195,7 +208,7 @@ public:
     /** Returns a text for the passed @a enmTextRole. */
     virtual QString text(QAccessible::Text enmTextRole) const RT_OVERRIDE
     {
-        /* Make sure item still alive: */
+        /* Sanity check: */
         AssertPtrReturn(item(), QString());
 
         /* Return the description: */
