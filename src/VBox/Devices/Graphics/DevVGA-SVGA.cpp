@@ -1,4 +1,4 @@
-/* $Id: DevVGA-SVGA.cpp 112586 2026-01-14 23:38:37Z vitali.pelenjow@oracle.com $ */
+/* $Id: DevVGA-SVGA.cpp 112675 2026-01-23 17:45:53Z andreas.loeffler@oracle.com $ */
 /** @file
  * VMware SVGA device.
  *
@@ -206,6 +206,13 @@
 /*********************************************************************************************************************************
 *   Structures and Typedefs                                                                                                      *
 *********************************************************************************************************************************/
+
+
+/*********************************************************************************************************************************
+*   Prototypes                                                                                                                   *
+*********************************************************************************************************************************/
+void vmsvgaR3InstallColorCursor(PVGASTATE pThis, PVGASTATECC pThisCC, SVGAGBColorCursorHeader const *pCursorHdr);
+void vmsvgaR3InstallAlphaCursor(PVGASTATE pThis, PVGASTATECC pThisCC, SVGAGBAlphaCursorHeader const *pCursorHdr);
 
 
 /*********************************************************************************************************************************
@@ -1567,24 +1574,25 @@ static int vmsvgaReadPort(PPDMDEVINS pDevIns, PVGASTATE pThis, uint32_t idxReg, 
             *pu32 = pThis->svga.u32GuestDriverVer3;
             break;
 
-        /*
-         * SVGA_REG_CURSOR_ registers require SVGA_CAP2_CURSOR_MOB which the device does not support currently.
-         */
         case SVGA_REG_CURSOR_MOBID:
-            *pu32 = SVGA_ID_INVALID;
+#ifndef IN_RING3
+            rc = VINF_IOM_R3_IOPORT_READ;
+#else /* IN_RING3 */
+            *pu32 = pThisCC->svga.pSvgaR3State->Cursor.mobId;
+#endif
             break;
 
         case SVGA_REG_CURSOR_MAX_BYTE_SIZE:
-            *pu32 = 0;
+            *pu32 = VMSVGA_CURSOR_MAX_BYTES;
             break;
 
         case SVGA_REG_CURSOR_MAX_DIMENSION:
-            *pu32 = 0;
+            *pu32 = VMSVGA_CURSOR_MAX_DIMENSION;
             break;
 
         case SVGA_REG_FIFO_CAPS:
         {
-            if (pThis->fVmSvga3)
+            if (pThis->fVmSvga3) /** @todo r=andy Merge this with caps in vmsvgaR3GetCaps(). */
                 *pu32 =   SVGA_FIFO_CAP_FENCE
                         | SVGA_FIFO_CAP_PITCHLOCK
                         | SVGA_FIFO_CAP_CURSOR_BYPASS_3
@@ -2441,9 +2449,59 @@ static VBOXSTRICTRC vmsvgaWritePort(PPDMDEVINS pDevIns, PVGASTATE pThis, PVGASTA
             break;
 
         case SVGA_REG_CURSOR_MOBID:
-            /* Not supported, ignore. See correspondent comments in vmsvgaReadPort. */
+        {
+#ifndef IN_RING3
+            rc = VINF_IOM_R3_IOPORT_WRITE;
             break;
+#else /* IN_RING3 */
+            STAM_REL_COUNTER_INC(&pThis->svga.StatRegCursorMobIdWr);
+            PVMSVGAMOB pMob = vmsvgaR3MobGet(pSVGAState, u32);
+            if (pMob)
+            {
+                uint32_t const cbMaxMobSize = pThis->vram_size;
+                uint32_t const cbMob = vmsvgaR3MobSize(pMob);
+                if (cbMob <= cbMaxMobSize)
+                {
+                    void *pvBuf = RTMemAlloc(cbMob);
+                    AssertPtrBreak(pvBuf);
 
+                    rc = vmsvgaR3MobRead(pSVGAState, pMob, 0 /* Offset */, pvBuf, cbMob);
+                    if (RT_SUCCESS(rc))
+                    {
+                        pThisCC->svga.pSvgaR3State->Cursor.mobId = u32;
+
+                        SVGAGBCursorHeader *pHdr = (SVGAGBCursorHeader *)pvBuf;
+                        if (pHdr)
+                        {
+                            if (   pHdr->sizeInBytes
+                                && pHdr->sizeInBytes <= cbMaxMobSize - sizeof(SVGAGBCursorHeader))
+                            {
+                                switch (pHdr->type)
+                                {
+                                    case SVGA_ALPHA_CURSOR:
+                                        vmsvgaR3InstallAlphaCursor(pThis, pThisCC, &pHdr->header.alphaHeader);
+                                        break;
+                                    case SVGA_COLOR_CURSOR:
+                                        vmsvgaR3InstallColorCursor(pThis, pThisCC, &pHdr->header.colorHeader);
+                                        break;
+                                    default:
+                                        LogRelMax(16, ("VMSVGA: Invalid MOB cursor type %#x, ignoring\n", pHdr->type));
+                                        break;
+                                }
+                            }
+                            else
+                                LogRelMax(16, ("VMSVGA: Invalid MOB cursor size %#x, ignoring\n", pHdr->sizeInBytes));
+                        }
+                    }
+                }
+                else
+                    LogRelMax(16, ("VMSVGA: Invalid CURSOR_MOBID size %#x, ignoring\n", cbMob));
+            }
+            else
+                LogRelMax(16, ("VMSVGA: Invalid CURSOR_MOBID %#x written, ignoring\n", u32));
+#endif
+            break;
+        }
         case SVGA_REG_FB_START:
         case SVGA_REG_MEM_START:
         case SVGA_REG_HOST_BITS_PER_PIXEL:
@@ -6106,10 +6164,12 @@ static DECLCALLBACK(void) vmsvgaR3Info(PPDMDEVINS pDevIns, PCDBGFINFOHLP pHlp, c
     pHlp->pfnPrintf(pHlp, "Viewport position:  %ux%u\n", pThis->svga.viewport.x, pThis->svga.viewport.y);
     pHlp->pfnPrintf(pHlp, "Viewport size:      %ux%u\n", pThis->svga.viewport.cx, pThis->svga.viewport.cy);
 
-    pHlp->pfnPrintf(pHlp, "Cursor active:      %RTbool\n", pSVGAState->Cursor.fActive);
+    pHlp->pfnPrintf(pHlp, "Cursor active:      %RTbool (via %s)\n", pSVGAState->Cursor.fActive, pSVGAState->Cursor.mobId == UINT32_MAX ? "CMD" : "MOB");
     pHlp->pfnPrintf(pHlp, "Cursor hotspot:     %ux%u\n", pSVGAState->Cursor.xHotspot, pSVGAState->Cursor.yHotspot);
     pHlp->pfnPrintf(pHlp, "Cursor size:        %ux%u\n", pSVGAState->Cursor.width, pSVGAState->Cursor.height);
     pHlp->pfnPrintf(pHlp, "Cursor byte size:   %u (%#x)\n", pSVGAState->Cursor.cbData, pSVGAState->Cursor.cbData);
+    if (pSVGAState->Cursor.mobId != UINT32_MAX)
+        pHlp->pfnPrintf(pHlp, "Cursor MOB ID:      %u (%#x)\n", pSVGAState->Cursor.mobId, pSVGAState->Cursor.mobId);
     if (pFIFO)
     {
         pHlp->pfnPrintf(pHlp, "FIFO cursor:        state %u, screen %d\n", pFIFO[SVGA_FIFO_CURSOR_ON], pFIFO[SVGA_FIFO_CURSOR_SCREEN_ID]);
@@ -6578,6 +6638,20 @@ int vmsvgaR3LoadExec(PPDMDEVINS pDevIns, PSSMHANDLE pSSM, uint32_t uVersion, uin
                 pHlp->pfnSSMGetU32(pSSM, &pSVGAState->idDXContextCurrent);
             }
 # endif
+            /*
+             * Cursor MOB support.
+             */
+            if (uVersion >= VGA_SAVEDSTATE_VERSION_VMSVGA_CURSOR_MOB)
+            {
+                rc = pHlp->pfnSSMGetU32(pSSM, &pSVGAState->Cursor.mobId);
+                AssertRCReturn(rc, rc);
+                if (pSVGAState->Cursor.mobId != SVGA_ID_INVALID) /* MOB in use? */
+                {
+                    /* Make sure the MOB ID exists (see MOB loading code above). */
+                    PVMSVGAMOB const pMob = (PVMSVGAMOB)RTAvlU32Get(&pSVGAState->MOBTree, pSVGAState->Cursor.mobId);
+                    AssertPtrReturn(pMob, VERR_NOT_FOUND);
+                }
+            }
         }
     }
 
@@ -6867,6 +6941,11 @@ int vmsvgaR3SaveExec(PPDMDEVINS pDevIns, PSSMHANDLE pSSM)
             pHlp->pfnSSMPutU32(pSSM, pSVGAState->idDXContextCurrent);
         }
 # endif
+
+        /*
+         * Cursor MOB support.
+         */
+        pHlp->pfnSSMPutU32(pSSM, pSVGAState->Cursor.mobId);
     }
 
     /*
@@ -6966,6 +7045,10 @@ static int vmsvgaR3StateInit(PPDMDEVINS pDevIns, PVGASTATE pThis, PVMSVGAR3STATE
     pSVGAState->idDXContextCurrent = SVGA3D_INVALID_ID;
 #  endif
 # endif
+
+    /* Mark the cursor MOB ID as invalid. */
+    pSVGAState->Cursor.mobId = SVGA_ID_INVALID;
+
     return rc;
 }
 
@@ -7111,12 +7194,16 @@ static void vmsvgaR3GetCaps(PVGASTATE pThis, PVGASTATECC pThisCC, uint32_t *pu32
     {
 # ifdef VBOX_WITH_VMSVGA3D
         if (pThisCC->svga.pSvgaR3State->pFuncsGBO)
+        {
            *pu32DeviceCaps |= SVGA_CAP_GBOBJECTS; /* Enable guest-backed objects and surfaces. */
+
+           /* As we have GBOs, also enable cursor MOBs. */
+           *pu32DeviceCaps  |= SVGA_CAP_CAP2_REGISTER; /* Extended capabilities. */
+           *pu32DeviceCaps2 |= SVGA_CAP2_CURSOR_MOB;   /* "Allow the SVGA_REG_CURSOR_MOBID register" */
+        }
         if (pThisCC->svga.pSvgaR3State->pFuncsDX)
         {
-           *pu32DeviceCaps |= SVGA_CAP_DX                 /* DX commands, and command buffers in a mob. */
-                           |  SVGA_CAP_CAP2_REGISTER      /* Extended capabilities. */
-                           ;
+           *pu32DeviceCaps |= SVGA_CAP_DX;                /* DX commands, and command buffers in a mob. */
 
            if (*pu32DeviceCaps & SVGA_CAP_CAP2_REGISTER)
                *pu32DeviceCaps2 |= SVGA_CAP2_GROW_OTABLE  /* "Allow the GrowOTable/DXGrowCOTable commands" */
@@ -7882,6 +7969,7 @@ int vmsvgaR3Init(PPDMDEVINS pDevIns)
     REG_CNT(&pThis->svga.StatRegDevCapWr,                 "VMSVGA/Reg/DevCapWrite",                "SVGA_REG_DEV_CAP writes.");
     REG_CNT(&pThis->svga.StatRegCmdPrependLowWr,          "VMSVGA/Reg/CmdPrependLowWrite",         "SVGA_REG_CMD_PREPEND_LOW writes.");
     REG_CNT(&pThis->svga.StatRegCmdPrependHighWr,         "VMSVGA/Reg/CmdPrependHighWrite",        "SVGA_REG_CMD_PREPEND_HIGH writes.");
+    REG_CNT(&pThis->svga.StatRegCursorMobIdWr,            "VMSVGA/Reg/CursorMobIdWrite",           "SVGA_REG_CURSOR_MOBID writes.");
 
     REG_CNT(&pThis->svga.StatRegBitsPerPixelRd,           "VMSVGA/Reg/BitsPerPixelRead",           "SVGA_REG_BITS_PER_PIXEL reads.");
     REG_CNT(&pThis->svga.StatRegBlueMaskRd,               "VMSVGA/Reg/BlueMaskRead",               "SVGA_REG_BLUE_MASK reads.");

@@ -1,4 +1,4 @@
-/* $Id: DevVGA-SVGA-internal.h 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: DevVGA-SVGA-internal.h 112675 2026-01-23 17:45:53Z andreas.loeffler@oracle.com $ */
 /** @file
  * VMWare SVGA device - internal header for DevVGA-SVGA* source files.
  */
@@ -105,6 +105,9 @@ typedef struct VMSVGAR3STATE
     struct
     {
         bool                fActive;
+        /** The current cursor MOB ID. See @bugref{11042}.
+         *  Set to SVGA_ID_INVALID if not set (yet). */
+        SVGAMobId           mobId;
         uint32_t            xHotspot;
         uint32_t            yHotspot;
         uint32_t            width;

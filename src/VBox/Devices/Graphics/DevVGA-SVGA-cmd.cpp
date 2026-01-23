@@ -1,4 +1,4 @@
-/* $Id: DevVGA-SVGA-cmd.cpp 112586 2026-01-14 23:38:37Z vitali.pelenjow@oracle.com $ */
+/* $Id: DevVGA-SVGA-cmd.cpp 112675 2026-01-23 17:45:53Z andreas.loeffler@oracle.com $ */
 /** @file
  * VMware SVGA device - implementation of VMSVGA commands.
  */
@@ -1516,6 +1516,296 @@ static void vmsvgaR3InstallNewCursor(PVGASTATECC pThisCC, PVMSVGAR3STATE pSVGASt
     pSVGAState->Cursor.height   = cy;
     pSVGAState->Cursor.cbData   = cbData;
     pSVGAState->Cursor.pData    = pbData;
+}
+
+
+/**
+ * Installs a new alpha cursor.
+ *
+ * @param   pThis               The VGA state.
+ * @param   pThisCC             The VGA/VMSVGA state for ring-3.
+ * @param   pCursorHdr          Cursor header to use for installing the cursor.
+ */
+void vmsvgaR3InstallAlphaCursor(PVGASTATE pThis, PVGASTATECC pThisCC, SVGAGBAlphaCursorHeader const *pCursorHdr)
+{
+    RT_NOREF(pThis);
+    PVMSVGAR3STATE const pSvgaR3State = pThisCC->svga.pSvgaR3State;
+
+    /* Check against a reasonable upper limit to prevent integer overflows in the sanity checks below. */
+    ASSERT_GUEST_RETURN_VOID(pCursorHdr->height < 2048 && pCursorHdr->width < 2048);
+    RT_UNTRUSTED_VALIDATED_FENCE();
+
+    /* The mouse pointer interface always expects an AND mask followed by the color data (XOR mask). */
+    uint32_t cbAndMask     = (pCursorHdr->width + 7) / 8 * pCursorHdr->height;          /* size of the AND mask */
+    cbAndMask              = ((cbAndMask + 3) & ~3);                                    /* + gap for alignment */
+    uint32_t cbXorMask     = pCursorHdr->width * sizeof(uint32_t) * pCursorHdr->height; /* + size of the XOR mask (32-bit BRGA format) */
+    uint32_t cbCursorShape = cbAndMask + cbXorMask;
+
+    uint8_t *pCursorCopy = (uint8_t *)RTMemAlloc(cbCursorShape);
+    AssertPtrReturnVoid(pCursorCopy);
+
+    /* Transparency is defined by the alpha bytes, so make the whole bitmap visible. */
+    memset(pCursorCopy, 0xff, cbAndMask);
+    /* Colour data */
+    memcpy(pCursorCopy + cbAndMask, pCursorHdr + sizeof(SVGAGBAlphaCursorHeader), cbXorMask);
+
+    vmsvgaR3InstallNewCursor(pThisCC, pSvgaR3State, true /*fAlpha*/, pCursorHdr->hotspotX, pCursorHdr->hotspotY,
+                             pCursorHdr->width, pCursorHdr->height, pCursorCopy, cbCursorShape);
+}
+
+
+/**
+ * Installs a new color cursor.
+ *
+ * @param   pThis               The VGA state.
+ * @param   pThisCC             The VGA/VMSVGA state for ring-3.
+ * @param   pCursorHdr          Cursor header to use for installing the cursor.
+ */
+void vmsvgaR3InstallColorCursor(PVGASTATE pThis, PVGASTATECC pThisCC, SVGAGBColorCursorHeader const *pCursorHdr)
+{
+    PVMSVGAR3STATE const pSvgaR3State = pThisCC->svga.pSvgaR3State;
+
+    ASSERT_GUEST_RETURN_VOID(pCursorHdr->height < 2048 && pCursorHdr->width < 2048);
+    ASSERT_GUEST_RETURN_VOID(pCursorHdr->andMaskDepth <= 32);
+    ASSERT_GUEST_RETURN_VOID(pCursorHdr->xorMaskDepth <= 32);
+    RT_UNTRUSTED_VALIDATED_FENCE();
+
+    uint32_t const cbSrcAndLine = RT_ALIGN_32(pCursorHdr->width * (pCursorHdr->andMaskDepth + (pCursorHdr->andMaskDepth == 15)), 32) / 8;
+    uint32_t const cbSrcAndMask = cbSrcAndLine * pCursorHdr->height;
+    uint32_t const cbSrcXorLine = RT_ALIGN_32(pCursorHdr->width * (pCursorHdr->xorMaskDepth + (pCursorHdr->xorMaskDepth == 15)), 32) / 8;
+
+    uint8_t const *pbSrcAndMask = (uint8_t const *)(pCursorHdr + 1);
+    uint8_t const *pbSrcXorMask = (uint8_t const *)(pCursorHdr + 1) + cbSrcAndMask;
+
+    uint32_t const cx = pCursorHdr->width;
+    uint32_t const cy = pCursorHdr->height;
+
+    /*
+     * Convert the input to 1-bit AND mask and a 32-bit BRGA XOR mask.
+     * The AND data uses 8-bit aligned scanlines.
+     * The XOR data must be starting on a 32-bit boundary.
+     */
+    uint32_t cbDstAndLine = RT_ALIGN_32(cx, 8) / 8;
+    uint32_t cbDstAndMask = cbDstAndLine          * cy;
+    uint32_t cbDstXorMask = cx * sizeof(uint32_t) * cy;
+    uint32_t cbCopy = RT_ALIGN_32(cbDstAndMask, 4) + cbDstXorMask;
+
+    uint8_t *pbCopy = (uint8_t *)RTMemAlloc(cbCopy);
+    AssertReturnVoid(pbCopy);
+
+    /* Convert the AND mask. */
+    uint8_t       *pbDst     = pbCopy;
+    uint8_t const *pbSrc     = pbSrcAndMask;
+    switch (pCursorHdr->andMaskDepth)
+    {
+        case 1:
+            if (cbSrcAndLine == cbDstAndLine)
+                memcpy(pbDst, pbSrc, cbSrcAndLine * cy);
+            else
+            {
+                Assert(cbSrcAndLine > cbDstAndLine); /* lines are dword aligned in source, but only byte in destination. */
+                for (uint32_t y = 0; y < cy; y++)
+                {
+                    memcpy(pbDst, pbSrc, cbDstAndLine);
+                    pbDst += cbDstAndLine;
+                    pbSrc += cbSrcAndLine;
+                }
+            }
+            break;
+        /* Should take the XOR mask into account for the multi-bit AND mask. */
+        case 8:
+            for (uint32_t y = 0; y < cy; y++)
+            {
+                for (uint32_t x = 0; x < cx; )
+                {
+                    uint8_t bDst = 0;
+                    uint8_t fBit = 0x80;
+                    do
+                    {
+                        uint8_t const idxPal = pbSrc[x];
+                        if (((   pThis->last_palette[idxPal]
+                              | (pThis->last_palette[idxPal] >>  8)
+                              | (pThis->last_palette[idxPal] >> 16)) & 0xff) > 0xfc)
+                            bDst |= fBit;
+                        fBit >>= 1;
+                        x++;
+                    } while (x < cx && (x & 7));
+                    pbDst[(x - 1) / 8] = bDst;
+                }
+                pbDst += cbDstAndLine;
+                pbSrc += cbSrcAndLine;
+            }
+            break;
+        case 15:
+            for (uint32_t y = 0; y < cy; y++)
+            {
+                for (uint32_t x = 0; x < cx; )
+                {
+                    uint8_t bDst = 0;
+                    uint8_t fBit = 0x80;
+                    do
+                    {
+                        if ((pbSrc[x * 2] | (pbSrc[x * 2 + 1] & 0x7f)) >= 0xfc)
+                            bDst |= fBit;
+                        fBit >>= 1;
+                        x++;
+                    } while (x < cx && (x & 7));
+                    pbDst[(x - 1) / 8] = bDst;
+                }
+                pbDst += cbDstAndLine;
+                pbSrc += cbSrcAndLine;
+            }
+            break;
+        case 16:
+            for (uint32_t y = 0; y < cy; y++)
+            {
+                for (uint32_t x = 0; x < cx; )
+                {
+                    uint8_t bDst = 0;
+                    uint8_t fBit = 0x80;
+                    do
+                    {
+                        if ((pbSrc[x * 2] | pbSrc[x * 2 + 1]) >= 0xfc)
+                            bDst |= fBit;
+                        fBit >>= 1;
+                        x++;
+                    } while (x < cx && (x & 7));
+                    pbDst[(x - 1) / 8] = bDst;
+                }
+                pbDst += cbDstAndLine;
+                pbSrc += cbSrcAndLine;
+            }
+            break;
+        case 24:
+            for (uint32_t y = 0; y < cy; y++)
+            {
+                for (uint32_t x = 0; x < cx; )
+                {
+                    uint8_t bDst = 0;
+                    uint8_t fBit = 0x80;
+                    do
+                    {
+                        if ((pbSrc[x * 3] | pbSrc[x * 3 + 1] | pbSrc[x * 3 + 2]) >= 0xfc)
+                            bDst |= fBit;
+                        fBit >>= 1;
+                        x++;
+                    } while (x < cx && (x & 7));
+                    pbDst[(x - 1) / 8] = bDst;
+                }
+                pbDst += cbDstAndLine;
+                pbSrc += cbSrcAndLine;
+            }
+            break;
+        case 32:
+            for (uint32_t y = 0; y < cy; y++)
+            {
+                for (uint32_t x = 0; x < cx; )
+                {
+                    uint8_t bDst = 0;
+                    uint8_t fBit = 0x80;
+                    do
+                    {
+                        if ((pbSrc[x * 4] | pbSrc[x * 4 + 1] | pbSrc[x * 4 + 2] | pbSrc[x * 4 + 3]) >= 0xfc)
+                            bDst |= fBit;
+                        fBit >>= 1;
+                        x++;
+                    } while (x < cx && (x & 7));
+                    pbDst[(x - 1) / 8] = bDst;
+                }
+                pbDst += cbDstAndLine;
+                pbSrc += cbSrcAndLine;
+            }
+            break;
+        default:
+            RTMemFreeZ(pbCopy, cbCopy);
+            AssertFailedReturnVoid();
+    }
+
+    /* Convert the XOR mask. */
+    uint32_t *pu32Dst = (uint32_t *)(pbCopy + RT_ALIGN_32(cbDstAndMask, 4));
+    pbSrc  = pbSrcXorMask;
+    switch (pCursorHdr->xorMaskDepth)
+    {
+        case 1:
+            for (uint32_t y = 0; y < cy; y++)
+            {
+                for (uint32_t x = 0; x < cx; )
+                {
+                    /* most significant bit is the left most one. */
+                    uint8_t bSrc = pbSrc[x / 8];
+                    do
+                    {
+                        *pu32Dst++ = bSrc & 0x80 ? UINT32_C(0x00ffffff) : 0;
+                        bSrc <<= 1;
+                        x++;
+                    } while ((x & 7) && x < cx);
+                }
+                pbSrc += cbSrcXorLine;
+            }
+            break;
+        case 8:
+            for (uint32_t y = 0; y < cy; y++)
+            {
+                for (uint32_t x = 0; x < cx; x++)
+                {
+                    uint32_t u = pThis->last_palette[pbSrc[x]];
+                    *pu32Dst++ = u;//RT_MAKE_U32_FROM_U8(RT_BYTE1(u), RT_BYTE2(u), RT_BYTE3(u), 0);
+                }
+                pbSrc += cbSrcXorLine;
+            }
+            break;
+        case 15: /* Src: RGB-5-5-5 */
+            for (uint32_t y = 0; y < cy; y++)
+            {
+                for (uint32_t x = 0; x < cx; x++)
+                {
+                    uint32_t const uValue = RT_MAKE_U16(pbSrc[x * 2], pbSrc[x * 2 + 1]);
+                    *pu32Dst++ = RT_MAKE_U32_FROM_U8(( uValue        & 0x1f) << 3,
+                                                     ((uValue >>  5) & 0x1f) << 3,
+                                                     ((uValue >> 10) & 0x1f) << 3, 0);
+                }
+                pbSrc += cbSrcXorLine;
+            }
+            break;
+        case 16: /* Src: RGB-5-6-5 */
+            for (uint32_t y = 0; y < cy; y++)
+            {
+                for (uint32_t x = 0; x < cx; x++)
+                {
+                    uint32_t const uValue = RT_MAKE_U16(pbSrc[x * 2], pbSrc[x * 2 + 1]);
+                    *pu32Dst++ = RT_MAKE_U32_FROM_U8(( uValue        & 0x1f) << 3,
+                                                     ((uValue >>  5) & 0x3f) << 2,
+                                                     ((uValue >> 11) & 0x1f) << 3, 0);
+                }
+                pbSrc += cbSrcXorLine;
+            }
+            break;
+        case 24:
+            for (uint32_t y = 0; y < cy; y++)
+            {
+                for (uint32_t x = 0; x < cx; x++)
+                    *pu32Dst++ = RT_MAKE_U32_FROM_U8(pbSrc[x*3], pbSrc[x*3 + 1], pbSrc[x*3 + 2], 0);
+                pbSrc += cbSrcXorLine;
+            }
+            break;
+        case 32:
+            for (uint32_t y = 0; y < cy; y++)
+            {
+                for (uint32_t x = 0; x < cx; x++)
+                    *pu32Dst++ = RT_MAKE_U32_FROM_U8(pbSrc[x*4], pbSrc[x*4 + 1], pbSrc[x*4 + 2], 0);
+                pbSrc += cbSrcXorLine;
+            }
+            break;
+        default:
+            RTMemFreeZ(pbCopy, cbCopy);
+            AssertFailedReturnVoid();
+    }
+
+    /*
+     * Pass it to the frontend/whatever.
+     */
+    vmsvgaR3InstallNewCursor(pThisCC, pSvgaR3State, false /*fAlpha*/, pCursorHdr->hotspotX, pCursorHdr->hotspotY,
+                             cx, cy, pbCopy, cbCopy);
 }
 
 
@@ -7780,281 +8070,25 @@ void vmsvgaR3CmdDefineCursor(PVGASTATE pThis, PVGASTATECC pThisCC, SVGAFifoCmdDe
 
     STAM_REL_COUNTER_INC(&pSvgaR3State->StatR3CmdDefineCursor);
     Log(("SVGA_CMD_DEFINE_CURSOR id=%d size (%dx%d) hotspot (%d,%d) andMaskDepth=%d xorMaskDepth=%d\n",
-             pCmd->id, pCmd->width, pCmd->height, pCmd->hotspotX, pCmd->hotspotY, pCmd->andMaskDepth, pCmd->xorMaskDepth));
+         pCmd->id, pCmd->width, pCmd->height, pCmd->hotspotX, pCmd->hotspotY, pCmd->andMaskDepth, pCmd->xorMaskDepth));
 
-    ASSERT_GUEST_RETURN_VOID(pCmd->height < 2048 && pCmd->width < 2048);
-    ASSERT_GUEST_RETURN_VOID(pCmd->andMaskDepth <= 32);
-    ASSERT_GUEST_RETURN_VOID(pCmd->xorMaskDepth <= 32);
-    RT_UNTRUSTED_VALIDATED_FENCE();
-
-    uint32_t const cbSrcAndLine = RT_ALIGN_32(pCmd->width * (pCmd->andMaskDepth + (pCmd->andMaskDepth == 15)), 32) / 8;
-    uint32_t const cbSrcAndMask = cbSrcAndLine * pCmd->height;
-    uint32_t const cbSrcXorLine = RT_ALIGN_32(pCmd->width * (pCmd->xorMaskDepth + (pCmd->xorMaskDepth == 15)), 32) / 8;
-
-    uint8_t const *pbSrcAndMask = (uint8_t const *)(pCmd + 1);
-    uint8_t const *pbSrcXorMask = (uint8_t const *)(pCmd + 1) + cbSrcAndMask;
-
-    uint32_t const cx = pCmd->width;
-    uint32_t const cy = pCmd->height;
-
-    /*
-     * Convert the input to 1-bit AND mask and a 32-bit BRGA XOR mask.
-     * The AND data uses 8-bit aligned scanlines.
-     * The XOR data must be starting on a 32-bit boundary.
-     */
-    uint32_t cbDstAndLine = RT_ALIGN_32(cx, 8) / 8;
-    uint32_t cbDstAndMask = cbDstAndLine          * cy;
-    uint32_t cbDstXorMask = cx * sizeof(uint32_t) * cy;
-    uint32_t cbCopy = RT_ALIGN_32(cbDstAndMask, 4) + cbDstXorMask;
-
-    uint8_t *pbCopy = (uint8_t *)RTMemAlloc(cbCopy);
-    AssertReturnVoid(pbCopy);
-
-    /* Convert the AND mask. */
-    uint8_t       *pbDst     = pbCopy;
-    uint8_t const *pbSrc     = pbSrcAndMask;
-    switch (pCmd->andMaskDepth)
-    {
-        case 1:
-            if (cbSrcAndLine == cbDstAndLine)
-                memcpy(pbDst, pbSrc, cbSrcAndLine * cy);
-            else
-            {
-                Assert(cbSrcAndLine > cbDstAndLine); /* lines are dword aligned in source, but only byte in destination. */
-                for (uint32_t y = 0; y < cy; y++)
-                {
-                    memcpy(pbDst, pbSrc, cbDstAndLine);
-                    pbDst += cbDstAndLine;
-                    pbSrc += cbSrcAndLine;
-                }
-            }
-            break;
-        /* Should take the XOR mask into account for the multi-bit AND mask. */
-        case 8:
-            for (uint32_t y = 0; y < cy; y++)
-            {
-                for (uint32_t x = 0; x < cx; )
-                {
-                    uint8_t bDst = 0;
-                    uint8_t fBit = 0x80;
-                    do
-                    {
-                        uint8_t const idxPal = pbSrc[x];
-                        if (((   pThis->last_palette[idxPal]
-                              | (pThis->last_palette[idxPal] >>  8)
-                              | (pThis->last_palette[idxPal] >> 16)) & 0xff) > 0xfc)
-                            bDst |= fBit;
-                        fBit >>= 1;
-                        x++;
-                    } while (x < cx && (x & 7));
-                    pbDst[(x - 1) / 8] = bDst;
-                }
-                pbDst += cbDstAndLine;
-                pbSrc += cbSrcAndLine;
-            }
-            break;
-        case 15:
-            for (uint32_t y = 0; y < cy; y++)
-            {
-                for (uint32_t x = 0; x < cx; )
-                {
-                    uint8_t bDst = 0;
-                    uint8_t fBit = 0x80;
-                    do
-                    {
-                        if ((pbSrc[x * 2] | (pbSrc[x * 2 + 1] & 0x7f)) >= 0xfc)
-                            bDst |= fBit;
-                        fBit >>= 1;
-                        x++;
-                    } while (x < cx && (x & 7));
-                    pbDst[(x - 1) / 8] = bDst;
-                }
-                pbDst += cbDstAndLine;
-                pbSrc += cbSrcAndLine;
-            }
-            break;
-        case 16:
-            for (uint32_t y = 0; y < cy; y++)
-            {
-                for (uint32_t x = 0; x < cx; )
-                {
-                    uint8_t bDst = 0;
-                    uint8_t fBit = 0x80;
-                    do
-                    {
-                        if ((pbSrc[x * 2] | pbSrc[x * 2 + 1]) >= 0xfc)
-                            bDst |= fBit;
-                        fBit >>= 1;
-                        x++;
-                    } while (x < cx && (x & 7));
-                    pbDst[(x - 1) / 8] = bDst;
-                }
-                pbDst += cbDstAndLine;
-                pbSrc += cbSrcAndLine;
-            }
-            break;
-        case 24:
-            for (uint32_t y = 0; y < cy; y++)
-            {
-                for (uint32_t x = 0; x < cx; )
-                {
-                    uint8_t bDst = 0;
-                    uint8_t fBit = 0x80;
-                    do
-                    {
-                        if ((pbSrc[x * 3] | pbSrc[x * 3 + 1] | pbSrc[x * 3 + 2]) >= 0xfc)
-                            bDst |= fBit;
-                        fBit >>= 1;
-                        x++;
-                    } while (x < cx && (x & 7));
-                    pbDst[(x - 1) / 8] = bDst;
-                }
-                pbDst += cbDstAndLine;
-                pbSrc += cbSrcAndLine;
-            }
-            break;
-        case 32:
-            for (uint32_t y = 0; y < cy; y++)
-            {
-                for (uint32_t x = 0; x < cx; )
-                {
-                    uint8_t bDst = 0;
-                    uint8_t fBit = 0x80;
-                    do
-                    {
-                        if ((pbSrc[x * 4] | pbSrc[x * 4 + 1] | pbSrc[x * 4 + 2] | pbSrc[x * 4 + 3]) >= 0xfc)
-                            bDst |= fBit;
-                        fBit >>= 1;
-                        x++;
-                    } while (x < cx && (x & 7));
-                    pbDst[(x - 1) / 8] = bDst;
-                }
-                pbDst += cbDstAndLine;
-                pbSrc += cbSrcAndLine;
-            }
-            break;
-        default:
-            RTMemFreeZ(pbCopy, cbCopy);
-            AssertFailedReturnVoid();
-    }
-
-    /* Convert the XOR mask. */
-    uint32_t *pu32Dst = (uint32_t *)(pbCopy + RT_ALIGN_32(cbDstAndMask, 4));
-    pbSrc  = pbSrcXorMask;
-    switch (pCmd->xorMaskDepth)
-    {
-        case 1:
-            for (uint32_t y = 0; y < cy; y++)
-            {
-                for (uint32_t x = 0; x < cx; )
-                {
-                    /* most significant bit is the left most one. */
-                    uint8_t bSrc = pbSrc[x / 8];
-                    do
-                    {
-                        *pu32Dst++ = bSrc & 0x80 ? UINT32_C(0x00ffffff) : 0;
-                        bSrc <<= 1;
-                        x++;
-                    } while ((x & 7) && x < cx);
-                }
-                pbSrc += cbSrcXorLine;
-            }
-            break;
-        case 8:
-            for (uint32_t y = 0; y < cy; y++)
-            {
-                for (uint32_t x = 0; x < cx; x++)
-                {
-                    uint32_t u = pThis->last_palette[pbSrc[x]];
-                    *pu32Dst++ = u;//RT_MAKE_U32_FROM_U8(RT_BYTE1(u), RT_BYTE2(u), RT_BYTE3(u), 0);
-                }
-                pbSrc += cbSrcXorLine;
-            }
-            break;
-        case 15: /* Src: RGB-5-5-5 */
-            for (uint32_t y = 0; y < cy; y++)
-            {
-                for (uint32_t x = 0; x < cx; x++)
-                {
-                    uint32_t const uValue = RT_MAKE_U16(pbSrc[x * 2], pbSrc[x * 2 + 1]);
-                    *pu32Dst++ = RT_MAKE_U32_FROM_U8(( uValue        & 0x1f) << 3,
-                                                     ((uValue >>  5) & 0x1f) << 3,
-                                                     ((uValue >> 10) & 0x1f) << 3, 0);
-                }
-                pbSrc += cbSrcXorLine;
-            }
-            break;
-        case 16: /* Src: RGB-5-6-5 */
-            for (uint32_t y = 0; y < cy; y++)
-            {
-                for (uint32_t x = 0; x < cx; x++)
-                {
-                    uint32_t const uValue = RT_MAKE_U16(pbSrc[x * 2], pbSrc[x * 2 + 1]);
-                    *pu32Dst++ = RT_MAKE_U32_FROM_U8(( uValue        & 0x1f) << 3,
-                                                     ((uValue >>  5) & 0x3f) << 2,
-                                                     ((uValue >> 11) & 0x1f) << 3, 0);
-                }
-                pbSrc += cbSrcXorLine;
-            }
-            break;
-        case 24:
-            for (uint32_t y = 0; y < cy; y++)
-            {
-                for (uint32_t x = 0; x < cx; x++)
-                    *pu32Dst++ = RT_MAKE_U32_FROM_U8(pbSrc[x*3], pbSrc[x*3 + 1], pbSrc[x*3 + 2], 0);
-                pbSrc += cbSrcXorLine;
-            }
-            break;
-        case 32:
-            for (uint32_t y = 0; y < cy; y++)
-            {
-                for (uint32_t x = 0; x < cx; x++)
-                    *pu32Dst++ = RT_MAKE_U32_FROM_U8(pbSrc[x*4], pbSrc[x*4 + 1], pbSrc[x*4 + 2], 0);
-                pbSrc += cbSrcXorLine;
-            }
-            break;
-        default:
-            RTMemFreeZ(pbCopy, cbCopy);
-            AssertFailedReturnVoid();
-    }
-
-    /*
-     * Pass it to the frontend/whatever.
-     */
-    vmsvgaR3InstallNewCursor(pThisCC, pSvgaR3State, false /*fAlpha*/, pCmd->hotspotX, pCmd->hotspotY,
-                             cx, cy, pbCopy, cbCopy);
+    /* We simply can cast SVGAFifoCmdDefineCursor to SVGAGBColorCursorHeader here, skipping the reserved ID at the beginning.
+     * This ASSUMES that the structs don't diverge from each other. */
+    vmsvgaR3InstallColorCursor(pThis, pThisCC, (SVGAGBColorCursorHeader *)pCmd + sizeof(uint32_t) /* ID, reserved */);
 }
 
 
 /* SVGA_CMD_DEFINE_ALPHA_CURSOR */
 void vmsvgaR3CmdDefineAlphaCursor(PVGASTATE pThis, PVGASTATECC pThisCC, SVGAFifoCmdDefineAlphaCursor const *pCmd)
 {
-    RT_NOREF(pThis);
     PVMSVGAR3STATE const pSvgaR3State = pThisCC->svga.pSvgaR3State;
 
     STAM_REL_COUNTER_INC(&pSvgaR3State->StatR3CmdDefineAlphaCursor);
     Log(("VMSVGA cmd: SVGA_CMD_DEFINE_ALPHA_CURSOR id=%d size (%dx%d) hotspot (%d,%d)\n", pCmd->id, pCmd->width, pCmd->height, pCmd->hotspotX, pCmd->hotspotY));
 
-    /* Check against a reasonable upper limit to prevent integer overflows in the sanity checks below. */
-    ASSERT_GUEST_RETURN_VOID(pCmd->height < 2048 && pCmd->width < 2048);
-    RT_UNTRUSTED_VALIDATED_FENCE();
-
-    /* The mouse pointer interface always expects an AND mask followed by the color data (XOR mask). */
-    uint32_t cbAndMask     = (pCmd->width + 7) / 8 * pCmd->height;          /* size of the AND mask */
-    cbAndMask              = ((cbAndMask + 3) & ~3);                        /* + gap for alignment */
-    uint32_t cbXorMask     = pCmd->width * sizeof(uint32_t) * pCmd->height; /* + size of the XOR mask (32-bit BRGA format) */
-    uint32_t cbCursorShape = cbAndMask + cbXorMask;
-
-    uint8_t *pCursorCopy = (uint8_t *)RTMemAlloc(cbCursorShape);
-    AssertPtrReturnVoid(pCursorCopy);
-
-    /* Transparency is defined by the alpha bytes, so make the whole bitmap visible. */
-    memset(pCursorCopy, 0xff, cbAndMask);
-    /* Colour data */
-    memcpy(pCursorCopy + cbAndMask, pCmd + 1, cbXorMask);
-
-    vmsvgaR3InstallNewCursor(pThisCC, pSvgaR3State, true /*fAlpha*/, pCmd->hotspotX, pCmd->hotspotY,
-                             pCmd->width, pCmd->height, pCursorCopy, cbCursorShape);
+    /* We simply can cast SVGAFifoCmdDefineAlphaCursor to SVGAGBAlphaCursorHeader here, skipping the reserved ID at the beginning.
+     * This ASSUMES that the structs don't diverge from each other. */
+    vmsvgaR3InstallAlphaCursor(pThis, pThisCC, (SVGAGBAlphaCursorHeader *)pCmd + sizeof(uint32_t) /* ID, reserved */);
 }
 
 

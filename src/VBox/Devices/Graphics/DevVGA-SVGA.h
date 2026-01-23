@@ -1,4 +1,4 @@
-/* $Id: DevVGA-SVGA.h 112588 2026-01-14 23:53:53Z vitali.pelenjow@oracle.com $ */
+/* $Id: DevVGA-SVGA.h 112675 2026-01-23 17:45:53Z andreas.loeffler@oracle.com $ */
 /** @file
  * VMware SVGA device
  */
@@ -183,6 +183,11 @@ struct {
 /** For validating Y and height values.
  * The code assumes it's at least an order of magnitude less than UINT32_MAX. */
 #define VMSVGA_MAX_Y                    _1M
+
+/** Maximum dimensions (X/Y, in pixel) a cursor can have. */
+#define VMSVGA_CURSOR_MAX_DIMENSION     512
+/** Maximum size (in bytes) a cursor can have. */
+#define VMSVGA_CURSOR_MAX_BYTES         VMSVGA_CURSOR_MAX_DIMENSION * VMSVGA_CURSOR_MAX_DIMENSION * 4 /* RGBA */
 
 /* u32ActionFlags */
 #define VMSVGA_ACTION_CHANGEMODE_BIT    0
@@ -476,6 +481,7 @@ typedef struct VMSVGAState
     STAMCOUNTER                 StatRegDevCapWr;
     STAMCOUNTER                 StatRegCmdPrependLowWr;
     STAMCOUNTER                 StatRegCmdPrependHighWr;
+    STAMCOUNTER                 StatRegCursorMobIdWr;
 
     STAMCOUNTER                 StatRegBitsPerPixelRd;
     STAMCOUNTER                 StatRegBlueMaskRd;
