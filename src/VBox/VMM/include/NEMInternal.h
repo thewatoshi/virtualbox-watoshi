@@ -1,4 +1,4 @@
-/* $Id: NEMInternal.h 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: NEMInternal.h 112679 2026-01-25 16:38:00Z alexander.eichner@oracle.com $ */
 /** @file
  * NEM - Internal header file.
  */
@@ -232,6 +232,8 @@ typedef struct NEM
 # else
     /** KVM_CAP_X86_ROBUST_SINGLESTEP. */
     bool                        fRobustSingleStep;
+    /** KVM_CAP_SPLIT_IRQCHIP */
+    bool                        fKvmApic;
 # endif
 
     /** Hint where there might be a free slot. */

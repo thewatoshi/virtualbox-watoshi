@@ -1,4 +1,4 @@
-/* $Id: NEMR3NativeTemplate-linux.cpp.h 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: NEMR3NativeTemplate-linux.cpp.h 112679 2026-01-25 16:38:00Z alexander.eichner@oracle.com $ */
 /** @file
  * NEM - Native execution manager, native ring-3 Linux backend, common bits for x86 and arm64.
  */
@@ -233,7 +233,11 @@ static int nemR3LnxInitCheckCapabilities(PVM pVM, PRTERRINFO pErrInfo)
         CAP_ENTRY__L(KVM_CAP_MULTI_ADDRESS_SPACE),
         CAP_ENTRY__L(KVM_CAP_GUEST_DEBUG_HW_BPS),
         CAP_ENTRY__L(KVM_CAP_GUEST_DEBUG_HW_WPS),            /* 120 */
+#ifdef VBOX_VMM_TARGET_X86
+        CAP_ENTRY__S(KVM_CAP_SPLIT_IRQCHIP, fKvmApic),
+#else
         CAP_ENTRY__L(KVM_CAP_SPLIT_IRQCHIP),
+#endif
         CAP_ENTRY__L(KVM_CAP_IOEVENTFD_ANY_LENGTH),
         CAP_ENTRY__L(KVM_CAP_HYPERV_SYNIC),
         CAP_ENTRY__L(KVM_CAP_S390_RI),
