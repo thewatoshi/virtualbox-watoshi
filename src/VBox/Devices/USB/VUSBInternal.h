@@ -1,4 +1,4 @@
-/* $Id: VUSBInternal.h 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: VUSBInternal.h 112698 2026-01-26 14:26:47Z michal.necasek@oracle.com $ */
 /** @file
  * Virtual USB - Internal header.
  *
@@ -435,6 +435,9 @@ typedef struct VUSBROOTHUB
     /** Alignment */
     uint32_t                   Alignment2;
 #endif
+    /** Public I/O statistics. */
+    STAMCOUNTER             StatReceiveBytes;
+    STAMCOUNTER             StatTransmitBytes;
 #ifdef VBOX_WITH_STATISTICS
     VUSBROOTHUBTYPESTATS    Total;
     VUSBROOTHUBTYPESTATS    aTypes[VUSBXFERTYPE_MSG];

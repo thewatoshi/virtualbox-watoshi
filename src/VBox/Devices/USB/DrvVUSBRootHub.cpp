@@ -1,4 +1,4 @@
-/* $Id: DrvVUSBRootHub.cpp 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: DrvVUSBRootHub.cpp 112698 2026-01-26 14:26:47Z michal.necasek@oracle.com $ */
 /** @file
  * Virtual USB - Root Hub Driver.
  */
@@ -1751,7 +1751,15 @@ static DECLCALLBACK(int) vusbRhConstruct(PPDMDRVINS pDrvIns, PCFGMNODE pCfg, uin
 
     /*
      * Statistics. (It requires a 30" monitor or extremely tiny fonts to edit this "table".)
+     * The /Public/ bits are official and used by session info in the GUI.
      */
+    PDMDrvHlpSTAMRegisterF(pDrvIns, &pThis->StatReceiveBytes,      STAMTYPE_COUNTER, STAMVISIBILITY_ALWAYS, STAMUNIT_BYTES,
+                           "Amount of data received",     "/Public/USB/%u/BytesReceived", pDrvIns->iInstance);
+    PDMDrvHlpSTAMRegisterF(pDrvIns, &pThis->StatTransmitBytes,     STAMTYPE_COUNTER, STAMVISIBILITY_ALWAYS, STAMUNIT_BYTES,
+                           "Amount of data transmitted",  "/Public/USB/%u/BytesTransmitted", pDrvIns->iInstance);
+    PDMDrvHlpSTAMRegisterF(pDrvIns, &pDrvIns->iInstance,           STAMTYPE_U32,     STAMVISIBILITY_ALWAYS, STAMUNIT_NONE,
+                           "Root Hub instance number",    "/Public/USB/%u/%s", pDrvIns->iInstance, pThis->pszName);
+
 #ifdef VBOX_WITH_STATISTICS
     PDMDrvHlpSTAMRegisterF(pDrvIns, &pThis->Total.StatUrbsSubmitted,                     STAMTYPE_COUNTER, STAMVISIBILITY_ALWAYS, STAMUNIT_COUNT, "The number of URBs submitted.",                  "/VUSB/%d/UrbsSubmitted",               pDrvIns->iInstance);
     PDMDrvHlpSTAMRegisterF(pDrvIns, &pThis->aTypes[VUSBXFERTYPE_BULK].StatUrbsSubmitted, STAMTYPE_COUNTER, STAMVISIBILITY_ALWAYS, STAMUNIT_COUNT, "Bulk transfer.",                                 "/VUSB/%d/UrbsSubmitted/Bulk",          pDrvIns->iInstance);

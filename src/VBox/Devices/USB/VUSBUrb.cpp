@@ -1,4 +1,4 @@
-/* $Id: VUSBUrb.cpp 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: VUSBUrb.cpp 112698 2026-01-26 14:26:47Z michal.necasek@oracle.com $ */
 /** @file
  * Virtual USB - URBs.
  */
@@ -271,7 +271,6 @@ void vusbUrbCompletionRhEx(PVUSBROOTHUB pRh, PVUSBURB pUrb)
             LogRel(("VUSB: Capturing URB completion event on the root hub failed with %Rrc\n", rc));
     }
 
-#ifdef VBOX_WITH_STATISTICS
     /*
      * Total and per-type submit statistics.
      */
@@ -295,11 +294,13 @@ void vusbUrbCompletionRhEx(PVUSBROOTHUB pRh, PVUSBURB pUrb)
                         STAM_COUNTER_ADD(&pRh->aStatIsocDetails[i].Bytes, cb);
                         if (pUrb->enmDir == VUSBDIRECTION_IN)
                         {
+                            STAM_REL_COUNTER_ADD(&pRh->StatReceiveBytes, cb);
                             STAM_COUNTER_ADD(&pRh->Total.StatActReadBytes, cb);
                             STAM_COUNTER_ADD(&pRh->aTypes[VUSBXFERTYPE_ISOC].StatActReadBytes, cb);
                         }
                         else
                         {
+                            STAM_REL_COUNTER_ADD(&pRh->StatTransmitBytes, cb);
                             STAM_COUNTER_ADD(&pRh->Total.StatActWriteBytes, cb);
                             STAM_COUNTER_ADD(&pRh->aTypes[VUSBXFERTYPE_ISOC].StatActWriteBytes, cb);
                         }
@@ -329,11 +330,13 @@ void vusbUrbCompletionRhEx(PVUSBROOTHUB pRh, PVUSBURB pUrb)
                 STAM_COUNTER_ADD(&pRh->aTypes[pUrb->enmType].StatActBytes, pUrb->cbData);
                 if (pUrb->enmDir == VUSBDIRECTION_IN)
                 {
+                    STAM_REL_COUNTER_ADD(&pRh->StatReceiveBytes, pUrb->cbData);
                     STAM_COUNTER_ADD(&pRh->Total.StatActReadBytes, pUrb->cbData);
                     STAM_COUNTER_ADD(&pRh->aTypes[pUrb->enmType].StatActReadBytes, pUrb->cbData);
                 }
                 else
                 {
+                    STAM_REL_COUNTER_ADD(&pRh->StatTransmitBytes, pUrb->cbData);
                     STAM_COUNTER_ADD(&pRh->Total.StatActWriteBytes, pUrb->cbData);
                     STAM_COUNTER_ADD(&pRh->aTypes[pUrb->enmType].StatActWriteBytes, pUrb->cbData);
                 }
@@ -346,7 +349,6 @@ void vusbUrbCompletionRhEx(PVUSBROOTHUB pRh, PVUSBURB pUrb)
             STAM_COUNTER_INC(&pRh->aTypes[pUrb->enmType].StatUrbsFailed);
         }
     }
-#endif /* VBOX_WITH_STATISTICS */
 
     /*
      * Msg transfers are special virtual transfers associated with
