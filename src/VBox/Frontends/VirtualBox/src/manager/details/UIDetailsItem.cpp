@@ -1,4 +1,4 @@
-/* $Id: UIDetailsItem.cpp 112700 2026-01-26 15:25:49Z sergey.dubov@oracle.com $ */
+/* $Id: UIDetailsItem.cpp 112701 2026-01-26 15:33:51Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIDetailsItem class definition.
  */
@@ -66,70 +66,19 @@ public:
     /** Returns the role. */
     virtual QAccessible::Role role() const RT_OVERRIDE
     {
-#ifdef VBOX_WS_MAC
-        // WORKAROUND: macOS doesn't respect QAccessible::Tree/TreeItem roles.
-
-        /* Sanity check: */
-        AssertPtrReturn(item(), QAccessible::NoRole);
-
-        /* Return List for group/set item, ListItem for element/preview item: */
-        switch (item()->type())
-        {
-            case UIDetailsItemType_Group:
-            case UIDetailsItemType_Set:
-                return QAccessible::List;
-            default:
-                break;
-        }
         return QAccessible::ListItem;
-#else
-        return QAccessible::TreeItem;
-#endif
     }
 
     /** Returns the parent. */
     virtual QAccessibleInterface *parent() const RT_OVERRIDE
     {
-        /* Return the parent: */
-        switch (item()->type())
-        {
-            /* For a set: */
-            case UIDetailsItemType_Set:
-            {
-                /* Sanity check: */
-                AssertPtrReturn(item(), 0);
-                AssertPtrReturn(item()->model(), 0);
-                AssertPtrReturn(item()->model()->view(), 0);
+        /* Sanity check: */
+        AssertPtrReturn(item(), 0);
+        AssertPtrReturn(item()->model(), 0);
+        AssertPtrReturn(item()->model()->view(), 0);
 
-                /* Always return parent view: */
-                return QAccessible::queryAccessibleInterface(item()->model()->view());
-            }
-            /* For an element: */
-            case UIDetailsItemType_Element:
-            {
-                /* Sanity check: */
-                AssertPtrReturn(item(), 0);
-                AssertPtrReturn(item()->model(), 0);
-                AssertPtrReturn(item()->model()->root(), 0);
-
-                /* What amount of children root has? */
-                const int cChildCount = item()->model()->root()->items().size();
-                /* Return our parent (if root has many children): */
-                if (cChildCount > 1)
-                    return QAccessible::queryAccessibleInterface(item()->parentItem());
-
-                /* Sanity check: */
-                AssertPtrReturn(item()->model()->view(), 0);
-
-                /* Return parent view (otherwise): */
-                return QAccessible::queryAccessibleInterface(item()->model()->view());
-            }
-            default:
-                break;
-        }
-
-        /* Null by default: */
-        return 0;
+        /* Always return parent view: */
+        return QAccessible::queryAccessibleInterface(item()->model()->view());
     }
 
     /** Returns the rect. */
@@ -155,14 +104,6 @@ public:
         /* Sanity check: */
         AssertPtrReturn(item(), 0);
 
-        /* Return the number of children: */
-        switch (item()->type())
-        {
-            case UIDetailsItemType_Set:     return item()->items().size();
-            case UIDetailsItemType_Element: return item()->toElement()->text().size();
-            default: break;
-        }
-
         /* Zero by default: */
         return 0;
     }
@@ -174,14 +115,6 @@ public:
         AssertReturn(iIndex >= 0 && iIndex < childCount(), 0);
         AssertPtrReturn(item(), 0);
 
-        /* Return the child with the iIndex: */
-        switch (item()->type())
-        {
-            case UIDetailsItemType_Set:     return QAccessible::queryAccessibleInterface(item()->items().at(iIndex));
-            case UIDetailsItemType_Element: return QAccessible::queryAccessibleInterface(&item()->toElement()->text()[iIndex]);
-            default: break;
-        }
-
         /* Null be default: */
         return 0;
     }
@@ -189,10 +122,8 @@ public:
     /** Returns the index of the passed @a pChild. */
     virtual int indexOfChild(const QAccessibleInterface *pChild) const RT_OVERRIDE
     {
-        /* Search for corresponding child: */
-        for (int i = 0; i < childCount(); ++i)
-            if (child(i) == pChild)
-                return i;
+        /* Sanity check: */
+        AssertPtrReturn(pChild, -1);
 
         /* -1 by default: */
         return -1;

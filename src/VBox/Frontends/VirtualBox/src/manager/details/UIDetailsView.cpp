@@ -1,4 +1,4 @@
-/* $Id: UIDetailsView.cpp 112670 2026-01-22 15:00:13Z sergey.dubov@oracle.com $ */
+/* $Id: UIDetailsView.cpp 112701 2026-01-26 15:33:51Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIDetailsView class implementation.
  */
@@ -59,12 +59,7 @@ public:
 
     /** Constructs an accessibility interface passing @a pWidget to the base-class. */
     UIAccessibilityInterfaceForUIDetailsView(QWidget *pWidget)
-#ifdef VBOX_WS_MAC
-        // WORKAROUND: macOS doesn't respect QAccessible::Tree/TreeItem roles.
         : QAccessibleWidget(pWidget, QAccessible::List)
-#else
-        : QAccessibleWidget(pWidget, QAccessible::Tree)
-#endif
     {}
 
     /** Returns a specialized accessibility interface type. */
@@ -93,17 +88,19 @@ public:
         AssertPtrReturn(view()->model(), 0);
         AssertPtrReturn(view()->model()->root(), 0);
 
-        /* What amount of children root has? */
-        const int cChildCount = view()->model()->root()->items().size();
-        /* Return amount of children root has (if there are many children): */
-        if (cChildCount > 1)
-            return cChildCount;
+        /* Calculate a number of all elements in all sets we have: */
+        int iCount = 0;
+        foreach (UIDetailsItem *pSet, view()->model()->root()->items())
+        {
+            /* Sanity check: */
+            AssertPtrReturn(pSet, iCount);
 
-        /* Sanity check: */
-        AssertPtrReturn(view()->model()->root()->items().first(), 0);
+            /* Append result with number of elements current set has: */
+            iCount += pSet->items().size();
+        }
 
-        /* Return the number of children lone root child has (otherwise): */
-        return view()->model()->root()->items().first()->items().size();
+        /* Return result: */
+        return iCount;
     }
 
     /** Returns the child with the passed @a iIndex. */
@@ -115,34 +112,31 @@ public:
         AssertPtrReturn(view()->model(), 0);
         AssertPtrReturn(view()->model()->root(), 0);
 
-        /* What amount of children root has? */
-        const int cChildCount = view()->model()->root()->items().size();
-        /* Return the root child with the passed iIndex (if there are many children): */
-        if (cChildCount > 1)
-            return QAccessible::queryAccessibleInterface(view()->model()->root()->items().value(iIndex));
+        /* Compose a list of all elements in all sets we have: */
+        QList<UIDetailsItem*> children;
+        foreach (UIDetailsItem *pSet, view()->model()->root()->items())
+        {
+            /* Sanity check: */
+            AssertPtrReturn(pSet, 0);
 
-        /* Sanity check: */
-        AssertPtrReturn(view()->model()->root()->items().first(), 0);
+            /* Append result with elements current set has: */
+            children += pSet->items();
+        }
 
-        /* Return the lone root child's child with the passed iIndex (otherwise): */
-        return QAccessible::queryAccessibleInterface(view()->model()->root()->items().first()->items().value(iIndex));
+        /* Return result: */
+        return QAccessible::queryAccessibleInterface(children.value(iIndex));
     }
 
     /** Returns the index of passed @a pChild. */
     virtual int indexOfChild(const QAccessibleInterface *pChild) const RT_OVERRIDE
     {
-        /* Sanity check: */
-        AssertReturn(pChild, -1);
+        /* Search for corresponding child: */
+        for (int i = 0; i < childCount(); ++i)
+            if (child(i) == pChild)
+                return i;
 
-        /* Acquire item itself: */
-        UIDetailsItem *pChildItem = qobject_cast<UIDetailsItem*>(pChild->object());
-
-        /* Sanity check: */
-        AssertPtrReturn(pChildItem, -1);
-        AssertPtrReturn(pChildItem->parentItem(), -1);
-
-        /* Return the index of item in it's parent: */
-        return pChildItem->parentItem()->items().indexOf(pChildItem);
+        /* -1 by default: */
+        return -1;
     }
 
     /** Returns the state. */
