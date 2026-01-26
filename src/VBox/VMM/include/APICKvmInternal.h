@@ -1,4 +1,4 @@
-/* $Id: APICKvmInternal.h 112683 2026-01-25 17:23:05Z alexander.eichner@oracle.com $ */
+/* $Id: APICKvmInternal.h 112686 2026-01-26 08:24:54Z alexander.eichner@oracle.com $ */
 /** @file
  * APIC - Advanced Programmable Interrupt Controller - NEM Hyper-V backend, Internal header.
  */
@@ -111,7 +111,7 @@ typedef struct KVMAPICCPU
     /** The APIC page virtual address - R3 ptr. */
     R3PTRTYPE(void *)           pvApicPageR3;
     /** The APIC page passed to and used by KVM - R3 ptr. */
-    R3PTRTYPE(void *)           pvHvPageR3;
+    R3PTRTYPE(void *)           pvKvmPageR3;
 
     /** The APIC base MSR.*/
     uint64_t                    uApicBaseMsr;

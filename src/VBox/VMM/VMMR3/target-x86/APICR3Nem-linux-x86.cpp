@@ -1,4 +1,4 @@
-/* $Id: APICR3Nem-linux-x86.cpp 112683 2026-01-25 17:23:05Z alexander.eichner@oracle.com $ */
+/* $Id: APICR3Nem-linux-x86.cpp 112686 2026-01-26 08:24:54Z alexander.eichner@oracle.com $ */
 /** @file
  * APIC - Advanced Programmable Interrupt Controller - NEM KVM backend.
  */
@@ -268,7 +268,7 @@ static DECLCALLBACK(uint64_t) apicR3KvmGetIcrNoCheck(PVMCPUCC pVCpu)
 static DECLCALLBACK(VBOXSTRICTRC) apicR3KvmSetIcr(PVMCPUCC pVCpu, uint64_t u64Icr, int rcRZ)
 {
     VMCPU_ASSERT_EMT(pVCpu);
-    RT_NOREF(rcRZ, u64Icr);
+    RT_NOREF(pVCpu, rcRZ, u64Icr);
 
     /** @todo */
     AssertMsgFailed(("Unexpected ICR write failed (%#RX64) in CPU %u\n", u64Icr, pVCpu->idCpu));
@@ -448,7 +448,7 @@ static DECLCALLBACK(VBOXSTRICTRC) apicR3KvmImportState(PVMCPUCC pVCpu)
 
 #if 1
     PKVMAPICCPU pKvmApicCpu  = VMCPU_TO_KVMAPICCPU(pVCpu);
-    PXAPICPAGE pKvmApicPage = (PXAPICPAGE)pVCpu->apic.s.pvHvPageR3;
+    PXAPICPAGE pKvmApicPage = (PXAPICPAGE)pVCpu->apic.s.pvKvmPageR3;
 
     int rcLnx = ioctl(pKvmApicCpu->iFdVCpu, KVM_GET_LAPIC, pKvmApicPage);
     if (RT_UNLIKELY(rcLnx == -1))
@@ -472,7 +472,7 @@ static DECLCALLBACK(VBOXSTRICTRC) apicR3KvmExportState(PVMCPUCC pVCpu)
 {
 #if 0
     PKVMAPICCPU pKvmApicCpu = VMCPU_TO_KVMAPICCPU(pVCpu);
-    PXAPICPAGE pKvmApicPage = (PXAPICPAGE)pVCpu->apic.s.pvHvPageR3;
+    PXAPICPAGE pKvmApicPage = (PXAPICPAGE)pVCpu->apic.s.pvKvmPageR3;
 
     memcpy(pKvmApicPage, pVCpu->apic.s.pvApicPageR3, sizeof(XAPICPAGE));
     int rcLnx = ioctl(pKvmApicCpu->iFdVCpu, KVM_SET_LAPIC, pKvmApicPage);
@@ -553,7 +553,7 @@ static void apicR3HKvmResetCpu(PVMCPUCC pVCpu, bool fResetApicBaseMsr)
 {
     VMCPU_ASSERT_EMT_OR_NOT_RUNNING(pVCpu);
 
-    LogFlow(("APIC/WHv%u: apicR3ResetCpu: fResetApicBaseMsr=%RTbool\n", pVCpu->idCpu, fResetApicBaseMsr));
+    LogFlow(("APIC/KVM%u: apicR3ResetCpu: fResetApicBaseMsr=%RTbool\n", pVCpu->idCpu, fResetApicBaseMsr));
 
 #ifdef VBOX_STRICT
     /* Verify that the initial APIC ID reported via CPUID matches our VMCPU ID assumption. */
@@ -629,7 +629,21 @@ DECLCALLBACK(void) apicR3KvmReset(PPDMDEVINS pDevIns)
     VM_ASSERT_EMT0(pVM);
     VM_ASSERT_IS_NOT_RUNNING(pVM);
 
-    /** @todo */
+    VMCC_FOR_EACH_VMCPU(pVM)
+    {
+        apicR3HKvmResetCpu(pVCpu, true /*fResetApicBaseMsr*/);
+
+        PKVMAPICCPU pKvmApicCpu = VMCPU_TO_KVMAPICCPU(pVCpu);
+
+        memcpy(pVCpu->apic.s.pvKvmPageR3, pVCpu->apic.s.pvApicPageR3, sizeof(XAPICPAGE));
+        int rcLnx = ioctl(pKvmApicCpu->iFdVCpu, KVM_SET_LAPIC, pVCpu->apic.s.pvKvmPageR3);
+        if (RT_UNLIKELY(rcLnx == -1))
+        {
+            int rc = RTErrConvertFromErrno(errno);
+            LogRel(("APIC/KVM%u: Failed to set the KVM APIC state during reset (rc=%Rrc errno=%d)", pVCpu->idCpu, rc, errno));
+        }
+    }
+    VMCC_FOR_EACH_VMCPU_END(pVM);
 }
 
 
@@ -666,7 +680,7 @@ DECLCALLBACK(int) apicR3KvmDestruct(PPDMDEVINS pDevIns)
         PKVMAPICCPU pKvmApicCpu = VMCPU_TO_KVMAPICCPU(pVCpu);
 
         pKvmApicCpu->pvApicPageR3 = NIL_RTR3PTR;
-        pKvmApicCpu->pvHvPageR3   = NIL_RTR3PTR;
+        pKvmApicCpu->pvKvmPageR3  = NIL_RTR3PTR;
     }
     return VINF_SUCCESS;
 }
@@ -788,17 +802,17 @@ DECLCALLBACK(int) apicR3KvmConstruct(PPDMDEVINS pDevIns, int iInstance, PCFGMNOD
     {
         PKVMAPICCPU pKvmApicCpu = VMCPU_TO_KVMAPICCPU(pVCpu);
         Assert(pKvmApicCpu->pvApicPageR3 == NIL_RTR3PTR);
-        Assert(pKvmApicCpu->pvHvPageR3 == NIL_RTR3PTR);
+        Assert(pKvmApicCpu->pvKvmPageR3 == NIL_RTR3PTR);
 
         size_t const offPage     = 2 * idCpu * sizeof(XAPICPAGE);
-        pKvmApicCpu->pvHvPageR3   = (void *)((uintptr_t)pvApicPages + offPage);
+        pKvmApicCpu->pvKvmPageR3  = (void *)((uintptr_t)pvApicPages + offPage);
         pKvmApicCpu->pvApicPageR3 = (void *)((uintptr_t)pvApicPages + offPage + sizeof(XAPICPAGE));
 
-        Assert(pKvmApicCpu->pvHvPageR3 != NIL_RTR3PTR);
+        Assert(pKvmApicCpu->pvKvmPageR3 != NIL_RTR3PTR);
         Assert(pKvmApicCpu->pvApicPageR3 != NIL_RTR3PTR);
 
         /* Initialize the APIC page and the APIC base MSR and copy it over to the Hyper-V APIC page. */
-        PXAPICPAGE pKvmApicPage = (PXAPICPAGE)pKvmApicCpu->pvHvPageR3;
+        PXAPICPAGE pKvmApicPage = (PXAPICPAGE)pKvmApicCpu->pvKvmPageR3;
         {
             apicR3HKvmResetCpu(pVCpu, true /*fResetApicBaseMsr*/);
             PCXAPICPAGE pXApicPage = (PCXAPICPAGE)pKvmApicCpu->pvApicPageR3;
@@ -808,7 +822,14 @@ DECLCALLBACK(int) apicR3KvmConstruct(PPDMDEVINS pDevIns, int iInstance, PCFGMNOD
 
         rc = NEMR3LinuxGetKvmVCpuFd(pVCpu, &pKvmApicCpu->iFdVCpu);
         AssertRC(rc);
-        /** @todo _SET_LAPIC */
+
+        int rcLnx = ioctl(pKvmApicCpu->iFdVCpu, KVM_SET_LAPIC, pKvmApicPage);
+        if (RT_UNLIKELY(rcLnx == -1))
+        {
+            rc = RTErrConvertFromErrno(errno);
+            return PDMDEV_SET_ERROR(pDevIns, rc,
+                                    N_("APIC/KVM: Failed to set the initial KVM APIC state"));
+        }
     }
     VMCC_FOR_EACH_VMCPU_END(pVM);
 
@@ -863,23 +884,7 @@ DECLCALLBACK(int) apicR3KvmConstruct(PPDMDEVINS pDevIns, int iInstance, PCFGMNOD
     /*
      * Statistics.
      */
-#ifdef VBOX_WITH_STATISTICS
-# define APIC_REG_COUNTER(a_pvReg, a_pszNameFmt, a_pszDesc) \
-        PDMDevHlpSTAMRegisterF(pDevIns, a_pvReg, STAMTYPE_COUNTER, STAMVISIBILITY_ALWAYS, \
-                               STAMUNIT_OCCURENCES, a_pszDesc, a_pszNameFmt, idCpu)
-
-    for (VMCPUID idCpu = 0; idCpu < pVM->cCpus; idCpu++)
-    {
-        PVMCPU     pVCpu      = pVM->apCpusR3[idCpu];
-        PKVMAPICCPU pKvmApicCpu = VMCPU_TO_KVMAPICCPU(pVCpu);
-
-        APIC_REG_COUNTER(&pKvmApicCpu->StatTimerOneShot,     "%u/TimerOneShot",     "Number of times the one-shot timer callback is invoked.");
-        APIC_REG_COUNTER(&pKvmApicCpu->StatTimerPeriodic,    "%u/TimerPeriodic",    "Number of times the periodic timer  callback is invoked.");
-        APIC_REG_COUNTER(&pKvmApicCpu->StatTimerTscDeadline, "%u/TimerTscDeadline", "Number of times the TSC deadline timers callback is invoked");
-    }
-
-# undef APIC_REG_ACCESS_COUNTER
-#endif
+    /** @todo */
 
     return VINF_SUCCESS;
 }
