@@ -1,4 +1,4 @@
-/* $Id: DevVGA-SVGA.cpp 112695 2026-01-26 12:24:26Z knut.osmundsen@oracle.com $ */
+/* $Id: DevVGA-SVGA.cpp 112707 2026-01-27 09:00:46Z andreas.loeffler@oracle.com $ */
 /** @file
  * VMware SVGA device.
  *
@@ -2434,7 +2434,8 @@ static VBOXSTRICTRC vmsvgaWritePort(PPDMDEVINS pDevIns, PVGASTATE pThis, PVGASTA
 
         case SVGA_REG_CURSOR_MOBID:
         {
-#ifdef IN_RING3
+#ifdef VBOX_WITH_VMSVGA3D
+# ifdef IN_RING3
             STAM_REL_COUNTER_INC(&pThis->svga.StatRegCursorMobIdWr);
 
             /*
@@ -2543,9 +2544,12 @@ static VBOXSTRICTRC vmsvgaWritePort(PPDMDEVINS pDevIns, PVGASTATE pThis, PVGASTA
             }
             else
                 LogRelMax(16, ("VMSVGA: CURSOR_MOBID: Invalid ID %#x. Ignoring request.\n", u32));
-#else  /* !IN_RING3 */
+# else  /* !IN_RING3 */
             rc = VINF_IOM_R3_IOPORT_WRITE;
-#endif /* !IN_RING3 */
+# endif /* !IN_RING3 */
+#else   /* !VBOX_WITH_VMSVGA3D */
+            /* Not supported, ignore. */
+#endif /* !VBOX_WITH_VMSVGA3D */
             break;
         }
         case SVGA_REG_FB_START:
