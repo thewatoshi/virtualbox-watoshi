@@ -1,4 +1,4 @@
-/* $Id: NEMR3NativeTemplate-linux.cpp.h 112679 2026-01-25 16:38:00Z alexander.eichner@oracle.com $ */
+/* $Id: NEMR3NativeTemplate-linux.cpp.h 112709 2026-01-27 10:00:35Z alexander.eichner@oracle.com $ */
 /** @file
  * NEM - Native execution manager, native ring-3 Linux backend, common bits for x86 and arm64.
  */
@@ -444,6 +444,39 @@ static DECLCALLBACK(VBOXSTRICTRC) nemR3LnxFixThreadPoke(PVM pVM, PVMCPU pVCpu, v
 }
 
 
+/**
+ * Makes sure GIM is not using HyperV mode as we don't support it with the KVM backend right now.
+ *
+ * This is rather ugly.
+ *
+ * @returns VBox status code
+ * @param   pVM             The cross context VM structure.
+ */
+static int nemR3LnxDisableGimHyperV(PVM pVM)
+{
+    /*
+     * Check the GIM config and rewrite it to Minimal if HyperV is currently configured.
+     */
+    PCFGMNODE pCfg = CFGMR3GetChild(CFGMR3GetRoot(pVM), "/GIM");
+    if (pCfg)
+    {
+        char szProvider[64];
+        int rc = CFGMR3QueryString(pCfg, "Provider", &szProvider[0], sizeof(szProvider));
+        AssertLogRelMsgReturn(RT_SUCCESS(rc) || rc == VERR_CFGM_VALUE_NOT_FOUND, ("%Rrc\n", rc), rc);
+        if (RT_SUCCESS(rc) && !strcmp(szProvider, "HyperV"))
+        {
+            LogRel(("NEM: Adjusting GIM configuration from HyperV to Minimal mode.  HyperV is currently not supported for GIM on NEM!\n"));
+            LogRel(("NEM: Disable KVM if you need the HyperV GIM provider for your guests!\n"));
+            rc = CFGMR3RemoveValue(pCfg, "Provider");
+            rc = CFGMR3InsertString(pCfg, "Provider", "Minimal");
+            AssertLogRelRCReturn(rc, rc);
+        }
+    }
+
+    return VINF_SUCCESS;
+}
+
+
 DECLHIDDEN(int) nemR3NativeInit(PVM pVM, bool fFallback, bool fForced)
 {
     RT_NOREF(pVM, fFallback, fForced);
@@ -504,6 +537,7 @@ DECLHIDDEN(int) nemR3NativeInit(PVM pVM, bool fFallback, bool fForced)
                      */
                     VM_SET_MAIN_EXECUTION_ENGINE(pVM, VM_EXEC_ENGINE_NATIVE_API);
                     Log(("NEM: Marked active!\n"));
+                    nemR3LnxDisableGimHyperV(pVM);
                     PGMR3EnableNemMode(pVM);
 
                     /*

@@ -1,4 +1,4 @@
-/* $Id: APICR3Nem-linux-x86.cpp 112703 2026-01-26 16:37:35Z alexander.eichner@oracle.com $ */
+/* $Id: APICR3Nem-linux-x86.cpp 112709 2026-01-27 10:00:35Z alexander.eichner@oracle.com $ */
 /** @file
  * APIC - Advanced Programmable Interrupt Controller - NEM KVM backend.
  */
@@ -288,9 +288,21 @@ static DECLCALLBACK(int) apicR3KvmGetTimerFreq(PVMCC pVM, uint64_t *pu64Value)
     Assert(pVM);
     AssertPtrReturn(pu64Value, VERR_INVALID_PARAMETER);
 
-    RT_NOREF(pVM, pu64Value);
-    AssertReleaseMsgFailed(("Unexpected interface call\n"));
-    return VERR_NOT_IMPLEMENTED;
+    PKVMAPIC pKvmApic = VM_TO_KVMAPIC(pVM);
+
+    int rcLnx = ioctl(pKvmApic->iFdVm, KVM_CHECK_EXTENSION, KVM_CAP_X86_APIC_BUS_CYCLES_NS);
+    if (rcLnx == -1)
+    {
+        LogRel(("APIC/KVM: Querying KVM_CAP_X86_APIC_BUS_CYCLES_NS failed, assuming default of 1GHz"));
+        *pu64Value = 1000000000;
+    }
+    else
+    {
+        Assert(rcLnx > 0);
+        *pu64Value = RT_NS_1SEC / (uint64_t)rcLnx; /* The value is the period, the default should be 1ns translating to 1GHz. */
+    }
+
+    return VINF_SUCCESS;
 }
 
 
