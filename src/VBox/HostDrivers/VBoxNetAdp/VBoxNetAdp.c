@@ -1,4 +1,4 @@
-/* $Id: VBoxNetAdp.c 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: VBoxNetAdp.c 112720 2026-01-27 21:27:26Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBoxNetAdp - Virtual Network Adapter Driver (Host), Common Code.
  */
@@ -109,7 +109,7 @@ DECLHIDDEN(void) vboxNetAdpComposeMACAddress(PVBOXNETADP pThis, PRTMAC pMac)
 
     pMac->au8[3] = 0; /* pThis->iUnit >> 16; */
     pMac->au8[4] = 0; /* pThis->iUnit >> 8; */
-    pMac->au8[5] = pThis->iUnit;
+    pMac->au8[5] = (uint8_t)pThis->iUnit;
 }
 
 int vboxNetAdpCreate(PVBOXNETADP *ppNew, const char *pcszName)
