@@ -1,4 +1,4 @@
-/* $Id: VBoxCpuReport-arm.cpp 112714 2026-01-27 13:33:55Z knut.osmundsen@oracle.com $ */
+/* $Id: VBoxCpuReport-arm.cpp 112718 2026-01-27 20:47:33Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBoxCpuReport - Produces the basis for a CPU DB entry, x86 specifics.
  */
@@ -264,6 +264,19 @@ static DECLCALLBACK(int) sysRegValSortCmp(void const *pvElement1, void const *pv
     PCSUPARMSYSREGVAL const pElm1 = (PCSUPARMSYSREGVAL)pvElement1;
     PCSUPARMSYSREGVAL const pElm2 = (PCSUPARMSYSREGVAL)pvElement2;
     return pElm1->idReg < pElm2->idReg ? -1 : pElm1->idReg > pElm2->idReg ? 1 : 0;
+}
+
+/** Formats a 64-bit unsigned integer value. */
+static const char *formatU64(char *pszTmp, size_t cbTmp, uint64_t uValue, int cchWidth = 18, bool fTrailingComma = true)
+{
+    if (uValue == UINT64_MAX)
+        return fTrailingComma ? "UINT64_MAX," : "UINT64_MAX";
+    if (uValue == UINT32_MAX)
+        return fTrailingComma ? "UINT32_MAX," : "UINT32_MAX";
+    if (uValue == 0)
+        return fTrailingComma ? "0,"          : "0";
+    RTStrPrintf(pszTmp, cbTmp, "UINT64_C(%#0*RX64)%s", cchWidth, uValue, fTrailingComma ? "," : "");
+    return pszTmp;
 }
 
 
@@ -822,18 +835,21 @@ static void printCacheEntries(const char *pszNameC, uint32_t cEntries, SUPARMCAC
                                  : (uint32_t)(paEntries[i].uCcsIdR >> 13) & (RT_BIT_32(15) - 1U)) + 1U;
         uint32_t const cbLine = RT_BIT_32((paEntries[i].uCcsIdR & 7U) + 4);
         uint32_t const uAssoc = (uint32_t)((paEntries[i].uCcsIdR >> 3) & ((fFeatCcIdx ? RT_BIT_32(21) : RT_BIT_32(10)) - 1U)) + 1U;
-        vbCpuRepPrintf("    { %#04x, {%u,%u,%u}, %u, UINT64_C(%#010RX32), UINT64_C(%#010RX64) }, /* CSSEL=L%u-%s%s cbLine=%u cSets=%-5u Asc=%u */\n",
+        uint64_t const cbCache = cbLine * cSets * uAssoc;
+        char szTmp1[64], szTmp2[64];
+        vbCpuRepPrintf("    { %#04x, {%u,%u,%u}, %u, %s %s }, /* CSSEL=L%u-%s%s cbLine=%u cSets=%-5u Asc=%-2u (% .0RhubB) */\n",
                        paEntries[i].bCsSel,
                        paEntries[i].abReserved[0], paEntries[i].abReserved[1], paEntries[i].abReserved[2],
                        paEntries[i].fFlags,
-                       paEntries[i].uCcsIdR,
-                       paEntries[i].uCcs2IdR,
+                       formatU64(szTmp1, sizeof(szTmp1), paEntries[i].uCcsIdR, 14),
+                       formatU64(szTmp2, sizeof(szTmp2), paEntries[i].uCcs2IdR, 10, false),
                        (paEntries[i].bCsSel >> 1) & 7,
                        pszType,
                        paEntries[i].bCsSel & 16 ? "-tag" : "",
                        cbLine,
                        cSets,
-                       uAssoc);
+                       uAssoc,
+                       cbCache);
     }
     vbCpuRepPrintf("};\n"
                    "\n");
@@ -853,9 +869,9 @@ static int produceSysRegArray(const char *pszNameC, const char *pszCpuDesc)
 
         /* Determine FEAT_CCIDX - extended cache index */
         SUPARMSYSREGVAL *pReg = lookupSysReg(g_aVariations[iVar].aSysRegVals, g_aVariations[iVar].cSysRegVals,
-                                             ARMV8_AARCH64_SYSREG_ID_MMFR2_EL1);
-        if (pReg)
-            pReg = lookupSysReg(g_aCmnSysRegVals, g_cCmnSysRegVals, ARMV8_AARCH64_SYSREG_ID_MMFR2_EL1);
+                                             ARMV8_AARCH64_SYSREG_ID_AA64MMFR2_EL1);
+        if (!pReg)
+            pReg = lookupSysReg(g_aCmnSysRegVals, g_cCmnSysRegVals, ARMV8_AARCH64_SYSREG_ID_AA64MMFR2_EL1);
         bool const fFeatCcIdx = pReg && ((pReg->uValue >> 20) & UINT32_C(0xf)) >= 1;
 
         printCacheEntries(pszNameC, g_aVariations[iVar].cCacheEntries, g_aVariations[iVar].aCacheEntries,

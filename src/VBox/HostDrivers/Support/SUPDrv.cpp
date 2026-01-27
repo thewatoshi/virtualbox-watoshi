@@ -1,4 +1,4 @@
-/* $Id: SUPDrv.cpp 112714 2026-01-27 13:33:55Z knut.osmundsen@oracle.com $ */
+/* $Id: SUPDrv.cpp 112718 2026-01-27 20:47:33Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBoxDrv - The VirtualBox Support Driver - Common code.
  */
@@ -7579,15 +7579,19 @@ static void supdrvIOCtl_ArmGetCacheInfoOnCpu(PSUPARMGETCACHEINFO pReq, uint32_t 
     COMPILER_READ_SYS_REG_NAMED(pReq->u.Out.uCacheTypeReg, CTR_EL0);
     COMPILER_READ_SYS_REG_NAMED(pReq->u.Out.uDataCacheZeroId, DCZID_EL0);
 
-    /* Check if CCSIDR2_EL1 is available on this CPU. */
-    uint64_t                uReg = 0;
-    COMPILER_READ_SYS_REG_NAMED(uReg, ID_AA64MMFR2_EL1);
-    bool const              fFeatCcIdx = ((uReg >> 20) & UINT32_C(0xf) /*CCIDX*/) >= 1;
-
     /* Check if FEAT_MTE2 is available on this CPU. */
-    uReg = 0;
+    uint64_t                uReg = 0;
     COMPILER_READ_SYS_REG_NAMED(uReg, ID_AA64PFR1_EL1);
     bool const              fFeatMte2 = ((uReg >> 8) & UINT32_C(0xf) /*MTE*/) >= 2;
+
+#if 0 /** @todo CCSIDR2_EL1 accesses crash on the Nvidia DGX. Buggy docs? Buggy firmware? What? */
+    /* Check if CCSIDR2_EL1 is available on this CPU. */
+    uReg = 0;
+    COMPILER_READ_SYS_REG_NAMED(uReg, ID_AA64MMFR2_EL1);
+    bool const              fFeatCcIdx = ((uReg >> 20) & UINT32_C(0xf) /*CCIDX*/) >= 1;
+#else
+    bool const              fFeatCcIdx = false;
+#endif
 
     /* Read the cache level ID register CLIDR_EL1 register so we can enumerate the levels correctly. */
     uint64_t                uCacheLevelIdReg;
