@@ -1,4 +1,4 @@
-/* $Id: APICR3-x86.cpp 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: APICR3-x86.cpp 112727 2026-01-28 17:02:49Z alexander.eichner@oracle.com $ */
 /** @file
  * APIC - Advanced Programmable Interrupt Controller.
  */
@@ -306,6 +306,8 @@ static void apicR3DumpState(PVMCPU pVCpu, const char *pszPrefix, uint32_t uVersi
  * @param   pDevIns     The device instance.
  * @param   pVM     The cross context VM structure.
  * @param   pSSM    The SSM handle.
+ *
+ * @sa apicR3KvmSaveVMData, apicR3HvSaveVMData
  */
 static int apicR3SaveVMData(PPDMDEVINS pDevIns, PVM pVM, PSSMHANDLE pSSM)
 {

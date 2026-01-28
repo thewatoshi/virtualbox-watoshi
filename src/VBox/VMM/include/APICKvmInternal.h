@@ -1,4 +1,4 @@
-/* $Id: APICKvmInternal.h 112686 2026-01-26 08:24:54Z alexander.eichner@oracle.com $ */
+/* $Id: APICKvmInternal.h 112727 2026-01-28 17:02:49Z alexander.eichner@oracle.com $ */
 /** @file
  * APIC - Advanced Programmable Interrupt Controller - NEM Hyper-V backend, Internal header.
  */
@@ -90,6 +90,8 @@ typedef struct KVMAPIC
 
     /** @name Miscellaneous data.
      * @{ */
+    /** Flag whether an IO-APIC is present in the system. */
+    bool                        fIoApicPresent;
     /** Whether Hyper-V x2APIC compatibility mode is enabled. */
     bool                        fHyperVCompatMode;
     /** Whether TSC-deadline timer mode is supported for the guest. */
