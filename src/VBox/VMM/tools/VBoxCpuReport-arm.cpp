@@ -1,4 +1,4 @@
-/* $Id: VBoxCpuReport-arm.cpp 112718 2026-01-27 20:47:33Z knut.osmundsen@oracle.com $ */
+/* $Id: VBoxCpuReport-arm.cpp 112724 2026-01-28 13:01:53Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBoxCpuReport - Produces the basis for a CPU DB entry, x86 specifics.
  */
@@ -1068,7 +1068,7 @@ int produceCpuReport(void)
                        "                    /*.u4Implementer = */ %#04x,\n"
                        "                }\n"
                        "            },\n"
-                       "            /*.enmCoreType  = */ kCpumCoreType_%s,\n"
+                       "            /*.enmCoreType    = */ kCpumCoreType_%s,\n"
                        ,
                        iVar,
                        g_aVariations[iVar].pszFullName,

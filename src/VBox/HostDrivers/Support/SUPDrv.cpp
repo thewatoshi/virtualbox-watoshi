@@ -1,4 +1,4 @@
-/* $Id: SUPDrv.cpp 112720 2026-01-27 21:27:26Z knut.osmundsen@oracle.com $ */
+/* $Id: SUPDrv.cpp 112724 2026-01-28 13:01:53Z knut.osmundsen@oracle.com $ */
 /** @file
  * VBoxDrv - The VirtualBox Support Driver - Common code.
  */
@@ -7584,7 +7584,7 @@ static void supdrvIOCtl_ArmGetCacheInfoOnCpu(PSUPARMGETCACHEINFO pReq, uint32_t 
     COMPILER_READ_SYS_REG_NAMED(uReg, ID_AA64PFR1_EL1);
     bool const              fFeatMte2 = ((uReg >> 8) & UINT32_C(0xf) /*MTE*/) >= 2;
 
-#if 0 /** @todo CCSIDR2_EL1 accesses crash on the Nvidia DGX. Buggy docs? Buggy firmware? What? */
+#ifndef RT_OS_LINUX /** @todo CCSIDR2_EL1 accesses crash on the Nvidia DGX. Buggy docs? Buggy firmware? Linux specific? */
     /* Check if CCSIDR2_EL1 is available on this CPU. */
     uReg = 0;
     COMPILER_READ_SYS_REG_NAMED(uReg, ID_AA64MMFR2_EL1);
