@@ -1,4 +1,4 @@
-/* $Id: UIMachineAttributeSetter.cpp 112748 2026-01-29 14:28:16Z sergey.dubov@oracle.com $ */
+/* $Id: UIMachineAttributeSetter.cpp 112749 2026-01-29 14:48:10Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIMachineAttributeSetter namespace implementation.
  */
@@ -26,6 +26,7 @@
  */
 
 /* Qt includes: */
+#include <QDir>
 #include <QFileInfo>
 #include <QVariant>
 
@@ -326,6 +327,13 @@ void UIMachineAttributeSetter::setMachineLocation(const QUuid &uMachineId,
     /* Do nothing if there is a file named same way as passed folder: */
     if (fi.exists() && fi.isFile())
         return UINotificationMessage::cannotMoveMachineFolder(strLocation);
+    /* Make sure location exists, propose to create one, exit otherwise: */
+    else if (!fi.exists())
+    {
+        if (!msgCenter().confirmCreatingPath(strLocation))
+            return;
+        QDir().mkpath(strLocation);
+    }
 
     /* Move machine: */
     UINotificationProgressMachineMove *pNotification = new UINotificationProgressMachineMove(uMachineId,

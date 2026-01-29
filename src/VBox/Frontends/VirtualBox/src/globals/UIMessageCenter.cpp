@@ -1,4 +1,4 @@
-/* $Id: UIMessageCenter.cpp 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: UIMessageCenter.cpp 112749 2026-01-29 14:48:10Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIMessageCenter class implementation.
  */
@@ -748,6 +748,17 @@ bool UIMessageCenter::confirmResetMachine(const QString &strNames) const
                              .arg(strNames),
                           "confirmResetMachine" /* auto-confirm id */,
                           tr("Reset", "machine"));
+}
+
+bool UIMessageCenter::confirmCreatingPath(const QString &strPath, QWidget *pParent /* = 0 */)
+{
+    return questionBinary(pParent, MessageType_Question,
+                          tr("<p>Selected path doesn't exist:<br>%1</p>"
+                             "<p>Would you like to create it?</p>").arg(strPath),
+                          0 /* auto-confirm id */,
+                          QString() /* ok button text */,
+                          QString() /* cancel button text */,
+                          false /* ok button by default? */);
 }
 
 void UIMessageCenter::cannotSaveSettings(const QString strDetails, QWidget *pParent /* = 0 */) const
