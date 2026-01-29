@@ -1,4 +1,4 @@
-/* $Id: UIVMActivityMonitor.cpp 112710 2026-01-27 10:09:25Z serkan.bayraktar@oracle.com $ */
+/* $Id: UIVMActivityMonitor.cpp 112751 2026-01-29 16:30:52Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - UIVMActivityMonitor class implementation.
  */
@@ -31,6 +31,7 @@
 #include <QDateTime>
 #include <QLabel>
 #include <QMenu>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QGridLayout>
 #include <QScrollArea>

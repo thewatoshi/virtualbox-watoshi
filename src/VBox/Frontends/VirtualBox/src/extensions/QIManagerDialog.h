@@ -1,4 +1,4 @@
-/* $Id: QIManagerDialog.h 112403 2026-01-11 19:29:08Z knut.osmundsen@oracle.com $ */
+/* $Id: QIManagerDialog.h 112751 2026-01-29 16:30:52Z sergey.dubov@oracle.com $ */
 /** @file
  * VBox Qt GUI - Qt extensions: QIManagerDialog class declaration.
  */
@@ -32,11 +32,10 @@
 #endif
 
 /* Qt includes: */
-#include <QMainWindow>
 #include <QMap>
 
 /* GUI includes: */
-#include "QIWithRestorableGeometry.h"
+#include "QIMainWindow.h"
 #include "UILibraryDefs.h"
 
 /* Forward declarations: */
@@ -93,8 +92,8 @@ protected:
 };
 
 
-/** QMainWindow sub-class used as various manager dialogs. */
-class SHARED_LIBRARY_STUFF QIManagerDialog : public QIWithRestorableGeometry<QMainWindow>
+/** QIMainWindow sub-class used as various manager dialogs. */
+class SHARED_LIBRARY_STUFF QIManagerDialog : public QIMainWindow
 {
     Q_OBJECT;
 
