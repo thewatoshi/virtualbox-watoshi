@@ -1,4 +1,4 @@
-/* $Id: VBoxStub.cpp 112743 2026-01-29 12:04:30Z andreas.loeffler@oracle.com $ */
+/* $Id: VBoxStub.cpp 112759 2026-01-29 17:00:39Z andreas.loeffler@oracle.com $ */
 /** @file
  * VBoxStub - VirtualBox's Windows installer stub.
  */
@@ -1859,7 +1859,7 @@ int main(int argc, char **argv)
                         RTEXITCODE rcExit2 = ProcessPackage(iPackage, szMSIArgs, szMSILogFile[0] ? szMSILogFile : NULL);
                         if (rcExit2 == RTEXITCODE_SUCCESS)
                             cProcessed++;
-                        else
+                        else if (rcExit2 != RTEXITCODE_SKIPPED) /* Don't pass this along as exit code. */
                             rcExit = rcExit2;
                         iPackage++;
                     }
